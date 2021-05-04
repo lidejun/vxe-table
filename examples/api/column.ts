@@ -216,15 +216,6 @@ const apis = [
         list: []
       },
       {
-        name: 'seq-method',
-        descKey: 'app.api.tableColumn.desc.seqMethod',
-        version: '',
-        type: '({ row, rowIndex, column, columnIndex }) => number',
-        enum: '',
-        defVal: '',
-        list: []
-      },
-      {
         name: 'sortable',
         descKey: 'app.api.tableColumn.desc.sortable',
         version: '',
@@ -237,7 +228,7 @@ const apis = [
         name: 'sort-by',
         descKey: 'app.api.tableColumn.desc.sortBy',
         version: '',
-        type: 'string | ((row) => string | number)',
+        type: 'string | (({ row, column }) => string | number)',
         enum: '',
         defVal: '',
         list: []
@@ -319,7 +310,7 @@ const apis = [
         name: 'filter-method',
         descKey: 'app.api.tableColumn.desc.filterMethod',
         version: '',
-        type: '({ value, row, column }) => boolean',
+        type: '({ value, option, cellValue, row, column }) => boolean',
         enum: '',
         defVal: '',
         list: []
@@ -703,6 +694,15 @@ const apis = [
             enum: '',
             defVal: 'false',
             list: []
+          },
+          {
+            name: 'placeholder',
+            desc: '单元格占位符，但单元格为空值时显示的占位符',
+            version: '4.0.5',
+            type: 'string',
+            enum: '',
+            defVal: '',
+            list: []
           }
         ]
       },
@@ -859,6 +859,33 @@ const apis = [
         type: '',
         enum: '',
         defVal: '{column, columnIndex, $columnIndex, _columnIndex, $rowIndex, items}',
+        list: []
+      },
+      {
+        name: 'title',
+        desc: '只对 type=checkbox,radio 有效，自定义标题模板',
+        version: '4.0.15',
+        type: '',
+        enum: '',
+        defVal: '{column, columnIndex, $columnIndex, _columnIndex, $rowIndex}',
+        list: []
+      },
+      {
+        name: 'checkbox',
+        desc: '只对 type=checkbox 有效，自定义复选框模板',
+        version: '4.0.15',
+        type: '',
+        enum: '',
+        defVal: '{row, rowIndex, $rowIndex, column, columnIndex, $columnIndex, _columnIndex, checked, disabled, indeterminate}',
+        list: []
+      },
+      {
+        name: 'radio',
+        desc: '只对 type=radio 有效，自定义单选框模板',
+        version: '4.0.15',
+        type: '',
+        enum: '',
+        defVal: '{row, rowIndex, $rowIndex, column, columnIndex, $columnIndex, _columnIndex, checked, disabled}',
         list: []
       },
       {

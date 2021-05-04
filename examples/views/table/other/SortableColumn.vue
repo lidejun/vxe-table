@@ -47,7 +47,7 @@
 <script lang="ts">
 import { defineComponent, reactive, ref, onUnmounted, nextTick } from 'vue'
 import { VXETable } from '../../../../packages/all'
-import { VxeGridInstance, VxeGridOptions, VxeTableInstance } from '../../../../types/index'
+import { VxeGridInstance, VxeGridProps, VxeTableInstance } from '../../../../types/index'
 import Sortable from 'sortablejs'
 
 export default defineComponent({
@@ -85,7 +85,7 @@ export default defineComponent({
             } else {
               wrapperElem.insertBefore(oldTrElement, targetThElem)
             }
-            return VXETable.modal.message({ message: '固定列不允许拖动！', status: 'error' })
+            return VXETable.modal.message({ content: '固定列不允许拖动！', status: 'error' })
           }
           // 转换真实索引
           const oldColumnIndex = $table.getColumnIndex(tableColumn[oldIndex])
@@ -164,7 +164,7 @@ export default defineComponent({
           })
         ]
       }
-    } as VxeGridOptions)
+    } as VxeGridProps)
 
     let sortable2: any
 
@@ -187,7 +187,7 @@ export default defineComponent({
             } else {
               wrapperElem.insertBefore(oldTrElement, targetThElem)
             }
-            return VXETable.modal.message({ message: '固定列不允许拖动！', status: 'error' })
+            return VXETable.modal.message({ content: '固定列不允许拖动！', status: 'error' })
           }
           // 转换真实索引
           const oldColumnIndex = $grid.getColumnIndex(tableColumn[oldIndex])
@@ -243,7 +243,7 @@ export default defineComponent({
         `,
         `
         import { defineComponent, reactive, ref, onUnmounted, nextTick } from 'vue'
-        import { VXETable, VxeGridInstance, VxeGridOptions, VxeTableInstance } from 'vxe-table'
+        import { VXETable, VxeGridInstance, VxeGridProps, VxeTableInstance } from 'vxe-table'
         import Sortable from 'sortablejs'
 
         export default defineComponent({
@@ -281,7 +281,7 @@ export default defineComponent({
                     } else {
                       wrapperElem.insertBefore(oldTrElement, targetThElem)
                     }
-                    return VXETable.modal.message({ message: '固定列不允许拖动！', status: 'error' })
+                    return VXETable.modal.message({ content: '固定列不允许拖动！', status: 'error' })
                   }
                   // 转换真实索引
                   const oldColumnIndex = $table.getColumnIndex(tableColumn[oldIndex])
@@ -328,7 +328,7 @@ export default defineComponent({
         `,
         `
         import { defineComponent, reactive, ref, onUnmounted, nextTick } from 'vue'
-        import { VXETable, VxeGridInstance, VxeGridOptions, VxeTableInstance } from 'vxe-table'
+        import { VXETable, VxeGridInstance, VxeGridProps, VxeTableInstance } from 'vxe-table'
         import Sortable from 'sortablejs'
 
         export default defineComponent({
@@ -399,7 +399,7 @@ export default defineComponent({
                   })
                 ]
               }
-            } as VxeGridOptions)
+            } as VxeGridProps)
 
             let sortable2: any
 
@@ -422,7 +422,7 @@ export default defineComponent({
                     } else {
                       wrapperElem.insertBefore(oldTrElement, targetThElem)
                     }
-                    return VXETable.modal.message({ message: '固定列不允许拖动！', status: 'error' })
+                    return VXETable.modal.message({ content: '固定列不允许拖动！', status: 'error' })
                   }
                   // 转换真实索引
                   const oldColumnIndex = $grid.getColumnIndex(tableColumn[oldIndex])

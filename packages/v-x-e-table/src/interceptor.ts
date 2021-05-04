@@ -1,5 +1,5 @@
 import XEUtils from 'xe-utils'
-import { UtilTools } from '../../tools'
+import { warnLog } from '../../tools/utils'
 
 import { VxeGlobalInterceptor, VxeGlobalInterceptorHandles } from '../../../types/v-x-e-table'
 
@@ -14,10 +14,11 @@ export const interceptor: VxeGlobalInterceptor = {
     return storeMap[type] || []
   },
   add (type, callback) {
+    // 检测类型
     if (process.env.VUE_APP_VXE_TABLE_ENV === 'development') {
       const eventTypes: VxeGlobalInterceptorHandles.Type[] = ['created', 'mounted', 'activated', 'beforeUnmount', 'unmounted', 'event.clearActived', 'event.clearFilter', 'event.clearAreas', 'event.showMenu', 'event.keydown', 'event.export', 'event.import']
       if (eventTypes.indexOf(type) === -1) {
-        UtilTools.warn('vxe.error.errProp', [`${type}`, eventTypes.join('|')])
+        warnLog('vxe.error.errProp', [`Interceptor.${type}`, eventTypes.join('|')])
       }
     }
 
@@ -26,6 +27,14 @@ export const interceptor: VxeGlobalInterceptor = {
       if (!eList) {
         eList = storeMap[type] = []
       }
+
+      // 检测重复
+      if (process.env.VUE_APP_VXE_TABLE_ENV === 'development') {
+        if (eList.indexOf(callback) > -1) {
+          warnLog('vxe.error.coverProp', ['Interceptor', type])
+        }
+      }
+
       eList.push(callback)
     }
     return interceptor

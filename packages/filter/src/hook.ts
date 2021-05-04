@@ -1,11 +1,10 @@
 import { nextTick } from 'vue'
 import XEUtils from 'xe-utils'
-import { UtilTools, DomTools } from '../../tools'
 import { VXETable } from '../../v-x-e-table'
+import { toFilters, handleFieldOrColumn } from '../../table/src/util'
+import { getDomNode } from '../../tools/dom'
 
 import { VxeGlobalHooksHandles, TableFilterMethods, TableFilterPrivateMethods } from '../../../types/all'
-
-const { toFilters } = UtilTools
 
 const tableFilterMethodKeys: (keyof TableFilterMethods)[] = ['setFilter', 'clearFilter', 'getCheckedFilters']
 
@@ -36,7 +35,7 @@ const tableFilterHook: VxeGlobalHooksHandles.HookOptions = {
           filterStore.visible = false
         } else {
           const { target: targetElem, pageX } = evnt
-          const { visibleWidth } = DomTools.getDomNode()
+          const { visibleWidth } = getDomNode()
           const { filters, filterMultiple, filterRender } = column
           const compConf = filterRender ? VXETable.renderer.get(filterRender.name) : null
           const filterRecoverMethod = column.filterRecoverMethod || (compConf ? compConf.filterRecoverMethod : null)
@@ -64,13 +63,28 @@ const tableFilterHook: VxeGlobalHooksHandles.HookOptions = {
             const tableBody = refTableBody.value
             const bodyElem = tableBody.$el as HTMLDivElement
             const tableFilter = refTableFilter.value
-            const filterWrapperElem = tableFilter ? tableFilter.$el : null
-            const filterWidth = filterWrapperElem ? filterWrapperElem.offsetWidth : 0
+            const filterWrapperElem = tableFilter ? tableFilter.$el as HTMLDivElement : null
+            let filterWidth = 0
+            let filterHeight = 0
+            let filterHeadElem: HTMLDivElement | null = null
+            let filterFootElem: HTMLDivElement | null = null
+            if (filterWrapperElem) {
+              filterWidth = filterWrapperElem.offsetWidth
+              filterHeight = filterWrapperElem.offsetHeight
+              filterHeadElem = filterWrapperElem.querySelector('.vxe-table--filter-header')
+              filterFootElem = filterWrapperElem.querySelector('.vxe-table--filter-footer')
+            }
             const centerWidth = filterWidth / 2
-            const minMargin = 32
+            const minMargin = 10
+            const maxLeft = bodyElem.clientWidth - filterWidth - minMargin
             let left, right
             const style: any = {
               top: `${targetElem.offsetTop + targetElem.offsetParent.offsetTop + targetElem.offsetHeight + 8}px`
+            }
+            // 判断面板不能大于表格高度
+            let maxHeight = null
+            if (filterHeight >= bodyElem.clientHeight) {
+              maxHeight = bodyElem.clientHeight - (filterFootElem ? filterFootElem.offsetHeight : 0) - (filterHeadElem ? filterHeadElem.offsetHeight : 0)
             }
             if (column.fixed === 'left') {
               left = targetElem.offsetLeft + targetElem.offsetParent.offsetLeft - centerWidth
@@ -84,15 +98,16 @@ const tableFilterHook: VxeGlobalHooksHandles.HookOptions = {
               if (overflowWidth > 0) {
                 left -= overflowWidth
               }
-              style.left = `${Math.max(minMargin, left)}px`
+              style.left = `${Math.min(maxLeft, Math.max(minMargin, left))}px`
             } else if (right) {
               const overflowWidth = (pageX + filterWidth - centerWidth + minMargin) - visibleWidth
               if (overflowWidth > 0) {
                 right += overflowWidth
               }
-              style.right = `${right}px`
+              style.right = `${Math.max(minMargin, right)}px`
             }
             filterStore.style = style
+            filterStore.maxHeight = maxHeight
           })
         }
       },
@@ -124,7 +139,7 @@ const tableFilterHook: VxeGlobalHooksHandles.HookOptions = {
        * @param {Array} options 选项
        */
       setFilter (fieldOrColumn, options) {
-        const column = $xetable.handleFieldOrColumn(fieldOrColumn)
+        const column = handleFieldOrColumn($xetable, fieldOrColumn)
         if (column && column.filters && options) {
           column.filters = toFilters(options)
         }
@@ -141,7 +156,7 @@ const tableFilterHook: VxeGlobalHooksHandles.HookOptions = {
         const filterOpts = computeFilterOpts.value
         let column
         if (fieldOrColumn) {
-          column = $xetable.handleFieldOrColumn(fieldOrColumn)
+          column = handleFieldOrColumn($xetable, fieldOrColumn)
           if (column) {
             filterPrivateMethods.handleClearFilter(column)
           }
@@ -165,9 +180,9 @@ const tableFilterHook: VxeGlobalHooksHandles.HookOptions = {
         return nextTick()
       },
       getCheckedFilters () {
-        const { visibleColumn } = internalData
+        const { tableFullColumn } = internalData
         const filterList: any[] = []
-        visibleColumn.filter((column: any) => {
+        tableFullColumn.filter((column: any) => {
           const { property, filters } = column
           const valueList: any[] = []
           const dataList: any[] = []

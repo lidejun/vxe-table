@@ -51,6 +51,8 @@ export default {
         events: 'Event',
         template: 'Template',
         dynamic: 'Use v-for dynamic implementation',
+        customCheckbox: 'Custom checkbox',
+        customRadio: 'Custom radio',
         sortIcon: 'Custom sort icon',
         customSort: 'Custom header sort',
         multiSort: 'Multi-field sort',
@@ -125,6 +127,7 @@ export default {
 
         scroll: 'Virtual Scroller',
         bigData: 'Virtual Scroller',
+        scrollMode: 'Scroll mode',
         scrollRows: 'vertical',
         scrollFullRows: 'vertical + complicated',
         scrollCols: 'horizontal and vertical',
@@ -146,6 +149,7 @@ export default {
         dblclick: 'dblclick trigger',
         selectContent: 'Select the content',
         autoClear: 'Auto clear',
+        cellPlaceholder: 'Cell placeholder',
         insert: 'Insert',
         delete: 'Delete',
         revert: 'Revert',
@@ -238,8 +242,8 @@ export default {
 
         api: 'API',
         vxeTable: 'vxe-table',
-        vxeTableColgroup: 'vxe-table-colgroup',
-        vxeTableColumn: 'vxe-table-column',
+        vxeTableColgroup: 'vxe-colgroup',
+        vxeTableColumn: 'vxe-column',
         vxeGrid: 'vxe-grid',
         vxeVirtualTree: 'vxe-virtual-tree',
         vxeExcel: 'vxe-excel',
@@ -260,6 +264,7 @@ export default {
         vxeModal: 'vxe-modal',
         vxeForm: 'vxe-form',
         vxeFormItem: 'vxe-form-item',
+        vxeFormGather: 'vxe-form-gather',
         vxeSwitch: 'vxe-switch',
         vxeList: 'vxe-list',
         vxePulldown: 'vxe-pulldown'
@@ -313,16 +318,16 @@ export default {
         copyToClipboard: 'Copied to clipboard'
       },
       other: {
-        v1: '1.0+ (Stop the maintenance)',
-        v2: '2.0+ (vue 2.6+ LTS)',
-        v3: '3.0+ (vue 2.6+ Latest)',
+        v1: '1.0+ (vue 2.6+ End of life) ~ 2020-04 Stop',
+        v2: '2.0+ (vue 2.6+ Old) ~ 2021-12 Stop',
+        v3: '3.0+ (vue 2.6+ Stable)',
         v3d5: '3.5+ (vue 2.6+ Sticky)',
-        v4: '4.0+ (vue 3.0+ next)',
+        v4: '4.0+ (vue 3.0+ Latest)',
         v4d5: '4.5+ (vue 3.0+ Sticky)',
         plan: {
           v1: 'v1 Based on vue2.6+, Support for all major browsers',
           v2: 'v2 Based on vue2.6+, Support for all major browsers',
-          v3: 'v3 Based on vue2.6+, Only supports modern browsers, improving rendering performance',
+          v3: 'v3 Support for modern browsers and partial compatibility with IE11 to improve rendering performance',
           v4: 'v4 Based on vue3.0+, Only supports modern browsers, not IE'
         },
         compatibility: 'Compatibility',
@@ -410,10 +415,10 @@ export default {
           footerRowStyle: 'Attach a style to the end of a table',
           showFooter: 'Whether to display table footer',
           footerMethod: 'The data method at table footer, return a two-dimensional array',
-          mergeCells: 'Temporary merge of specified cells (cannot be used to expand rows, tree structures, not recommended for fixed columns)',
-          mergeFooterItems: 'Temporary consolidated suffix (cannot be used to expand rows, tree structures, not recommended for fixed columns)',
-          spanMethod: 'User defined merge function. returns the calculated value (cannot be used for virtual scrolling and expanding rows, not recommended for fixed columns and tree structures)',
-          footerSpanMethod: 'Footer merge rows or columns (cannot be used for virtual scrolling and expanding rows, not recommended for fixed columns and tree structures)',
+          mergeCells: '临时合并指定的单元格 (不能用于展开行，不建议用于固定列、树形结构)',
+          mergeFooterItems: '临时合并表尾 (不能用于展开行，不建议用于固定列、树形结构)',
+          spanMethod: '自定义合并函数，返回计算后的值 (不能用于虚拟滚动、展开行，不建议用于固定列、树形结构)',
+          footerSpanMethod: '表尾合并行或列，返回计算后的值 (不能用于虚拟滚动、展开行，不建议用于固定列、树形结构)',
           showOverflow: 'Sets all content to appear as ellipses if it is too long',
           showHeaderOverflow: 'Sets the header to show ellipsis when all content is too long',
           showAllOverflow: 'It is about to be abandoned, please use "show-overflow"',
@@ -528,7 +533,7 @@ export default {
           indexMethod: 'Obsolete, please use "seqMethod"',
           seqMethod: 'Only valid for type=seq, custom indexing method',
           sortable: 'Whether column sorting is allowed',
-          sortBy: 'Only valid for sortable, custom sort attributes',
+          sortBy: 'Only valid for sortable, 指定排序的字段（当值 formatter 格式化后，可以设置该字段，使用值进行排序）',
           sortType: '排序的字段类型，比如字符串转数值等',
           sortMethod: 'Only valid for sortable, the sorting method of the column, whose return value is used to determine the collation of the row',
           remoteSort: 'Whether to use remote sorting',
@@ -607,7 +612,7 @@ export default {
       },
       radio: {
         desc: {
-          value: 'Binding value',
+          value: 'v-model Binding value',
           label: 'value',
           size: 'Size',
           disabled: 'Whether to disable',
@@ -616,7 +621,7 @@ export default {
       },
       checkbox: {
         desc: {
-          value: 'Binding values',
+          value: 'v-model Binding value',
           size: 'Size',
           disabled: 'Whether to disable',
           label: 'For checkbox-group only, value',
@@ -626,7 +631,7 @@ export default {
       },
       input: {
         desc: {
-          value: 'Binding values',
+          value: 'v-model Binding value',
           immediate: 'By default the input will synchronize the value in real time. This will cause delays in complex renderings and can be set to false before synchronizing the value after change',
           size: 'Size',
           disabled: 'Whether to disable',
@@ -650,14 +655,15 @@ export default {
       },
       modal: {
         desc: {
-          value: 'Binding values',
+          value: 'v-model Binding value',
           loading: 'Loading or not',
           id: 'Set a unique id (may be used in scenarios such as Message preventing repeated pop-ups or Storage drag state saving)',
           title: 'Message title (support internationalization)',
           type: 'Message type',
           status: 'Only valid for type=alert | confirm | message, message status',
           iconStatus: 'Custom status icon',
-          message: 'Displayed text',
+          message: 'Please use the "content"',
+          content: 'Displayed text',
           showHeader: 'Whether to display the head',
           showFooter: 'Whether to show bottom',
           lockView: 'Whether or not the page is locked does not allow any action outside the modal',
@@ -720,7 +726,7 @@ export default {
       },
       select: {
         desc: {
-          value: 'Binding values',
+          value: 'v-model Binding value',
           size: 'Size',
           multiple: 'Whether alternative',
           placeholder: 'Placeholder for null value empty',
@@ -740,7 +746,7 @@ export default {
       },
       option: {
         desc: {
-          value: 'Binding values',
+          value: 'v-model Binding value',
           label: 'display content',
           disabled: 'Whether to disable',
           size: 'Size'
@@ -748,7 +754,7 @@ export default {
       },
       switch: {
         desc: {
-          value: 'Binding values',
+          value: 'v-model Binding value',
           size: 'Size',
           disabled: 'Disable',
           onLabel: 'Text displayed on open',

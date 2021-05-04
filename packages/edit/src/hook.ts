@@ -1,7 +1,9 @@
 import { nextTick } from 'vue'
 import XEUtils from 'xe-utils'
 import { renderer } from '../../v-x-e-table'
-import { UtilTools, DomTools, isEnableConf } from '../../tools'
+import { errLog, getLog, isEnableConf } from '../../tools/utils'
+import { getCellValue, setCellValue } from '../../table/src/util'
+import { browse, removeClass, addClass } from '../../tools/dom'
 
 import { VxeGlobalHooksHandles, TableEditMethods, TableEditPrivateMethods } from '../../../types/all'
 
@@ -19,7 +21,7 @@ const editHook: VxeGlobalHooksHandles.HookOptions = {
     const getEditColumnModel = (row: any, column: any) => {
       const { model, editRender } = column
       if (editRender) {
-        model.value = UtilTools.getCellValue(row, column)
+        model.value = getCellValue(row, column)
         model.update = false
       }
     }
@@ -27,7 +29,7 @@ const editHook: VxeGlobalHooksHandles.HookOptions = {
     const setEditColumnModel = (row: any, column: any) => {
       const { model, editRender } = column
       if (editRender && model.update) {
-        UtilTools.setCellValue(row, column, model.value)
+        setCellValue(row, column, model.value)
         model.update = false
         model.value = null
       }
@@ -38,7 +40,21 @@ const editHook: VxeGlobalHooksHandles.HookOptions = {
       if (el) {
         const cell = el.querySelector('.col--selected')
         if (cell) {
-          DomTools.removeClass(cell, 'col--selected')
+          removeClass(cell, 'col--selected')
+        }
+      }
+    }
+
+    function syncActivedCell () {
+      const { editStore, tableColumn } = reactData
+      const editOpts = computeEditOpts.value
+      const { actived } = editStore
+      const { row, column } = actived
+      if (row || column) {
+        if (editOpts.mode === 'row') {
+          tableColumn.forEach((column: any) => setEditColumnModel(row, column))
+        } else {
+          setEditColumnModel(row, column)
         }
       }
     }
@@ -92,11 +108,11 @@ const editHook: VxeGlobalHooksHandles.HookOptions = {
             })
           } else {
             if (treeConfig) {
-              throw new Error(UtilTools.getLog('vxe.error.noTree', ['insert']))
+              throw new Error(getLog('vxe.error.noTree', ['insert']))
             }
             const afIndex = $xetable.findRowIndexOf(afterFullData, row)
             if (afIndex === -1) {
-              throw new Error(UtilTools.error('vxe.error.unableInsert'))
+              throw new Error(errLog('vxe.error.unableInsert'))
             }
             afterFullData.splice(afIndex, 0, ...newRecords)
             tableFullData.splice($xetable.findRowIndexOf(tableFullData, row), 0, ...newRecords)
@@ -113,9 +129,10 @@ const editHook: VxeGlobalHooksHandles.HookOptions = {
         }
         editStore.insertList.unshift(...newRecords)
         reactData.scrollYLoad = !treeConfig && sYOpts.gt > -1 && sYOpts.gt < tableFullData.length
-        $xetable.handleTableData()
         $xetable.updateFooter()
         $xetable.updateCache()
+        $xetable.handleTableData()
+        $xetable.updateAfterDataIndex()
         $xetable.checkSelectionStatus()
         if (scrollYLoad) {
           $xetable.updateScrollYSpace()
@@ -205,9 +222,10 @@ const editHook: VxeGlobalHooksHandles.HookOptions = {
           }
         })
         reactData.scrollYLoad = !treeConfig && sYOpts.gt > -1 && sYOpts.gt < tableFullData.length
-        $xetable.handleTableData()
         $xetable.updateFooter()
         $xetable.updateCache()
+        $xetable.handleTableData()
+        $xetable.updateAfterDataIndex()
         $xetable.checkSelectionStatus()
         if (scrollYLoad) {
           $xetable.updateScrollYSpace()
@@ -289,15 +307,10 @@ const editHook: VxeGlobalHooksHandles.HookOptions = {
        */
       getUpdateRecords () {
         const { keepSource, treeConfig } = props
-        const { editStore } = reactData
         const { tableFullData } = internalData
         const treeOpts = computeTreeOpts.value
         if (keepSource) {
-          const { actived } = editStore
-          const { row, column } = actived
-          if (row || column) {
-            this.clearActived()
-          }
+          syncActivedCell()
           if (treeConfig) {
             return XEUtils.filterTree(tableFullData, row => $xetable.isUpdateByRow(row), treeOpts)
           }
@@ -330,16 +343,11 @@ const editHook: VxeGlobalHooksHandles.HookOptions = {
        * 清除激活的编辑
        */
       clearActived (evnt) {
-        const { editStore, tableColumn } = reactData
-        const editOpts = computeEditOpts.value
+        const { editStore } = reactData
         const { actived } = editStore
         const { row, column } = actived
         if (row || column) {
-          if (editOpts.mode === 'row') {
-            tableColumn.forEach((column: any) => setEditColumnModel(row, column))
-          } else {
-            setEditColumnModel(row, column)
-          }
+          syncActivedCell()
           actived.args = null
           actived.row = null
           actived.column = null
@@ -479,7 +487,7 @@ const editHook: VxeGlobalHooksHandles.HookOptions = {
             if (oldColumn !== column) {
               const { model: oldModel } = oldColumn
               if (oldModel.update) {
-                UtilTools.setCellValue(row, oldColumn, oldModel.value)
+                setCellValue(row, oldColumn, oldModel.value)
               }
               if ($xetable.clearValidate) {
                 $xetable.clearValidate()
@@ -520,7 +528,7 @@ const editHook: VxeGlobalHooksHandles.HookOptions = {
               inputElem.select()
             } else {
               // 保持一致行为，光标移到末端
-              if (DomTools.browse.msie) {
+              if (browse.msie) {
                 const textRange = inputElem.createTextRange()
                 textRange.collapse(false)
                 textRange.select()
@@ -573,7 +581,7 @@ const editHook: VxeGlobalHooksHandles.HookOptions = {
         if (row && column) {
           const cell = $xetable.getCell(row, column)
           if (cell) {
-            DomTools.addClass(cell, 'col--selected')
+            addClass(cell, 'col--selected')
           }
         }
       }

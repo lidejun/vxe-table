@@ -1,32 +1,37 @@
-import { SetupContext, RenderFunction, ComponentPublicInstance, DefineComponent } from 'vue'
+import { SetupContext, RenderFunction, ComponentPublicInstance } from 'vue'
 import { VXEComponent, VxeComponentBase, SizeType, VxeEvent, ValueOf } from './component'
 import { VxeCheckboxEvents } from './checkbox'
 
 /**
  * 组件 - 复选框组
+ * @example import { CheckboxGroup as VxeCheckboxGroup } from 'vxe-table'
  */
-export const CheckboxGroup: VXEComponent<VxeCheckboxGroupOptions & VxeCheckboxGroupEventProps>;
+export const CheckboxGroup: VXEComponent<VxeCheckboxGroupProps, VxeCheckboxGroupEventProps>;
 
-export type VxeCheckboxGroupInstance = ComponentPublicInstance<VxeCheckboxGroupOptions, VxeCheckboxGroupConstructor>;
+export type VxeCheckboxGroupInstance = ComponentPublicInstance<VxeCheckboxGroupProps, VxeCheckboxGroupConstructor>;
 
 export interface VxeCheckboxGroupConstructor extends VxeComponentBase, VxeCheckboxGroupMethods {
-  props: VxeCheckboxGroupOptions;
+  props: VxeCheckboxGroupProps;
   context: SetupContext<VxeCheckboxGroupEmits>;
   renderVN: RenderFunction;
 }
 
-export interface VxeCheckboxGroupOptions extends VxeCheckboxGroupProps, VxeCheckboxGroupListeners { }
-
 export type VxeCheckboxGroupProps = {
-  size?: SizeType;
+  size?: VxeCheckboxGroupPropTypes.Size;
   /**
    * 绑定值
    */
-  modelValue?: any[];
+  modelValue?: VxeCheckboxGroupPropTypes.ModelValue;
   /**
    * 是否禁用
    */
-  disabled?: boolean;
+  disabled?: VxeCheckboxGroupPropTypes.Disabled;
+}
+
+export namespace VxeCheckboxGroupPropTypes {
+  export type Size = SizeType;
+  export type ModelValue = any[];
+  export type Disabled = boolean;
 }
 
 export interface CheckboxGroupMethods {

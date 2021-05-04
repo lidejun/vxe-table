@@ -289,7 +289,7 @@ const exportDataAPI = [
     name: 'columnFilterMethod',
     desc: '列过滤方法，该函数的返回值用来决定是否过滤掉列',
     version: '',
-    type: '(params: { column, $columnIndex }) => boolean',
+    type: '({ column, $columnIndex }) => boolean',
     enum: '',
     defVal: '默认过滤掉 type=seq,checkbox,radio 和 field 为空的列',
     list: []
@@ -298,7 +298,7 @@ const exportDataAPI = [
     name: 'dataFilterMethod',
     desc: '数据过滤方法，该函数的返回值用来决定是否过滤掉数据行',
     version: '',
-    type: '(params: { row, $rowIndex }) => boolean',
+    type: '({ row, $rowIndex }) => boolean',
     enum: '',
     defVal: '',
     list: []
@@ -307,7 +307,7 @@ const exportDataAPI = [
     name: 'footerFilterMethod',
     desc: '表尾过滤方法，该函数的返回值用来决定是否过滤掉表尾行',
     version: '',
-    type: '(params: { items, $rowIndex }) => boolean',
+    type: '({ items, $rowIndex }) => boolean',
     enum: '',
     defVal: '',
     list: []
@@ -343,7 +343,7 @@ const exportDataAPI = [
     name: 'sheetMethod',
     desc: '只对 type=xlsx 有效，该函数用于自定义工作簿的单元格',
     version: '2.10.9',
-    type: '(params: { options, workbook, worksheet }) => void',
+    type: '({ options, workbook, worksheet }) => void',
     enum: '',
     defVal: '',
     list: []
@@ -352,7 +352,7 @@ const exportDataAPI = [
     name: 'exportMethod',
     desc: '只对 remote=true 有效，该函数用于自定义导出或服务端导出，返回 Promise',
     version: '',
-    type: '(params: { options }) => Promise<any>',
+    type: '({ options }) => Promise<any>',
     enum: '',
     defVal: '',
     list: []
@@ -361,7 +361,7 @@ const exportDataAPI = [
     name: 'beforeExportMethod',
     desc: '该方法会在导出之前触发',
     version: '',
-    type: '(params: { options }) => void',
+    type: '({ options }) => void',
     enum: '',
     defVal: '',
     list: []
@@ -370,7 +370,7 @@ const exportDataAPI = [
     name: 'afterExportMethod',
     desc: '该方法会在导出之后触发',
     version: '',
-    type: '(params: { options }) => viod',
+    type: '({ options }) => viod',
     enum: '',
     defVal: '',
     list: []
@@ -418,7 +418,7 @@ const importDataAPI = [
     name: 'importMethod',
     desc: '只对 remote=true 有效，该函数用于自定义导入或服务端导入，返回 Promise',
     version: '',
-    type: '(params: { file, options }) => Promise<any>',
+    type: '({ file, options }) => Promise<any>',
     enum: '',
     defVal: '',
     list: []
@@ -427,7 +427,7 @@ const importDataAPI = [
     name: 'beforeImportMethod',
     desc: '该方法会在导入之前触发',
     version: '',
-    type: '(params: { options }) => void',
+    type: '({ options }) => void',
     enum: '',
     defVal: '',
     list: []
@@ -436,7 +436,7 @@ const importDataAPI = [
     name: 'afterImportMethod',
     desc: '该方法会在导入之后触发',
     version: '',
-    type: '(params: { options }) => viod',
+    type: '({ options }) => viod',
     enum: '',
     defVal: '',
     list: []
@@ -457,7 +457,7 @@ const printAPI = exportDataAPI.filter(item => !['filename', 'type', 'types', 'do
     name: 'beforePrintMethod',
     desc: '该函数会在打印之前触发，可以通过返回自定义打印的内容',
     version: '',
-    type: '(params: { content, options }) => string',
+    type: '({ content, options }) => string',
     enum: '',
     defVal: '',
     list: []
@@ -676,7 +676,7 @@ const apis = [
         name: 'row-class-name',
         descKey: 'app.api.table.desc.rowClassName',
         version: '',
-        type: 'string | ((params: { row, rowIndex, $rowIndex }) => any)',
+        type: 'string | (({ row, rowIndex, $rowIndex }) => any)',
         enum: '',
         defVal: '',
         list: []
@@ -685,7 +685,7 @@ const apis = [
         name: 'cell-class-name',
         descKey: 'app.api.table.desc.cellClassName',
         version: '',
-        type: 'string | ((params: { row, rowIndex, $rowIndex, column, columnIndex, $columnIndex }) => any)',
+        type: 'string | (({ row, rowIndex, $rowIndex, column, columnIndex, $columnIndex }) => any)',
         enum: '',
         defVal: '',
         list: []
@@ -694,7 +694,7 @@ const apis = [
         name: 'header-row-class-name',
         descKey: 'app.api.table.desc.headerRowClassName',
         version: '',
-        type: 'string | ((params: { $rowIndex }) => any)',
+        type: 'string | (({ $rowIndex }) => any)',
         enum: '',
         defVal: '',
         list: []
@@ -703,7 +703,7 @@ const apis = [
         name: 'header-cell-class-name',
         descKey: 'app.api.table.desc.headerCellClassName',
         version: '',
-        type: 'string | ((params: { $rowIndex, column, columnIndex, $columnIndex }) => any)',
+        type: 'string | (({ $rowIndex, column, columnIndex, $columnIndex }) => any)',
         enum: '',
         defVal: '',
         list: []
@@ -712,7 +712,7 @@ const apis = [
         name: 'footer-row-class-name',
         descKey: 'app.api.table.desc.footerRowClassName',
         version: '',
-        type: 'string | ((params: { $rowIndex }) => any)',
+        type: 'string | (({ $rowIndex }) => any)',
         enum: '',
         defVal: '',
         list: []
@@ -721,7 +721,7 @@ const apis = [
         name: 'footer-cell-class-name',
         descKey: 'app.api.table.desc.footerCellClassName',
         version: '',
-        type: 'string | ((params: { $rowIndex, column, columnIndex, $columnIndex }) => any)',
+        type: 'string | (({ $rowIndex, column, columnIndex, $columnIndex }) => any)',
         enum: '',
         defVal: '',
         list: []
@@ -731,7 +731,7 @@ const apis = [
         abandoned: true,
         descKey: 'app.api.table.desc.cellStyle',
         version: '',
-        type: 'any | ((params: { row, rowIndex, $rowIndex, column, columnIndex, $columnIndex }) => any)',
+        type: 'any | (({ row, rowIndex, $rowIndex, column, columnIndex, $columnIndex }) => any)',
         enum: '',
         defVal: '',
         list: []
@@ -741,7 +741,7 @@ const apis = [
         abandoned: true,
         descKey: 'app.api.table.desc.headerCellStyle',
         version: '',
-        type: 'any | ((params: { $rowIndex, column, columnIndex, $columnIndex }) => any)',
+        type: 'any | (({ $rowIndex, column, columnIndex, $columnIndex }) => any)',
         enum: '',
         defVal: '',
         list: []
@@ -751,7 +751,7 @@ const apis = [
         abandoned: true,
         descKey: 'app.api.table.desc.footerCellStyle',
         version: '',
-        type: 'any | ((params: { $rowIndex, column, columnIndex, $columnIndex }) => any)',
+        type: 'any | (({ $rowIndex, column, columnIndex, $columnIndex }) => any)',
         enum: '',
         defVal: '',
         list: []
@@ -761,7 +761,7 @@ const apis = [
         abandoned: true,
         descKey: 'app.api.table.desc.rowStyle',
         version: '',
-        type: 'any | ((params: { row, rowIndex, $rowIndex }) => any)',
+        type: 'any | (({ row, rowIndex, $rowIndex }) => any)',
         enum: '',
         defVal: '',
         list: []
@@ -771,7 +771,7 @@ const apis = [
         abandoned: true,
         descKey: 'app.api.table.desc.headerRowStyle',
         version: '',
-        type: 'any | ((params: { $rowIndex, column, columnIndex, $columnIndex }) => any)',
+        type: 'any | (({ $rowIndex, column, columnIndex, $columnIndex }) => any)',
         enum: '',
         defVal: '',
         list: []
@@ -781,7 +781,7 @@ const apis = [
         abandoned: true,
         descKey: 'app.api.table.desc.footerRowStyle',
         version: '',
-        type: 'any | ((params: { $rowIndex }) => any)',
+        type: 'any | (({ $rowIndex }) => any)',
         enum: '',
         defVal: '',
         list: []
@@ -799,7 +799,7 @@ const apis = [
         name: 'footer-method',
         descKey: 'app.api.table.desc.footerMethod',
         version: '',
-        type: '(params: { columns, data }) => any[][]',
+        type: '({ columns, data }) => any[][]',
         enum: '',
         defVal: '',
         list: []
@@ -827,7 +827,7 @@ const apis = [
         abandoned: true,
         descKey: 'app.api.table.desc.spanMethod',
         version: '',
-        type: '(params: { row, rowIndex, $rowIndex, _rowIndex, column, columnIndex, $columnIndex, _columnIndex, data }) => { rowspan: number, colspan: number}',
+        type: '({ row, rowIndex, $rowIndex, _rowIndex, column, columnIndex, $columnIndex, _columnIndex, data }) => { rowspan: number, colspan: number}',
         enum: '',
         defVal: '{ rowspan: 1, colspan: 1}',
         list: []
@@ -837,7 +837,7 @@ const apis = [
         abandoned: true,
         descKey: 'app.api.table.desc.footerSpanMethod',
         version: '',
-        type: '(params: { $rowIndex, column, columnIndex, $columnIndex, _columnIndex, data }) => { rowspan: number, colspan: number}',
+        type: '({ $rowIndex, column, columnIndex, $columnIndex, _columnIndex, data }) => { rowspan: number, colspan: number}',
         enum: '',
         defVal: '{ rowspan: 1, colspan: 1}',
         list: []
@@ -927,7 +927,7 @@ const apis = [
             name: 'width',
             desc: '列的默认宽度',
             version: '',
-            type: 'Number, String',
+            type: 'number, string',
             enum: 'auto, px, %',
             defVal: '',
             list: []
@@ -936,7 +936,7 @@ const apis = [
             name: 'minWidth',
             desc: '列的默认最小宽度',
             version: '',
-            type: 'Number, String',
+            type: 'number, string',
             enum: 'auto, px, %',
             defVal: '',
             list: []
@@ -955,7 +955,7 @@ const apis = [
             name: 'minWidth',
             desc: '列宽拖动的最小宽度',
             version: '',
-            type: 'number | string | ((params: { $table, column, columnIndex, cell }) => number | string)',
+            type: 'number | string | (({ $table, column, columnIndex, cell }) => number | string)',
             enum: '',
             defVal: 'auto',
             list: []
@@ -983,7 +983,7 @@ const apis = [
             name: 'seqMethod',
             desc: '自定义序号的方法，返回处理后的值',
             version: '',
-            type: '(params: { row, rowIndex, column, columnIndex }) => number',
+            type: '({ row, rowIndex, column, columnIndex }) => number',
             enum: '',
             defVal: '',
             list: []
@@ -1039,7 +1039,7 @@ const apis = [
             name: 'sortMethod',
             desc: '全局排序方法，当触发排序时会调用该函数，返回排序后的列表',
             version: '',
-            type: '(params: { data, column, property, order }) => any[]',
+            type: '({ data, column, property, order }) => any[]',
             enum: '',
             defVal: '',
             list: []
@@ -1064,7 +1064,7 @@ const apis = [
           },
           {
             name: 'trigger',
-            desc: '触发方式',
+            desc: '触发方式（注：当多种功能重叠时，会同时触发）',
             version: '',
             type: 'string',
             enum: 'default（点击按钮触发）, cell（点击表头触发）',
@@ -1121,7 +1121,7 @@ const apis = [
             name: 'filterMethod',
             desc: '全局筛选方法，当触发筛选时会调用该函数，返回是否有效',
             version: '',
-            type: '(params: { value, row, column }) => boolean',
+            type: '({ options, values, cellValue, row, column }) => boolean',
             enum: '',
             defVal: '',
             list: []
@@ -1221,14 +1221,14 @@ const apis = [
             name: 'checkMethod',
             desc: '是否允许选中的方法，该方法，的返回值用来决定这一行的 Radio 是否可以选中',
             version: '',
-            type: '(params: { row }) => boolean',
+            type: '({ row }) => boolean',
             enum: '',
             defVal: '',
             list: []
           },
           {
             name: 'trigger',
-            desc: '触发方式',
+            desc: '触发方式（注：当多种功能重叠时，会同时触发）',
             version: '',
             type: 'string',
             enum: 'default（默认）, cell（点击单元格触发）, row（点击行触发）',
@@ -1314,21 +1314,21 @@ const apis = [
             version: '',
             type: 'boolean',
             enum: '',
-            defVal: 'false',
+            defVal: 'true',
             list: []
           },
           {
             name: 'checkMethod',
             desc: '是否允许勾选的方法，该方法，的返回值用来决定这一行的 checkbox 是否可以勾选',
             version: '',
-            type: '(params: { row }) => boolean',
+            type: '({ row }) => boolean',
             enum: '',
             defVal: '',
             list: []
           },
           {
             name: 'trigger',
-            desc: '触发方式',
+            desc: '触发方式（注：当多种功能重叠时，会同时触发）',
             version: '',
             type: 'string',
             enum: 'default（默认）, cell（点击单元格触发）, row（点击行触发）',
@@ -1412,7 +1412,7 @@ const apis = [
             name: 'contentMethod',
             desc: '该方法可以通过返回值来重写默认的提示内容',
             version: '',
-            type: '(params: { items?, row?, rowIndex?, $rowIndex, column, columnIndex, $columnIndex, type, cell, $event }) => string',
+            type: '({ items?, row?, rowIndex?, $rowIndex, column, columnIndex, $columnIndex, type, cell, $event }) => string',
             enum: '',
             defVal: '',
             list: []
@@ -1465,7 +1465,7 @@ const apis = [
           },
           {
             name: 'trigger',
-            desc: '触发方式',
+            desc: '触发方式（注：当多种功能重叠时，会同时触发）',
             version: '',
             type: 'string',
             enum: 'default（点击按钮触发）, cell（点击单元格触发）, row（点击行触发）',
@@ -1485,7 +1485,7 @@ const apis = [
             name: 'loadMethod',
             desc: '该方法用于异步加载展开后的内容',
             version: '',
-            type: '(params: { row, rowIndex?, $rowIndex? }) => Promise<any[]>',
+            type: '({ row, rowIndex?, $rowIndex? }) => Promise<any[]>',
             enum: '',
             defVal: '',
             list: []
@@ -1494,7 +1494,7 @@ const apis = [
             name: 'toggleMethod',
             desc: '该方法在展开或关闭触发之前调用，可以通过返回值来决定是否允许继续执行',
             version: '',
-            type: '(params: { expanded, column, columnIndex, row, rowIndex? }) => boolean',
+            type: '({ expanded, column, columnIndex, row, rowIndex? }) => boolean',
             enum: '',
             defVal: '',
             list: []
@@ -1503,7 +1503,7 @@ const apis = [
             name: 'visibleMethod',
             desc: '该函数的返回值用来决定是否允许显示展开按钮',
             version: '',
-            type: '(params: { column, columnIndex, row, rowIndex? }) => boolean',
+            type: '({ column, columnIndex, row, rowIndex? }) => boolean',
             enum: '',
             defVal: '',
             list: []
@@ -1619,7 +1619,7 @@ const apis = [
           },
           {
             name: 'trigger',
-            desc: '触发方式',
+            desc: '触发方式（注：当多种功能重叠时，会同时触发）',
             version: '',
             type: 'string',
             enum: 'default（点击按钮触发）, cell（点击单元格触发）, row（点击行触发）',
@@ -1648,7 +1648,7 @@ const apis = [
             name: 'loadMethod',
             desc: '该方法用于异步加载子节点',
             version: '',
-            type: '(params: { row }) => Promise<any[]>',
+            type: '({ row }) => Promise<any[]>',
             enum: '',
             defVal: '',
             list: []
@@ -1657,7 +1657,7 @@ const apis = [
             name: 'toggleMethod',
             desc: '该方法在展开或关闭触发之前调用，可以通过返回值来决定是否允许继续执行',
             version: '',
-            type: '(params: { expanded, row, column, columnIndex }) => boolean',
+            type: '({ expanded, row, column, columnIndex }) => boolean',
             enum: '',
             defVal: '',
             list: []
@@ -1758,7 +1758,7 @@ const apis = [
             desc: '触发方式',
             version: '',
             type: 'string',
-            enum: 'default（默认触发）, cell（右键单元格触发）',
+            enum: 'default（默认右键表格触发）, cell（右键单元格触发）',
             defVal: 'default',
             list: []
           },
@@ -1766,7 +1766,7 @@ const apis = [
             name: 'visibleMethod',
             desc: '该函数的返回值用来决定是否允许显示右键菜单（对于需要对菜单进行权限控制时可能会用到）',
             version: '',
-            type: '(params: { type, options, columns, row?, rowIndex?, column?, columnIndex? }) => boolean',
+            type: '({ type, options, columns, row?, rowIndex?, column?, columnIndex? }) => boolean',
             enum: '',
             defVal: '',
             list: []
@@ -1848,7 +1848,7 @@ const apis = [
             name: 'copyMethod',
             desc: '重写单元格复制取值的方法，将单元格复制到剪贴板',
             version: 'pro',
-            type: '(params: { isCut, row, column, cellValue }) => string',
+            type: '({ isCut, row, column, cellValue }) => string',
             enum: '',
             defVal: '',
             list: []
@@ -1857,7 +1857,7 @@ const apis = [
             name: 'beforeCopyMethod',
             desc: '自定义单元格复制取值之前的方法，可以通过返回 false 阻止复制行为',
             version: 'pro',
-            type: '(params: { isCut, targetAreas }) => boolean',
+            type: '({ isCut, targetAreas }) => boolean',
             enum: '',
             defVal: '',
             list: []
@@ -1866,7 +1866,7 @@ const apis = [
             name: 'afterCopyMethod',
             desc: '自定义单元格复制到剪贴板之后的方法',
             version: 'pro',
-            type: '(params: { isCut, targetAreas }) => void',
+            type: '({ isCut, targetAreas }) => void',
             enum: '',
             defVal: '',
             list: []
@@ -1875,7 +1875,7 @@ const apis = [
             name: 'cutMethod',
             desc: '重写单元格剪贴值清除的方法，将剪贴单元格的值清除',
             version: 'pro',
-            type: '(params: { row, column, cellValue }) => void',
+            type: '({ row, column, cellValue }) => void',
             enum: '',
             defVal: '',
             list: []
@@ -1884,7 +1884,7 @@ const apis = [
             name: 'beforeCutMethod',
             desc: '自定义单元格剪贴值清除之前的方法，可以通过返回 false 阻止清除行为',
             version: 'pro',
-            type: '(params: { cutAreas, currentAreas }) => boolean',
+            type: '({ cutAreas, currentAreas }) => boolean',
             enum: '',
             defVal: '',
             list: []
@@ -1893,7 +1893,7 @@ const apis = [
             name: 'afterCutMethod',
             desc: '自定义单元格剪贴值清除之后的方法',
             version: 'pro',
-            type: '(params: { cutAreas, currentAreas }) => void',
+            type: '({ cutAreas, currentAreas }) => void',
             enum: '',
             defVal: '',
             list: []
@@ -1902,7 +1902,7 @@ const apis = [
             name: 'pasteMethod',
             desc: '重写单元格粘贴赋值的方法，从剪贴板赋值到单元格',
             version: 'pro',
-            type: '(params: { isCut, row, column, cellValue }) => void',
+            type: '({ isCut, row, column, cellValue }) => void',
             enum: '',
             defVal: '',
             list: []
@@ -1911,7 +1911,7 @@ const apis = [
             name: 'beforePasteMethod',
             desc: '自定义单元格粘贴赋值之前的方法，可以通过返回 false 阻止复制行为',
             version: 'pro',
-            type: '(params: { isCut, cutAreas, currentAreas, targetAreas, cellValues, pasteCells }) => boolean',
+            type: '({ isCut, cutAreas, currentAreas, targetAreas, cellValues, pasteCells }) => boolean',
             enum: '',
             defVal: '',
             list: []
@@ -1920,7 +1920,7 @@ const apis = [
             name: 'afterPasteMethod',
             desc: '自定义单元格粘贴赋值之后的方法',
             version: 'pro',
-            type: '(params: { isCut, cutAreas, currentAreas, targetAreas, cellValues, pasteCells, insertRows, insertColumns }) => void',
+            type: '({ isCut, cutAreas, currentAreas, targetAreas, cellValues, pasteCells, insertRows, insertColumns }) => void',
             enum: '',
             defVal: '',
             list: []
@@ -1929,7 +1929,7 @@ const apis = [
             name: 'createRowsMethod',
             desc: '只对 isRowIncrement 有效，自定义创建自增行数据的方法',
             version: 'pro',
-            type: '(params: { isCut, cutAreas, currentAreas, targetAreas, cellValues, pasteCells, insertRows }) => any[]',
+            type: '({ isCut, cutAreas, currentAreas, targetAreas, cellValues, pasteCells, insertRows }) => any[]',
             enum: '',
             defVal: '',
             list: []
@@ -1938,7 +1938,7 @@ const apis = [
             name: 'createColumnsMethod',
             desc: '只对 isColumnIncrement 有效，自定义创建自增列配置的方法',
             version: 'pro',
-            type: '(params: { isCut, cutAreas, currentAreas, targetAreas, cellValues, pasteCells, insertColumns }) => any[]',
+            type: '({ isCut, cutAreas, currentAreas, targetAreas, cellValues, pasteCells, insertColumns }) => any[]',
             enum: '',
             defVal: '',
             list: []
@@ -1966,7 +1966,7 @@ const apis = [
             name: 'findMethod',
             desc: '自定义单元格查找方法',
             version: 'pro',
-            type: '(params: { cellValue, isWhole, isRE, isSensitive, findValue: findCellValue, findRE }) => boolean',
+            type: '({ cellValue, isWhole, isRE, isSensitive, findValue: findCellValue, findRE }) => boolean',
             enum: '',
             defVal: '',
             list: []
@@ -1975,7 +1975,7 @@ const apis = [
             name: 'beforeFindMethod',
             desc: '自定义单元格替换之前的方法，可以通过返回 false 阻止替换行为',
             version: 'pro',
-            type: '(params: { findValue }) => boolean',
+            type: '({ findValue }) => boolean',
             enum: '',
             defVal: '',
             list: []
@@ -1993,7 +1993,7 @@ const apis = [
             name: 'replaceMethod',
             desc: '自定义单元格替换方法',
             version: 'pro',
-            type: '(params: { row, column, cellValue }) => void',
+            type: '({ row, column, cellValue }) => void',
             enum: '',
             defVal: '',
             list: []
@@ -2002,7 +2002,7 @@ const apis = [
             name: 'beforeReplaceMethod',
             desc: '自定义单元格替换之前的方法，可以通过返回 false 阻止替换行为',
             version: 'pro',
-            type: '(params: { findValue, replaceValue }) => boolean',
+            type: '({ findValue, replaceValue }) => boolean',
             enum: '',
             defVal: '',
             list: []
@@ -2065,11 +2065,56 @@ const apis = [
           },
           {
             name: 'extendByCopy',
-            desc: '只对 mouse-config.extension 启用后有效，将被选取区域的值复制到扩展区域中',
+            desc: '只对 mouse-config.extension 启用后有效，将被选取区域的值复制到扩展区域中（同时按住 shift 键可取消值复制功能）',
             version: 'pro',
             type: 'boolean',
             enum: '',
             defVal: 'true',
+            list: []
+          },
+          {
+            name: 'extendByCalc',
+            desc: '只对 mouse-config.extension 启用后有效，当选取大于两行或两列时，自动识别最近两行或两列数据运算规则进行计算（同时按住 ctrl 键可取消值自动识别数字功能）',
+            version: 'pro',
+            type: 'boolean',
+            enum: '',
+            defVal: 'false',
+            list: []
+          },
+          {
+            name: 'extendCalcMethod',
+            desc: '只对 extendByCalc 启用后有效，重写单元格扩展区域计算值的方法',
+            version: 'pro',
+            type: '({ rows, cols, targetValues, targetRows, targetCols, extendRows, extendCols, direction }) => any[][]',
+            enum: '',
+            defVal: '',
+            list: []
+          },
+          {
+            name: 'extendSetMethod',
+            desc: '只对 extendByCopy | extendByCalc 启用后有效，重写单元格扩展区域赋值的方法',
+            version: 'pro',
+            type: '({ cellValue, row, column, rows, cols, targetValues, targetRows, targetCols, extendRows, extendCols, direction }) => void',
+            enum: '',
+            defVal: '',
+            list: []
+          },
+          {
+            name: 'beforeExtendSetMethod',
+            desc: '只对 extendByCopy | extendByCalc 启用后有效，自定义单元格扩展区域赋值之前的方法，可以通过返回 false 阻止扩展区域赋值行为',
+            version: 'pro',
+            type: '({ rows, cols, targetValues, targetRows, targetCols, extendRows, extendCols, direction }) => boolean',
+            enum: '',
+            defVal: '',
+            list: []
+          },
+          {
+            name: 'afterExtendSetMethod',
+            desc: '只对 extendByCopy | extendByCalc 启用后有效，自定义单元格扩展区域赋值之后的方法',
+            version: 'pro',
+            type: '(params: { rows, cols, targetValues, targetRows, targetCols, extendValues, extendRows, extendCols, direction }) => void',
+            enum: '',
+            defVal: '',
             list: []
           }
         ]
@@ -2176,7 +2221,7 @@ const apis = [
             name: 'delMethod',
             desc: '只对 isDel=true 有效，用于删除键清空单元格内容方法',
             version: '',
-            type: '(params: { row, rowIndex, column, columnIndex }) => void',
+            type: '({ row, rowIndex, column, columnIndex }) => void',
             enum: '',
             defVal: '',
             list: []
@@ -2185,7 +2230,7 @@ const apis = [
             name: 'backMethod',
             desc: '只对 isDel=true 有效，用于重写回退键清空单元格内容并激活为编辑状态方法',
             version: '',
-            type: '(params: { row, rowIndex, column, columnIndex }) => void',
+            type: '({ row, rowIndex, column, columnIndex }) => void',
             enum: '',
             defVal: '',
             list: []
@@ -2194,7 +2239,7 @@ const apis = [
             name: 'editMethod',
             desc: '只对 isEdit=true 有效，用于重写编辑单元格方法',
             version: '',
-            type: '(params: { row, rowIndex, column, columnIndex }) => void',
+            type: '({ row, rowIndex, column, columnIndex }) => void',
             enum: '',
             defVal: '',
             list: []
@@ -2285,7 +2330,7 @@ const apis = [
             name: 'activeMethod',
             desc: '该方法的返回值用来决定该单元格是否允许编辑',
             version: '',
-            type: '(params: { row, rowIndex, column, columnIndex }) => boolean',
+            type: '({ row, rowIndex, column, columnIndex }) => boolean',
             enum: '',
             defVal: '',
             list: []
@@ -2406,7 +2451,7 @@ const apis = [
             name: 'validator',
             desc: '自定义校验方法，返回一个 Error 或者 Promise<new Error("提示消息")>',
             version: '',
-            type: '(params: { cellValue, rule, rules, row, rowIndex，column, columnIndex }) => Error | Promise<any>',
+            type: '({ cellValue, rule, rules, row, rowIndex，column, columnIndex }) => Error | Promise<any>',
             enum: '',
             defVal: '',
             list: []
@@ -2545,7 +2590,7 @@ const apis = [
             name: 'checkMethod',
             desc: '自定义列是否允许列选中的方法，该方法的返回值用来决定这一列的 checkbox 是否可以选中',
             version: '',
-            type: '(params: { column }) => boolean',
+            type: '({ column }) => boolean',
             enum: '',
             defVal: '',
             list: []
@@ -2636,6 +2681,15 @@ const apis = [
             defVal: 'true',
             list: []
           },
+          // {
+          //   name: 'mode',
+          //   desc: '滚动模式',
+          //   version: '4.0.9',
+          //   type: 'string',
+          //   enum: 'default,wheel',
+          //   defVal: 'default',
+          //   list: []
+          // },
           {
             name: 'gt',
             desc: '指定大于指定行时自动启动纵向虚拟滚动，如果为 0 则总是启用，如果为 -1 则关闭（注：启用纵向虚拟滚动之后将不能支持动态行高）',
@@ -3133,7 +3187,7 @@ const apis = [
         version: 'pro',
         type: '',
         enum: '',
-        defVal: '{ row, rowIndex, $rowIndex, column, columnIndex, $columnIndex, cell, $event}',
+        defVal: '{ row, rowIndex, $rowIndex, column, columnIndex, $columnIndex, cell, targetRows, targetCols, $event}',
         list: []
       },
       {
@@ -3142,7 +3196,7 @@ const apis = [
         version: 'pro',
         type: '',
         enum: '',
-        defVal: '{ rows, cols, $event}',
+        defVal: '{ rows, cols, targetRows, targetCols, $event}',
         list: []
       }
     ]
@@ -3940,7 +3994,7 @@ const apis = [
       },
       {
         name: 'setRadioRow(row)',
-        desc: '用于 type=radio，设置某一行为选中状态',
+        desc: '用于 type=radio 单选框，设置某一行为选中状态',
         version: '',
         type: 'Promise<any>',
         enum: '',
@@ -3949,7 +4003,7 @@ const apis = [
       },
       {
         name: 'setCheckboxRow(rows, checked)',
-        desc: '用于 type=checkbox，设置行为选中状态，第二个参数为选中与否',
+        desc: '用于 type=checkbox 复选框，设置行为选中状态，第二个参数为选中与否',
         version: '',
         type: 'Promise<any>',
         enum: '',

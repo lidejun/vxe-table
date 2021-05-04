@@ -1,7 +1,9 @@
 import XEUtils from 'xe-utils'
 import itemAPI from './form-item'
+// import gatherAPI from './form-gather'
 
 const itemProps: any = itemAPI.find(item => item.name === 'Props')
+// const gatherProps: any = gatherAPI.find(item => item.name === 'Props')
 
 const apis = [
   {
@@ -103,13 +105,32 @@ const apis = [
         list: []
       },
       {
+        name: 'class-name',
+        desc: '给表单附加 className',
+        version: '4.0.9',
+        type: 'string, ({ data }) => string',
+        enum: '',
+        defVal: '',
+        list: []
+      },
+      {
         name: 'items',
         desc: '项列表',
         version: '',
         type: 'any[]',
         enum: '',
         defVal: '',
-        list: XEUtils.mapTree(itemProps.list, (item: any) => Object.assign({}, item, { name: XEUtils.camelCase(item.name) }))
+        list: XEUtils.mapTree(itemProps.list, (item: any) => Object.assign({}, item, { name: XEUtils.camelCase(item.name) })).concat([
+          {
+            name: 'children',
+            desc: '项集合',
+            version: '4.0.7',
+            type: 'any[]',
+            enum: '',
+            defVal: '',
+            list: []
+          }
+        ])
       },
       {
         name: 'rules',

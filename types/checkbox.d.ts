@@ -1,10 +1,11 @@
-import { SetupContext, RenderFunction, ComponentPublicInstance, DefineComponent } from 'vue'
+import { SetupContext, RenderFunction, ComponentPublicInstance } from 'vue'
 import { VXEComponent, VxeComponentBase, VxeEvent, SizeType, ValueOf } from './component'
 
 /**
  * 组件 - 复选框
+ * @example import { Checkbox as VxeCheckbox } from 'vxe-table'
  */
-export const Checkbox: VXEComponent<VxeCheckboxProps & VxeCheckboxEventProps>;
+export const Checkbox: VXEComponent<VxeCheckboxProps, VxeCheckboxEventProps>;
 
 export type VxeCheckboxInstance = ComponentPublicInstance<VxeCheckboxProps, VxeCheckboxConstructor>;
 
@@ -14,34 +15,42 @@ export interface VxeCheckboxConstructor extends VxeComponentBase, VxeCheckboxMet
   renderVN: RenderFunction;
 }
 
-export interface VxeCheckboxOptions extends VxeCheckboxProps, VxeCheckboxListeners { }
-
 export type VxeCheckboxProps = {
-  size?: SizeType;
+  size?: VxeCheckboxPropTypes.Size;
   /**
    * 绑定值
    */
-  modelValue?: boolean;
+  modelValue?: VxeCheckboxPropTypes.ModelValue;
   /**
    * 只对 checkbox-group 有效，值
    */
-  label?: any;
+  label?: VxeCheckboxPropTypes.Label;
   /**
    * 是否不确定状态
    */
-  indeterminate?: boolean;
+  indeterminate?: VxeCheckboxPropTypes.Indeterminate;
   /**
    * 原生 title 属性
    */
-  title?: string | number;
+  title?: VxeCheckboxPropTypes.Title;
   /**
    * 内容
    */
-  content?: string | number;
+  content?: VxeCheckboxPropTypes.Content;
   /**
    * 是否禁用
    */
-  disabled?: boolean;
+  disabled?: VxeCheckboxPropTypes.Disabled;
+}
+
+export namespace VxeCheckboxPropTypes {
+  export type Size = SizeType;
+  export type ModelValue = boolean;
+  export type Label = string | number;
+  export type Indeterminate = boolean;
+  export type Title = string | number;
+  export type Content = string | number;
+  export type Disabled = boolean;
 }
 
 export interface CheckboxMethods {

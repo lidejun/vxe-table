@@ -12,6 +12,10 @@ import { VxeGlobalHooks } from './hooks'
 import { VxeGlobalSetup } from './setup'
 
 export class VXETableConfig {
+  clipboard: {
+    text: string;
+    html: string;
+  }
   get zIndex(): number;
   get nextZIndex(): number;
   /**
@@ -24,7 +28,8 @@ export class VXETableConfig {
    get importTypes(): string[];
 }
 
-export type VxeGlobalT = (key: string, args?: any) => string;
+export type VxeGlobalI18n = (key: string, args?: any) => string;
+export type VxeGlobalTranslate = (key: string, args?: any) => string;
 export type VxeGlobalUse = (plugin: VXETablePluginObject, ...options: any[]) => VXETableCore;
 
 export const setup: VxeGlobalSetup;
@@ -39,7 +44,8 @@ export const saveFile: SaveFileFunction;
 export const readFile: ReadFileFunction;
 export const print: PrintFunction;
 export const config: VXETableConfig;
-export const t: VxeGlobalT;
+export const t: VxeGlobalI18n;
+export const _t: VxeGlobalTranslate;
 export const use: VxeGlobalUse;
 
 export interface VXETablePluginObject {
@@ -83,7 +89,7 @@ export interface VXETableCore {
    */
   hooks: VxeGlobalHooks;
   /**
-   * 模态窗口
+   * 弹窗
    */
   modal: ModalController;
   /**
@@ -111,11 +117,12 @@ export interface VXETableCore {
   /**
    * 读取内置国际化
    */
-  t: VxeGlobalT;
+  t: VxeGlobalI18n;
+  _t: VxeGlobalTranslate;
 }
 
 /**
- * 一个基于 vue 的 PC 端表格组件，支持增删改查、虚拟滚动、懒加载、快捷菜单、数据校验、树形结构、打印导出、表单渲染、数据分页、虚拟列表、模态窗口、自定义模板、渲染器、贼灵活的配置项、扩展接口等...  
+ * 一个基于 vue 的 PC 端表格组件，支持增删改查、虚拟滚动、懒加载、快捷菜单、数据校验、树形结构、打印导出、表单渲染、数据分页、虚拟列表、弹窗、自定义模板、渲染器、贼灵活的配置项、扩展接口等...  
  */
 export const VXETable: VXETableCore
 

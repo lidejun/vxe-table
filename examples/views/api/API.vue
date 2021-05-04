@@ -72,8 +72,8 @@ import { VxeTableInstance, VxeToolbarInstance } from '../../../types/index'
 
 import XEClipboard from 'xe-clipboard'
 import tableAPI from '../../api/table'
-import tableColgroupAPI from '../../api/table-colgroup'
-import tableColumnAPI from '../../api/column'
+import colgroupAPI from '../../api/colgroup'
+import columnAPI from '../../api/column'
 import toolbarAPI from '../../api/toolbar'
 import gridAPI from '../../api/grid'
 import virtualTreeAPI from '../../api/virtual-tree'
@@ -93,6 +93,7 @@ import tooltipAPI from '../../api/tooltip'
 import modalAPI from '../../api/modal'
 import formAPI from '../../api/form'
 import formItemAPI from '../../api/form-item'
+import formGatherAPI from '../../api/form-gather'
 import switchAPI from '../../api/switch'
 import listAPI from '../../api/list'
 import pulldownAPI from '../../api/pulldown'
@@ -108,17 +109,19 @@ import pulldownAPI from '../../api/pulldown'
 // const tags: any = window.tags = {}
 
 // const tagMaps = [
-//   ['vxe-table', tableAPI, { subtags: ['vxe-table-column'], description: '基础表格' }],
-//   ['vxe-table-colgroup', tableColgroupAPI, { description: '基础表格 - 分组列' }],
-//   ['vxe-table-column', tableColumnAPI, { description: '基础表格 - 列' }],
+//   ['vxe-table', tableAPI, { subtags: ['vxe-colgroup', 'vxe-table-colgroup', 'vxe-column', 'vxe-table-column'], description: '基础表格' }],
+//   ['vxe-colgroup', colgroupAPI, { subtags: ['vxe-column'], description: '基础表格 - 分组列' }],
+//   ['vxe-table-colgroup', colgroupAPI, { subtags: ['vxe-table-column'], description: '基础表格 - 分组列' }],
+//   ['vxe-column', columnAPI, { description: '基础表格 - 列' }],
+//   ['vxe-table-column', columnAPI, { description: '基础表格 - 列' }],
 //   ['vxe-grid', gridAPI, { description: '高级表格' }],
 //   ['vxe-toolbar', toolbarAPI, { description: '工具栏' }],
 //   ['vxe-pager', pagerAPI, { description: '分页' }],
 //   ['vxe-radio', radioAPI, { description: '单选框' }],
-//   ['vxe-radio-group', radioGroupAPI, { description: '单选组' }],
+//   ['vxe-radio-group', radioGroupAPI, { subtags: ['vxe-radio', 'vxe-radio-button'], description: '单选组' }],
 //   ['vxe-radio-button', radioButtonAPI, { description: '单选按钮' }],
 //   ['vxe-checkbox', checkboxAPI, { description: '复选框' }],
-//   ['vxe-checkbox-group', checkboxGroupAPI, { description: '复选组' }],
+//   ['vxe-checkbox-group', checkboxGroupAPI, { subtags: ['vxe-checkbox'], description: '复选组' }],
 //   ['vxe-switch', switchAPI, { description: '开关按钮' }],
 //   ['vxe-input', inputAPI, { description: '输入框' }],
 //   ['vxe-select', selectAPI, { subtags: ['vxe-optgroup', 'vxe-option'], description: '下拉框' }],
@@ -126,9 +129,10 @@ import pulldownAPI from '../../api/pulldown'
 //   ['vxe-option', optionAPI, { description: '下拉框 - 选项' }],
 //   ['vxe-button', buttonAPI, { description: '按钮' }],
 //   ['vxe-tooltip', tooltipAPI, { description: '工具提示' }],
-//   ['vxe-modal', modalAPI, { description: '模态窗口' }],
+//   ['vxe-modal', modalAPI, { description: '弹窗' }],
 //   ['vxe-form', formAPI, { subtags: ['vxe-form-item'], description: '表单' }],
 //   ['vxe-form-item', formItemAPI, { description: '表单 - 项' }],
+//   ['vxe-form-gather', formGatherAPI, { description: '表单 - 项集合' }],
 //   ['vxe-list', listAPI, { description: '列表' }],
 //   ['vxe-pulldown', pulldownAPI, { description: '下拉容器' }]
 // ]
@@ -323,11 +327,11 @@ export default defineComponent({
             case 'table':
               apis = tableAPI
               break
-            case 'table-colgroup':
-              apis = tableColgroupAPI
+            case 'colgroup':
+              apis = colgroupAPI
               break
-            case 'table-column':
-              apis = tableColumnAPI
+            case 'column':
+              apis = columnAPI
               break
             case 'toolbar':
               apis = toolbarAPI
@@ -385,6 +389,9 @@ export default defineComponent({
               break
             case 'form-item':
               apis = formItemAPI
+              break
+            case 'form-gather':
+              apis = formGatherAPI
               break
             case 'switch':
               apis = switchAPI
@@ -446,7 +453,7 @@ export default defineComponent({
         case 'copy':
           if (row && column) {
             if (XEClipboard.copy(row[column.property])) {
-              VXETable.modal.message({ message: i18n.global.t('app.body.msg.copyToClipboard'), status: 'success' })
+              VXETable.modal.message({ content: i18n.global.t('app.body.msg.copyToClipboard'), status: 'success' })
             }
           }
           break

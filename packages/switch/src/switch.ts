@@ -1,23 +1,23 @@
 import { defineComponent, h, ref, Ref, computed, reactive, nextTick, createCommentVNode, PropType } from 'vue'
 import XEUtils from 'xe-utils'
-import { UtilTools } from '../../tools'
 import GlobalConfig from '../../v-x-e-table/src/conf'
 import { useSize } from '../../hooks/size'
+import { getFuncText } from '../../tools/utils'
 
-import { SizeType, VxeSwitchConstructor, VxeSwitchEmits, SwitchReactData, SwitchMethods } from '../../../types/all'
+import { VxeSwitchPropTypes, VxeSwitchConstructor, VxeSwitchEmits, SwitchReactData, SwitchMethods } from '../../../types/all'
 
 export default defineComponent({
   name: 'VxeSwitch',
   props: {
-    modelValue: [String, Number, Boolean],
-    disabled: Boolean,
-    size: { type: String as PropType<SizeType>, default: () => GlobalConfig.switch.size || GlobalConfig.size },
-    openLabel: String,
-    closeLabel: String,
-    openValue: { type: [String, Number, Boolean], default: true },
-    closeValue: { type: [String, Number, Boolean], default: false },
-    openIcon: String,
-    closeIcon: String
+    modelValue: [String, Number, Boolean] as PropType<VxeSwitchPropTypes.ModelValue>,
+    disabled: Boolean as PropType<VxeSwitchPropTypes.Disabled>,
+    size: { type: String as PropType<VxeSwitchPropTypes.Size>, default: () => GlobalConfig.switch.size || GlobalConfig.size },
+    openLabel: String as PropType<VxeSwitchPropTypes.OpenLabel>,
+    closeLabel: String as PropType<VxeSwitchPropTypes.CloseLabel>,
+    openValue: { type: [String, Number, Boolean] as PropType<VxeSwitchPropTypes.OpenValue>, default: true },
+    closeValue: { type: [String, Number, Boolean] as PropType<VxeSwitchPropTypes.CloseValue>, default: false },
+    openIcon: String as PropType<VxeSwitchPropTypes.OpenIcon>,
+    closeIcon: String as PropType<VxeSwitchPropTypes.CloseIcon>
   },
   emits: [
     'update:modelValue',
@@ -50,11 +50,11 @@ export default defineComponent({
     let switchMethods = {} as SwitchMethods
 
     const computeOnShowLabel = computed(() => {
-      return UtilTools.getFuncText(props.openLabel)
+      return getFuncText(props.openLabel)
     })
 
     const computeOffShowLabel = computed(() => {
-      return UtilTools.getFuncText(props.closeLabel)
+      return getFuncText(props.closeLabel)
     })
 
     const computeIsChecked = computed(() => {

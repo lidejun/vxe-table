@@ -1,8 +1,10 @@
 import { defineComponent, h, Teleport, ref, Ref, onUnmounted, reactive, nextTick, PropType } from 'vue'
-import { UtilTools, DomTools, GlobalEvent } from '../../tools'
 import XEUtils from 'xe-utils'
 import GlobalConfig from '../../v-x-e-table/src/conf'
 import { useSize } from '../../hooks/size'
+import { getAbsolutePos, getEventTargetNode } from '../../tools/dom'
+import { getLastZIndex, nextZIndex } from '../../tools/utils'
+import { GlobalEvent } from '../../tools/event'
 
 import { VNodeStyle, VxePulldownConstructor, VxePulldownPropTypes, VxePulldownEmits, PulldownReactData, PulldownMethods, PulldownPrivateRef, VxePulldownMethods } from '../../../types/all'
 
@@ -54,8 +56,8 @@ export default defineComponent({
     let pulldownMethods = {} as PulldownMethods
 
     const updateZindex = () => {
-      if (reactData.panelIndex < UtilTools.getLastZIndex()) {
-        reactData.panelIndex = UtilTools.nextZIndex()
+      if (reactData.panelIndex < getLastZIndex()) {
+        reactData.panelIndex = nextZIndex()
       }
     }
 
@@ -82,7 +84,7 @@ export default defineComponent({
             const panelStyle: VNodeStyle = {
               zIndex: panelIndex
             }
-            const { boundingTop, boundingLeft, visibleHeight, visibleWidth } = DomTools.getAbsolutePos(targetElem)
+            const { boundingTop, boundingLeft, visibleHeight, visibleWidth } = getAbsolutePos(targetElem)
             let panelPlacement = 'bottom'
             if (transfer) {
               let left = boundingLeft
@@ -199,7 +201,7 @@ export default defineComponent({
       const panelElem = refPulldowPnanel.value
       if (!disabled) {
         if (visiblePanel) {
-          if (DomTools.getEventTargetNode(evnt, panelElem).flag) {
+          if (getEventTargetNode(evnt, panelElem).flag) {
             updatePlacement()
           } else {
             hidePanel()
@@ -215,7 +217,7 @@ export default defineComponent({
       const el = refElem.value
       const panelElem = refPulldowPnanel.value
       if (!disabled) {
-        reactData.isActivated = DomTools.getEventTargetNode(evnt, el).flag || DomTools.getEventTargetNode(evnt, panelElem).flag
+        reactData.isActivated = getEventTargetNode(evnt, el).flag || getEventTargetNode(evnt, panelElem).flag
         if (visiblePanel && !reactData.isActivated) {
           hidePanel()
           pulldownMethods.dispatchEvent('hide-panel', {}, evnt)
@@ -225,6 +227,7 @@ export default defineComponent({
 
     const handleGlobalBlurEvent = (evnt: Event) => {
       if (reactData.visiblePanel) {
+        reactData.isActivated = false
         hidePanel()
         pulldownMethods.dispatchEvent('hide-panel', {}, evnt)
       }
@@ -285,7 +288,11 @@ export default defineComponent({
             }],
             placement: panelPlacement,
             style: panelStyle
-          }, slots.dropdown ? (!inited || (destroyOnClose && !visiblePanel && !animatVisible) ? [] : slots.dropdown({ $pulldown: $xepulldown })) : [])
+          }, slots.dropdown ? [
+            h('div', {
+              class: 'vxe-pulldown--wrapper'
+            }, !inited || (destroyOnClose && !visiblePanel && !animatVisible) ? [] : slots.dropdown({ $pulldown: $xepulldown }))
+          ] : [])
         ])
       ])
     }

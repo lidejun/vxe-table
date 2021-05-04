@@ -19,7 +19,7 @@
 <script lang="ts">
 import { defineComponent, reactive, ref } from 'vue'
 import { VXETable } from '../../../packages/all'
-import { VxeGridInstance, VxeGridEvents, VxeGridOptions } from '../../../types/index'
+import { VxeGridInstance, VxeGridEvents, VxeGridProps } from '../../../types/index'
 
 export default defineComponent({
   setup () {
@@ -53,7 +53,7 @@ export default defineComponent({
             { field: 'role', title: 'Role', editRender: { name: 'input' } }
           ]
         },
-        { field: 'describe', title: 'Describe', showOverflow: true, editRender: { name: 'input' } }
+        { field: 'address', title: 'Address', showOverflow: true, editRender: { name: 'input' } }
       ],
       toolbarConfig: {
         buttons: [
@@ -86,7 +86,7 @@ export default defineComponent({
         { id: 10007, name: 'Test7', nickname: 'T7', role: 'Test', sex: 'Man ', age: 29, address: 'Shenzhen' },
         { id: 10008, name: 'Test8', nickname: 'T8', role: 'Develop', sex: 'Man ', age: 35, address: 'Shenzhen' }
       ]
-    } as VxeGridOptions)
+    } as VxeGridProps)
 
     const toolbarButtonClickEvent: VxeGridEvents.ToolbarButtonClick = ({ code }) => {
       const $grid = xGrid.value
@@ -99,7 +99,7 @@ export default defineComponent({
         }
         case 'mySave': {
           const { insertRecords, removeRecords, updateRecords } = $grid.getRecordset()
-          VXETable.modal.message({ message: `新增 ${insertRecords.length} 条，删除 ${removeRecords.length} 条，更新 ${updateRecords.length} 条`, status: 'success' })
+          VXETable.modal.message({ content: `新增 ${insertRecords.length} 条，删除 ${removeRecords.length} 条，更新 ${updateRecords.length} 条`, status: 'success' })
           break
         }
         case 'myExport': {
@@ -124,7 +124,7 @@ export default defineComponent({
         `,
         `
         import { defineComponent, reactive, ref } from 'vue'
-        import { VXETable, VxeGridInstance, VxeGridEvents, VxeGridOptions } from 'vxe-table'
+        import { VXETable, VxeGridInstance, VxeGridEvents, VxeGridProps } from 'vxe-table'
 
         export default defineComponent({
           setup () {
@@ -158,7 +158,7 @@ export default defineComponent({
                     { field: 'role', title: 'Role', editRender: { name: 'input' } }
                   ]
                 },
-                { field: 'describe', title: 'Describe', showOverflow: true, editRender: { name: 'input' } }
+                { field: 'address', title: 'Address', showOverflow: true, editRender: { name: 'input' } }
               ],
               toolbarConfig: {
                 buttons: [
@@ -191,7 +191,7 @@ export default defineComponent({
                 { id: 10007, name: 'Test7', nickname: 'T7', role: 'Test', sex: 'Man ', age: 29, address: 'Shenzhen' },
                 { id: 10008, name: 'Test8', nickname: 'T8', role: 'Develop', sex: 'Man ', age: 35, address: 'Shenzhen' }
               ]
-            } as VxeGridOptions)
+            } as VxeGridProps)
 
             const toolbarButtonClickEvent: VxeGridEvents.ToolbarButtonClick = ({ code }) => {
               const $grid = xGrid.value
@@ -204,7 +204,7 @@ export default defineComponent({
                 }
                 case 'mySave': {
                   const { insertRecords, removeRecords, updateRecords } = $grid.getRecordset()
-                  VXETable.modal.message({ message: \`新增 \${insertRecords.length} 条，删除 \${removeRecords.length} 条，更新 \${updateRecords.length} 条\`, status: 'success' })
+                  VXETable.modal.message({ content: \`新增 \${insertRecords.length} 条，删除 \${removeRecords.length} 条，更新 \${updateRecords.length} 条\`, status: 'success' })
                   break
                 }
                 case 'myExport': {

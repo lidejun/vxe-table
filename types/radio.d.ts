@@ -1,10 +1,11 @@
-import { SetupContext, RenderFunction, ComponentPublicInstance, DefineComponent } from 'vue'
+import { SetupContext, RenderFunction, ComponentPublicInstance } from 'vue'
 import { VXEComponent, VxeComponentBase, VxeEvent, SizeType, ValueOf } from './component'
 
 /**
  * 组件 - 单选框
+ * @example import { Radio as VxeRadio } from 'vxe-table'
  */
-export const Radio: VXEComponent<VxeRadioProps & VxeRadioEventProps>;
+export const Radio: VXEComponent<VxeRadioProps, VxeRadioEventProps>;
 
 export type VxeRadioInstance = ComponentPublicInstance<VxeRadioProps, VxeRadioConstructor>;
 
@@ -14,34 +15,42 @@ export interface VxeRadioConstructor extends VxeComponentBase, VxeRadioMethods {
   renderVN: RenderFunction;
 }
 
-export interface VxeRadioOptions extends VxeRadioProps, VxeRadioListeners { }
-
 export type VxeRadioProps = {
-  size?: SizeType;
+  size?: VxeRadioPropTypes.Size;
   /**
    * 绑定值
    */
-  modelValue?: any;
+  modelValue?: VxeRadioPropTypes.ModelValue;
   /**
    * 值
    */
-  label?: any;
+  label?: VxeRadioPropTypes.Label;
   /**
    * 原生 title 属性
    */
-  title?: string | number;
+  title?: VxeRadioPropTypes.Title;
   /**
    * 内容
    */
-  content?: string | number;
+  content?: VxeRadioPropTypes.Content;
   /**
    * 是否禁用
    */
-  disabled?: boolean;
+  disabled?: VxeRadioPropTypes.Disabled;
   /**
    * 原生 title 属性
    */
-  name?: string;
+  name?: VxeRadioPropTypes.Name;
+}
+
+export namespace VxeRadioPropTypes {
+  export type Size = SizeType;
+  export type ModelValue = any;
+  export type Label = any;
+  export type Title = string | number;
+  export type Content = string | number;
+  export type Disabled = boolean;
+  export type Name = string;
 }
 
 export interface RadioMethods {

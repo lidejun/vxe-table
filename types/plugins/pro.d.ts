@@ -83,7 +83,7 @@ export interface VXETableProClipboard {
   [key: string]: any;
 }
 
-declare module '../v-x-e-table' {
+declare module '../vxe-table' {
   interface VXETableConfig {
     clipboard?: VXETableProClipboard;
   }
@@ -147,6 +147,20 @@ export namespace VxeTableProDefines {
     area: VxeTableProDefines.MouseCellArea;
     column: VxeTableDefines.ColumnInfo;
     row: any;
+  }
+
+  export type ExtendCellAreaDirection = 'up' | 'down' | 'left' | 'right'
+
+  export interface ExtendCellAreaCalcBaseParams {
+    rows: any[];
+    cols: VxeTableDefines.ColumnInfo[];
+    targetValues: any[][];
+    targetRows: any[];
+    targetCols: VxeTableDefines.ColumnInfo[];
+    extendRows: any[];
+    extendCols: VxeTableDefines.ColumnInfo[];
+    direction: ExtendCellAreaDirection;
+    $table: VxeTableConstructor & VxeTablePrivateMethods;
   }
 
   interface EventParams extends VxeEvent {

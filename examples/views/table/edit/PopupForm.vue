@@ -11,7 +11,7 @@
     <vxe-table
       border
       resizable
-      row-key
+      show-overflow
       highlight-hover-row
       ref="xTable"
       height="300"
@@ -151,7 +151,7 @@ export default defineComponent({
       demo1.showEdit = true
     }
 
-    const cellDBLClickEvent: VxeTableEvents.CellDBLClick = ({ row }) => {
+    const cellDBLClickEvent: VxeTableEvents.CellDblclick = ({ row }) => {
       editEvent(row)
     }
 
@@ -171,10 +171,10 @@ export default defineComponent({
         demo1.submitLoading = false
         demo1.showEdit = false
         if (demo1.selectRow) {
-          VXETable.modal.message({ message: '保存成功', status: 'success' })
+          VXETable.modal.message({ content: '保存成功', status: 'success' })
           Object.assign(demo1.selectRow, demo1.formData)
         } else {
-          VXETable.modal.message({ message: '新增成功', status: 'success' })
+          VXETable.modal.message({ content: '新增成功', status: 'success' })
           $table.insert(demo1.formData)
         }
       }, 500)
@@ -216,7 +216,7 @@ export default defineComponent({
         <vxe-table
           border
           resizable
-          row-key
+          show-overflow
           highlight-hover-row
           ref="xTable"
           height="300"
@@ -346,7 +346,7 @@ export default defineComponent({
               demo1.showEdit = true
             }
 
-            const cellDBLClickEvent: VxeTableEvents.CellDBLClick = ({ row }) => {
+            const cellDBLClickEvent: VxeTableEvents.CellDblclick = ({ row }) => {
               editEvent(row)
             }
 
@@ -366,10 +366,10 @@ export default defineComponent({
                 demo1.submitLoading = false
                 demo1.showEdit = false
                 if (demo1.selectRow) {
-                  VXETable.modal.message({ message: '保存成功', status: 'success' })
+                  VXETable.modal.message({ content: '保存成功', status: 'success' })
                   Object.assign(demo1.selectRow, demo1.formData)
                 } else {
-                  VXETable.modal.message({ message: '新增成功', status: 'success' })
+                  VXETable.modal.message({ content: '新增成功', status: 'success' })
                   $table.insert(demo1.formData)
                 }
               }, 500)

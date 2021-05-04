@@ -8,8 +8,8 @@
 
     <vxe-toolbar ref="xToolbar" print>
       <template #buttons>
-        <vxe-button @click="printEvent1">打印表格</vxe-button>
-        <vxe-button @click="printSelectEvent1">打印勾选行</vxe-button>
+        <vxe-button content="打印表格" @click="printEvent1"></vxe-button>
+        <vxe-button content="打印勾选行" @click="printSelectEvent1"></vxe-button>
       </template>
     </vxe-toolbar>
 
@@ -38,7 +38,7 @@
 
     <vxe-toolbar>
       <template #buttons>
-        <vxe-button @click="printEvent5">打印下面的区域</vxe-button>
+        <vxe-button content="打印下面的区域" @click="printEvent5"></vxe-button>
       </template>
     </vxe-toolbar>
 
@@ -60,7 +60,7 @@
 
     <vxe-toolbar>
       <template #buttons>
-        <vxe-button @click="printEvent2">打印条形码</vxe-button>
+        <vxe-button content="打印条形码" @click="printEvent2"></vxe-button>
       </template>
     </vxe-toolbar>
 
@@ -75,7 +75,7 @@
 
     <vxe-toolbar>
       <template #buttons>
-        <vxe-button @click="printEvent3">打印二维码</vxe-button>
+        <vxe-button content="打印二维码" @click="printEvent3"></vxe-button>
       </template>
     </vxe-toolbar>
 
@@ -90,7 +90,7 @@
 
     <vxe-toolbar>
       <template #buttons>
-        <vxe-button @click="printEvent4">打印自定义模板</vxe-button>
+        <vxe-button content="打印自定义模板" @click="printEvent4"></vxe-button>
       </template>
     </vxe-toolbar>
 
@@ -100,6 +100,24 @@
       <pre-code class="xml">{{ demoCodes[8] }}</pre-code>
       <pre-code class="typescript">{{ demoCodes[9] }}</pre-code>
     </pre>
+
+    <p class="tip">打印图片</p>
+
+    <vxe-toolbar>
+      <template #buttons>
+        <vxe-button content="打印图片" @click="printEvent6"></vxe-button>
+      </template>
+    </vxe-toolbar>
+
+    <img id="myPrint6" src="/vxe-table/static/other/invoice.png" style="width: 300px">
+
+    <p class="demo-code">{{ $t('app.body.button.showCode') }}</p>
+
+    <pre>
+      <pre-code class="xml">{{ demoCodes[10] }}</pre-code>
+      <pre-code class="typescript">{{ demoCodes[11] }}</pre-code>
+    </pre>
+
   </div>
 </template>
 
@@ -444,6 +462,19 @@ export default defineComponent({
       })
     }
 
+    const printEvent6 = () => {
+      const imgEl = document.getElementById('myPrint6') as HTMLImageElement
+      VXETable.print({
+        sheetName: '打印图片',
+        style: `
+        img {
+          width: 100%;
+        }
+        `,
+        content: `<img src="${imgEl.src}">`
+      })
+    }
+
     return {
       xTable,
       xToolbar,
@@ -454,12 +485,13 @@ export default defineComponent({
       printEvent3,
       printEvent4,
       printEvent5,
+      printEvent6,
       demoCodes: [
         `
         <vxe-toolbar ref="xToolbar" print>
           <template #buttons>
-            <vxe-button @click="printEvent1">打印表格</vxe-button>
-            <vxe-button @click="printSelectEvent1">打印勾选行</vxe-button>
+            <vxe-button content="打印表格" @click="printEvent1"></vxe-button>
+            <vxe-button content="打印勾选行" @click="printSelectEvent1"></vxe-button>
           </template>
         </vxe-toolbar>
 
@@ -612,7 +644,7 @@ export default defineComponent({
         `
         <vxe-toolbar>
           <template #buttons>
-            <vxe-button @click="printEvent5">打印下面的区域</vxe-button>
+            <vxe-button content="打印下面的区域" @click="printEvent5"></vxe-button>
           </template>
         </vxe-toolbar>
 
@@ -644,7 +676,7 @@ export default defineComponent({
         `
         <vxe-toolbar>
           <template #buttons>
-            <vxe-button @click="printEvent2">打印条形码</vxe-button>
+            <vxe-button content="打印条形码" @click="printEvent2"></vxe-button>
           </template>
         </vxe-toolbar>
         `,
@@ -713,7 +745,7 @@ export default defineComponent({
         `
         <vxe-toolbar>
           <template #buttons>
-            <vxe-button @click="printEvent3">打印二维码</vxe-button>
+            <vxe-button content="打印二维码" @click="printEvent3"></vxe-button>
           </template>
         </vxe-toolbar>
         `,
@@ -759,7 +791,7 @@ export default defineComponent({
         `
         <vxe-toolbar>
           <template #buttons>
-            <vxe-button @click="printEvent4">打印自定义模板</vxe-button>
+            <vxe-button content="打印自定义模板" @click="printEvent4"></vxe-button>
           </template>
         </vxe-toolbar>
         `,
@@ -904,6 +936,38 @@ export default defineComponent({
 
             return {
               printEvent4
+            }
+          }
+        })
+        `,
+        `
+        <vxe-toolbar>
+          <template #buttons>
+            <vxe-button content="打印图片" @click="printEvent6"></vxe-button>
+          </template>
+        </vxe-toolbar>
+
+        <img id="myPrint6" src="/vxe-table/static/other/invoice.png" style="width: 300px">
+        `,
+        `
+        import { defineComponent } from 'vue'
+
+        export default defineComponent({
+          setup () {
+            const printEvent6 = () => {
+              const imgEl = document.getElementById('myPrint6') as HTMLImageElement
+              VXETable.print({
+                sheetName: '打印图片',
+                style: \`
+                img {
+                  width: 100%;
+                }
+                \`,
+                content: \`<img src="\${imgEl.src}">\`
+              })
+            }
+            return {
+              printEvent6
             }
           }
         })

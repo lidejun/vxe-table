@@ -71,7 +71,7 @@
 <script lang="ts">
 import { defineComponent, reactive, ref, onUnmounted, nextTick } from 'vue'
 import { VXETable } from '../../../../packages/all'
-import { VxeGridInstance, VxeGridOptions, VxeTableInstance } from '../../../../types/index'
+import { VxeGridInstance, VxeGridProps, VxeTableInstance } from '../../../../types/index'
 import XEUtils from 'xe-utils'
 import Sortable from 'sortablejs'
 
@@ -156,7 +156,7 @@ export default defineComponent({
         { id: 23666, name: 'Test8', type: 'xlsx', size: 2048, date: '2020-11-01' },
         { id: 24555, name: 'vxe-table 从入门到放弃9', type: 'avi', size: 224, date: '2020-10-01' }
       ]
-    } as VxeGridOptions)
+    } as VxeGridProps)
 
     let sortable2: any
 
@@ -189,7 +189,7 @@ export default defineComponent({
               // 错误的移动
               const oldTrElem = wrapperElem.children[oldIndex]
               wrapperElem.insertBefore(targetTrElem, oldTrElem)
-              return VXETable.modal.message({ message: '不允许自己给自己拖动！', status: 'error' })
+              return VXETable.modal.message({ content: '不允许自己给自己拖动！', status: 'error' })
             }
             const currRow = selfNode.items.splice(selfNode.index, 1)[0]
             if ($grid.isTreeExpandByRow(prevRow)) {
@@ -266,7 +266,7 @@ export default defineComponent({
         `,
         `
         import { defineComponent, reactive, ref, onUnmounted, nextTick } from 'vue'
-        import { VXETable, VxeGridInstance, VxeGridOptions, VxeTableInstance } from 'vxe-table'
+        import { VXETable, VxeGridInstance, VxeGridProps, VxeTableInstance } from 'vxe-table'
         import XEUtils from 'xe-utils'
         import Sortable from 'sortablejs'
 
@@ -349,7 +349,7 @@ export default defineComponent({
         `,
         `
         import { defineComponent, reactive, ref, onUnmounted, nextTick } from 'vue'
-        import { VXETable, VxeGridInstance, VxeGridOptions, VxeTableInstance } from 'vxe-table'
+        import { VXETable, VxeGridInstance, VxeGridProps, VxeTableInstance } from 'vxe-table'
         import XEUtils from 'xe-utils'
         import Sortable from 'sortablejs'
 
@@ -406,7 +406,7 @@ export default defineComponent({
                 { id: 23666, name: 'Test8', type: 'xlsx', size: 2048, date: '2020-11-01' },
                 { id: 24555, name: 'vxe-table 从入门到放弃9', type: 'avi', size: 224, date: '2020-10-01' }
               ]
-            } as VxeGridOptions)
+            } as VxeGridProps)
 
             let sortable2: any
 
@@ -439,7 +439,7 @@ export default defineComponent({
                       // 错误的移动
                       const oldTrElem = wrapperElem.children[oldIndex]
                       wrapperElem.insertBefore(targetTrElem, oldTrElem)
-                      return VXETable.modal.message({ message: '不允许自己给自己拖动！', status: 'error' })
+                      return VXETable.modal.message({ content: '不允许自己给自己拖动！', status: 'error' })
                     }
                     const currRow = selfNode.items.splice(selfNode.index, 1)[0]
                     if ($grid.isTreeExpandByRow(prevRow)) {

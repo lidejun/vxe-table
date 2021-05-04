@@ -5,8 +5,7 @@
       还可以通过配置 <grid-api-link prop="form-config"/> 实现动态表单，还可以通过 <grid-api-link prop="titlePrefix"/> 或 <grid-api-link prop="titleSuffix"/> 设置标题提示信息<br>
       对于分页场景下，如果想要保留选中状态，可以通过设置 <table-api-link prop="checkbox-config"/> 的 <table-api-link prop="reserve"/> 属性<br>
       还可以通过 <table-api-link prop="checkMethod"/> 设置个性化列禁止勾选<br>
-      由 <grid-api-link name="vxe-grid"/> 代理数据转换，只需要配置好数据源即可；非常简单就可以渲染一个表格，从重复写冗余的代码中解放出来<br>
-      <span class="red">（注：使用后端导出才是最优的做法）</span>
+      由 <grid-api-link name="vxe-grid"/> 代理数据转换，只需要配置好数据源即可；非常简单就可以渲染一个表格，从重复写冗余的代码中解放出来
     </p>
 
     <vxe-grid ref='xGrid' v-bind="gridOptions"></vxe-grid>
@@ -23,7 +22,7 @@
 <script lang="ts">
 import { defineComponent, onMounted, reactive, ref } from 'vue'
 import { VXETable } from '../../../packages/all'
-import { VxeGridInstance, VxeGridOptions } from '../../../types/index'
+import { VxeGridInstance, VxeGridProps } from '../../../types/index'
 import XEUtils from 'xe-utils'
 import XEAjax from 'xe-ajax'
 
@@ -98,16 +97,17 @@ export default defineComponent({
         custom: true
       },
       proxyConfig: {
-        seq: true, // 启用动态序号代理
-        sort: true, // 启用排序代理
-        filter: true, // 启用筛选代理
-        form: true, // 启用表单代理
+        seq: true, // 启用动态序号代理，每一页的序号会根据当前页数变化
+        sort: true, // 启用排序代理，当点击排序时会自动触发 query 行为
+        filter: true, // 启用筛选代理，当点击筛选时会自动触发 query 行为
+        form: true, // 启用表单代理，当点击表单提交按钮时会自动触发 reload 行为
+        // 对应响应结果 { result: [], page: { total: 100 } }
         props: {
-          result: 'result',
-          total: 'page.total'
+          result: 'result', // 配置响应结果列表字段
+          total: 'page.total' // 配置响应结果总页数字段
         },
         ajax: {
-          // 任何支持 Promise API 的库都可以对接（fetch、jquery、axios、xe-ajax）
+          // 接收 Promise
           query: ({ page, sorts, filters, form }) => {
             const queryParams: any = Object.assign({}, form)
             // 处理排序条件
@@ -120,10 +120,10 @@ export default defineComponent({
             filters.forEach(({ property, values }) => {
               queryParams[property] = values.join(',')
             })
-            return XEAjax.get(`https://api.xuliangzhan.com:10443/api/pub/page/list/${page.pageSize}/${page.currentPage}`, queryParams)
+            return XEAjax.get(`https://api.xuliangzhan.com:10443/demo/api/pub/page/list/${page.pageSize}/${page.currentPage}`, queryParams)
           },
-          delete: ({ body }) => XEAjax.post('https://api.xuliangzhan.com:10443/api/pub/save', body),
-          save: ({ body }) => XEAjax.post('https://api.xuliangzhan.com:10443/api/pub/save', body)
+          delete: ({ body }) => XEAjax.post('https://api.xuliangzhan.com:10443/demo/api/pub/save', body),
+          save: ({ body }) => XEAjax.post('https://api.xuliangzhan.com:10443/demo/api/pub/save', body)
         }
       },
       columns: [
@@ -143,14 +143,22 @@ export default defineComponent({
           editRender: { name: 'input', attrs: { placeholder: '请输入角色' } }
         },
         { field: 'email', title: 'Email', width: 160, editRender: { name: '$input', props: { placeholder: '请输入邮件' } } },
-        { field: 'nickname', title: 'Nickname', editRender: { name: 'input' } },
-        { field: 'sex', title: 'Sex', editRender: { name: '$select', options: [], props: { placeholder: '请选择性别' } } },
+        { field: 'nickname', title: 'Nickname', editRender: { name: 'input', attrs: { placeholder: '请输入昵称' } } },
+        {
+          field: 'sex',
+          title: 'Sex',
+          filters: [
+            { label: '男', value: '1' },
+            { label: '女', value: '0' }
+          ],
+          editRender: { name: '$select', options: [], props: { placeholder: '请选择性别' } }
+        },
         { field: 'age', title: 'Age', visible: false, sortable: true, editRender: { name: '$input', props: { type: 'number', min: 1, max: 120 } } },
         {
           field: 'amount',
           title: 'Amount',
           formatter ({ cellValue }) {
-            return cellValue ? `$${XEUtils.commafy(XEUtils.toNumber(cellValue), { digits: 2 })}` : ''
+            return cellValue ? `￥${XEUtils.commafy(XEUtils.toNumber(cellValue), { digits: 2 })}` : ''
           },
           editRender:
            { name: '$input', props: { type: 'float', digits: 2, placeholder: '请输入数值' } }
@@ -180,16 +188,17 @@ export default defineComponent({
         remote: true,
         types: ['xlsx'],
         modes: ['insert'],
+        // 自定义服务端导入
         importMethod ({ file }) {
           const $grid = xGrid.value
           const formBody = new FormData()
           formBody.append('file', file)
-          return XEAjax.post('https://api.xuliangzhan.com:10443/api/pub/import', formBody).then(data => {
-            VXETable.modal.message({ message: `成功导入 ${data.result.insertRows} 条记录！`, status: 'success' })
+          return XEAjax.post('https://api.xuliangzhan.com:10443/demo/api/pub/import', formBody).then(data => {
+            VXETable.modal.message({ content: `成功导入 ${data.result.insertRows} 条记录！`, status: 'success' })
             // 导入完成，刷新表格
             $grid.commitProxy('query')
           }).catch(() => {
-            VXETable.modal.message({ message: '导入失败，请检查数据是否正确！', status: 'error' })
+            VXETable.modal.message({ content: '导入失败，请检查数据是否正确！', status: 'error' })
           })
         }
       },
@@ -197,6 +206,7 @@ export default defineComponent({
         remote: true,
         types: ['xlsx'],
         modes: ['current', 'selected', 'all'],
+        // 自定义服务端导出
         exportMethod ({ options }) {
           const $grid = xGrid.value
           const proxyInfo = $grid.getProxyInfo()
@@ -217,11 +227,11 @@ export default defineComponent({
             })
           }
           // 开始服务端导出
-          return XEAjax.post('https://api.xuliangzhan.com:10443/api/pub/export', body).then(data => {
+          return XEAjax.post('https://api.xuliangzhan.com:10443/demo/api/pub/export', body).then(data => {
             if (data.id) {
-              VXETable.modal.message({ message: '导出成功，开始下载', status: 'success' })
+              VXETable.modal.message({ content: '导出成功，开始下载', status: 'success' })
               // 读取路径，请求文件
-              XEAjax.fetch(`https://api.xuliangzhan.com:10443/api/pub/export/download/${data.id}`).then(response => {
+              fetch(`https://api.xuliangzhan.com:10443/demo/api/pub/export/download/${data.id}`).then(response => {
                 response.blob().then(blob => {
                   // 开始下载
                   VXETable.saveFile({ filename: '导出数据', type: 'xlsx', content: blob })
@@ -229,7 +239,7 @@ export default defineComponent({
               })
             }
           }).catch(() => {
-            VXETable.modal.message({ message: '导出失败！', status: 'error' })
+            VXETable.modal.message({ content: '导出失败！', status: 'error' })
           })
         }
       },
@@ -256,7 +266,7 @@ export default defineComponent({
         mode: 'row',
         showStatus: true
       }
-    } as VxeGridOptions)
+    } as VxeGridProps)
 
     onMounted(() => {
       const sexList = [
@@ -287,7 +297,7 @@ export default defineComponent({
         `,
         `
         import { defineComponent, onMounted, reactive, ref, Ref } from 'vue'
-        import { VXETable, VxeGridInstance, VxeGridOptions } from 'vxe-table'
+        import { VXETable, VxeGridInstance, VxeGridProps } from 'vxe-table'
         import XEUtils from 'xe-utils'
         import XEAjax from 'xe-ajax'
 
@@ -362,17 +372,18 @@ export default defineComponent({
                 custom: true
               },
               proxyConfig: {
-                seq: true, // 启用动态序号代理
-                sort: true, // 启用排序代理
-                filter: true, // 启用筛选代理
-                form: true, // 启用表单代理
+                seq: true, // 启用动态序号代理，每一页的序号会根据当前页数变化
+                sort: true, // 启用排序代理，当点击排序时会自动触发 query 行为
+                filter: true, // 启用筛选代理，当点击筛选时会自动触发 query 行为
+                form: true, // 启用表单代理，当点击表单提交按钮时会自动触发 reload 行为
+                // 对应响应结果 { result: [], page: { total: 100 } }
                 props: {
-                  result: 'result',
-                  total: 'page.total'
+                  result: 'result', // 配置响应结果列表字段
+                  total: 'page.total' // 配置响应结果总页数字段
                 },
                 ajax: {
-                  // 任何支持 Promise API 的库都可以对接（fetch、jquery、axios、xe-ajax）
-                  query: ({ page, sort, filters, form }) => {
+                  // 接收 Promise
+                  query: ({ page, sorts, filters, form }) => {
                     const queryParams: any = Object.assign({}, form)
                     // 处理排序条件
                     const firstSort = sorts[0]
@@ -384,10 +395,10 @@ export default defineComponent({
                     filters.forEach(({ property, values }) => {
                       queryParams[property] = values.join(',')
                     })
-                    return XEAjax.get(\`https://api.xuliangzhan.com:10443/api/pub/page/list/\${page.pageSize}/\${page.currentPage}\`, queryParams)
+                    return XEAjax.get(\`https://api.xuliangzhan.com:10443/demo/api/pub/page/list/\${page.pageSize}/\${page.currentPage}\`, queryParams)
                   },
-                  delete: ({ body }) => XEAjax.post('https://api.xuliangzhan.com:10443/api/pub/save', body),
-                  save: ({ body }) => XEAjax.post('https://api.xuliangzhan.com:10443/api/pub/save', body)
+                  delete: ({ body }) => XEAjax.post('https://api.xuliangzhan.com:10443/demo/api/pub/save', body),
+                  save: ({ body }) => XEAjax.post('https://api.xuliangzhan.com:10443/demo/api/pub/save', body)
                 }
               },
               columns: [
@@ -407,14 +418,22 @@ export default defineComponent({
                   editRender: { name: 'input', attrs: { placeholder: '请输入角色' } }
                 },
                 { field: 'email', title: 'Email', width: 160, editRender: { name: '$input', props: { placeholder: '请输入邮件' } } },
-                { field: 'nickname', title: 'Nickname', editRender: { name: 'input' } },
-                { field: 'sex', title: 'Sex', editRender: { name: '$select', options: [], props: { placeholder: '请选择性别' } } },
+                { field: 'nickname', title: 'Nickname', editRender: { name: 'input', attrs: { placeholder: '请输入昵称' } } },
+                {
+                  field: 'sex',
+                  title: 'Sex',
+                  filters: [
+                    { label: '男', value: '1' },
+                    { label: '女', value: '0' }
+                  ],
+                  editRender: { name: '$select', options: [], props: { placeholder: '请选择性别' } }
+                },
                 { field: 'age', title: 'Age', visible: false, sortable: true, editRender: { name: '$input', props: { type: 'number', min: 1, max: 120 } } },
                 {
                   field: 'amount',
                   title: 'Amount',
                   formatter ({ cellValue }) {
-                    return cellValue ? \`$\${XEUtils.commafy(XEUtils.toNumber(cellValue), { digits: 2 })}\` : ''
+                    return cellValue ? \`￥\${XEUtils.commafy(XEUtils.toNumber(cellValue), { digits: 2 })}\` : ''
                   },
                   editRender:
                   { name: '$input', props: { type: 'float', digits: 2, placeholder: '请输入数值' } }
@@ -444,16 +463,17 @@ export default defineComponent({
                 remote: true,
                 types: ['xlsx'],
                 modes: ['insert'],
+                // 自定义服务端导入
                 importMethod ({ file }) {
                   const $grid = xGrid.value
                   const formBody = new FormData()
                   formBody.append('file', file)
-                  return XEAjax.post('https://api.xuliangzhan.com:10443/api/pub/import', formBody).then(data => {
-                    VXETable.modal.message({ message: \`成功导入 \${data.result.insertRows} 条记录！\`, status: 'success' })
+                  return XEAjax.post('https://api.xuliangzhan.com:10443/demo/api/pub/import', formBody).then(data => {
+                    VXETable.modal.message({ content: \`成功导入 \${data.result.insertRows} 条记录！\`, status: 'success' })
                     // 导入完成，刷新表格
                     $grid.commitProxy('query')
                   }).catch(() => {
-                    VXETable.modal.message({ message: '导入失败，请检查数据是否正确！', status: 'error' })
+                    VXETable.modal.message({ content: '导入失败，请检查数据是否正确！', status: 'error' })
                   })
                 }
               },
@@ -461,6 +481,7 @@ export default defineComponent({
                 remote: true,
                 types: ['xlsx'],
                 modes: ['current', 'selected', 'all'],
+                // 自定义服务端导出
                 exportMethod ({ options }) {
                   const $grid = xGrid.value
                   const proxyInfo = $grid.getProxyInfo()
@@ -471,7 +492,7 @@ export default defineComponent({
                     isHeader: options.isHeader,
                     original: options.original,
                     mode: options.mode,
-                    pager: proxyInfo.pager,
+                    pager: proxyInfo ? proxyInfo.pager : null,
                     ids: options.mode === 'selected' ? options.data.map((item) => item.id) : [],
                     fields: options.columns.map((column) => {
                       return {
@@ -481,11 +502,11 @@ export default defineComponent({
                     })
                   }
                   // 开始服务端导出
-                  return XEAjax.post('https://api.xuliangzhan.com:10443/api/pub/export', body).then(data => {
+                  return XEAjax.post('https://api.xuliangzhan.com:10443/demo/api/pub/export', body).then(data => {
                     if (data.id) {
-                      VXETable.modal.message({ message: '导出成功，开始下载', status: 'success' })
+                      VXETable.modal.message({ content: '导出成功，开始下载', status: 'success' })
                       // 读取路径，请求文件
-                      XEAjax.fetch(\`https://api.xuliangzhan.com:10443/api/pub/export/download/\${data.id}\`).then(response => {
+                      fetch(\`https://api.xuliangzhan.com:10443/demo/api/pub/export/download/\${data.id}\`).then(response => {
                         response.blob().then(blob => {
                           // 开始下载
                           VXETable.saveFile({ filename: '导出数据', type: 'xlsx', content: blob })
@@ -493,7 +514,7 @@ export default defineComponent({
                       })
                     }
                   }).catch(() => {
-                    VXETable.modal.message({ message: '导出失败！', status: 'error' })
+                    VXETable.modal.message({ content: '导出失败！', status: 'error' })
                   })
                 }
               },
@@ -520,7 +541,7 @@ export default defineComponent({
                 mode: 'row',
                 showStatus: true
               }
-            } as VxeGridOptions)
+            } as VxeGridProps)
 
             onMounted(() => {
               const sexList = [

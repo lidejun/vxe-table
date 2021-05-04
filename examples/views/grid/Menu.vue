@@ -32,7 +32,7 @@
 <script lang="ts">
 import { defineComponent, reactive, ref } from 'vue'
 import { VXETable } from '../../../packages/all'
-import { VxeGridInstance, VxeGridOptions, VxeGridEvents } from '../../../types/index'
+import { VxeGridInstance, VxeGridProps, VxeGridEvents } from '../../../types/index'
 import XEUtils from 'xe-utils'
 import XEClipboard from 'xe-clipboard'
 
@@ -120,7 +120,7 @@ export default defineComponent({
           })
         ]
       }
-    } as VxeGridOptions)
+    } as VxeGridProps)
 
     const cellContextMenuEvent: VxeGridEvents.CellMenu = ({ row }) => {
       const $grid = xGrid.value
@@ -133,7 +133,7 @@ export default defineComponent({
         case 'copy':
           if (row && column) {
             if (XEClipboard.copy(row[column.property])) {
-              VXETable.modal.message({ message: '已复制到剪贴板！', status: 'success' })
+              VXETable.modal.message({ content: '已复制到剪贴板！', status: 'success' })
             }
           }
           break
@@ -164,7 +164,7 @@ export default defineComponent({
         `,
         `
         import { defineComponent, reactive, ref } from 'vue'
-        import { VXETable, VxeGridInstance, VxeGridOptions, VxeGridEvents } from 'vxe-table'
+        import { VXETable, VxeGridInstance, VxeGridProps, VxeGridEvents } from 'vxe-table'
         import XEUtils from 'xe-utils'
         import XEClipboard from 'xe-clipboard'
 
@@ -252,7 +252,7 @@ export default defineComponent({
                   })
                 ]
               }
-            } as VxeGridOptions)
+            } as VxeGridProps)
 
             const cellContextMenuEvent: VxeGridEvents.CellMenu = ({ row }) => {
               const $grid = xGrid.value
@@ -265,7 +265,7 @@ export default defineComponent({
                 case 'copy':
                   if (row && column) {
                     if (XEClipboard.copy(row[column.property])) {
-                      VXETable.modal.message({ message: '已复制到剪贴板！', status: 'success' })
+                      VXETable.modal.message({ content: '已复制到剪贴板！', status: 'success' })
                     }
                   }
                   break

@@ -1,7 +1,7 @@
-import { RenderFunction, SetupContext, Ref, ComputedRef, ComponentPublicInstance, ComponentInternalInstance, VNode, DefineComponent } from 'vue'
+import { RenderFunction, SetupContext, Ref, ComputedRef, ComponentPublicInstance, ComponentInternalInstance, VNode } from 'vue'
 import { VXEComponent, VxeComponentBase, VxeEvent, RecordInfo, SizeType, ValueOf, VNodeStyle } from './component'
 import { VxeTableProEmits, VxeTableProDefines } from './plugins/pro'
-import { VxeColumnOptions, VxeColumnPropTypes } from './column'
+import { VxeColumnPropTypes, VxeColumnProps } from './column'
 import { VxeGlobalRendererHandles } from './v-x-e-table'
 import { VxeToolbarConstructor, VxeToolbarInstance } from './toolbar'
 import { VxeTooltipInstance } from './tooltip'
@@ -10,8 +10,9 @@ import { VxeMenuPanelInstance } from './menu'
 
 /**
  * 组件 - 表格
+ * @example import { Table as VxeTable } from 'vxe-table'
  */
-export const Table: VXEComponent<VxeTableProps & VxeTableEventProps>;
+export const Table: VXEComponent<VxeTableProps, VxeTableEventProps>;
 
 export type VxeTableInstance = ComponentPublicInstance<VxeTableProps, VxeTableConstructor>;
 
@@ -131,12 +132,12 @@ export interface TablePublicMethods {
    * 加载列配置
    * @param columns 列对象
    */
-  loadColumn(columns: VxeColumnOptions[]): Promise<any>;
+  loadColumn(columns: VxeTableDefines.ColumnOptions[]): Promise<any>;
   /**
    * 加载列配置并恢复到初始状态
    * @param columns 列对象
    */
-  reloadColumn(columns: VxeColumnOptions[]): Promise<any>;
+  reloadColumn(columns: VxeTableDefines.ColumnOptions[]): Promise<any>;
   /**
    * 根据 tr 元素获取对应的 row 信息
    * @param tr 行节点元素
@@ -234,12 +235,12 @@ export interface TablePublicMethods {
    * 根据列的唯一主键获取列
    * @param colid 列主键
    */
-  getColumnById(colid: string): VxeTableDefines.ColumnInfo;
+  getColumnById(colid: string): VxeTableDefines.ColumnInfo | null;
   /**
    * 根据列的字段名获取列
    * @param field 字段名
    */
-  getColumnByField(field: string): VxeTableDefines.ColumnInfo;
+  getColumnByField(field: string): VxeTableDefines.ColumnInfo | null;
   /**
    * 获取当前表格的列
    * 收集到的全量列、全量表头列、处理条件之后的全量表头列、当前渲染中的表头列
@@ -263,7 +264,7 @@ export interface TablePublicMethods {
    * 根据行的唯一主键获取行
    * @param rowid 行主键
    */
-  getRowById(rowid: string | number): any;
+  getRowById(rowid: string | number): any | null;
   /**
    * 根据行获取行的唯一主键
    * @param row 行对象
@@ -643,7 +644,7 @@ export interface TablePublicMethods {
 export interface VxeTableMethods extends TableMethods { }
 
 export interface TablePrivateMethods {
-  handleFieldOrColumn(fieldOrColumn: any): VxeTableDefines.ColumnInfo | null;
+  updateAfterDataIndex(): void;
   callSlot(slotFunc: Function | string | null, params: any): VNode[];
   getParentElem(): Element;
   getParentHeight(): number;
@@ -656,6 +657,7 @@ export interface TablePrivateMethods {
   analyColumnWidth(): void;
   checkSelectionStatus(): void;
   handleSelectRow(params: any, value: any): void;
+  handleCustom(): Promise<any>;
   preventEvent(evnt: any, type: any, args?: any, next?: any, end?: any): any;
   triggerHeaderHelpEvent(evnt: MouseEvent, params: VxeTableDefines.CellRenderHeaderParams): void;
   triggerHeaderTooltipEvent(evnt: MouseEvent, params: VxeTableDefines.CellRenderHeaderParams): void;
@@ -663,9 +665,9 @@ export interface TablePrivateMethods {
   triggerFooterTooltipEvent(evnt: MouseEvent, params: VxeTableDefines.CellRenderFooterParams): void;
   handleTargetLeaveEvent(evnt: MouseEvent): void;
   triggerHeaderCellClickEvent(evnt: MouseEvent, params: VxeTableDefines.CellRenderHeaderParams): void;
-  triggerHeaderCellDBLClickEvent(evnt: MouseEvent, params: VxeTableDefines.CellRenderHeaderParams): void;
+  triggerHeaderCellDblclickEvent(evnt: MouseEvent, params: VxeTableDefines.CellRenderHeaderParams): void;
   triggerCellClickEvent(evnt: MouseEvent, params: VxeTableDefines.CellRenderBodyParams): void;
-  triggerCellDBLClickEvent(evnt: MouseEvent, params: VxeTableDefines.CellRenderBodyParams): void;
+  triggerCellDblclickEvent(evnt: MouseEvent, params: VxeTableDefines.CellRenderBodyParams): void;
   handleToggleCheckRowEvent(evnt: Event | null, params: { row: any }): void;
   triggerCheckRowEvent(evnt: Event, params: { row: any }, value: boolean): void;
   triggerCheckAllEvent(evnt: MouseEvent | null, value: boolean): void;
@@ -736,7 +738,7 @@ export interface TableReactData {
   // 单选框属性，选中行
   selectRow: any;
   // 表尾合计数据
-  footerData: any[];
+  footerTableData: any[];
   // 展开列信息
   expandColumn: any;
   hasFixedColumn: boolean;
@@ -771,6 +773,7 @@ export interface TableReactData {
     column: any;
     multiple: boolean;
     visible: boolean;
+    maxHeight: number | null;
     [key: string]: any;
   },
   // 存放列相关的信息
@@ -881,9 +884,21 @@ export interface TableInternalData {
   tZindex: number;
   elemStore: any;
   // 存放横向 X 虚拟滚动相关的信息
-  scrollXStore: any;
+  scrollXStore: {
+    offsetSize: number;
+    visibleSize: number;
+    startIndex: number;
+    endIndex: number;
+  };
   // 存放纵向 Y 虚拟滚动相关信息
-  scrollYStore: any;
+  scrollYStore: {
+    adaptive?: boolean;
+    rowHeight: number;
+    offsetSize: number;
+    visibleSize: number;
+    startIndex: number;
+    endIndex: number;
+  };
   // 存放 tooltip 相关信息
   tooltipStore: any;
   // 表格宽度
@@ -922,13 +937,56 @@ export interface TableInternalData {
   // 渲染所有列
   visibleColumn: VxeTableDefines.ColumnInfo[];
   // 缓存数据集
-  fullAllDataRowMap: Map<any, any>;
-  fullAllDataRowIdData: { [key: string]: any };
-  fullDataRowMap: Map<any, any>;
-  fullDataRowIdData: { [key: string]: any };
-  fullColumnMap: Map<any, any>;
-  fullColumnIdData: { [key: string]: any };
-  fullColumnFieldData: { [key: string]: any };
+  fullAllDataRowIdData: {
+    [key: string]: {
+      row: any;
+      rowid: string;
+      index: number;
+      $index: number;
+      _index: number;
+      items: any[];
+      parent: any;
+      treeLoaded?: boolean;
+      expandLoaded?: boolean;
+      formatData?: {
+        [key: string]: {
+          value: any;
+          label: any;
+        }
+      };
+    }
+  };
+  fullDataRowIdData: {
+    [key: string]: {
+      row: any;
+      rowid: string;
+      index: number;
+      $index: number;
+      _index: number;
+      items: any[];
+      parent: any;
+    }
+  };
+  fullColumnIdData: {
+    [key: string]: {
+      column: VxeTableDefines.ColumnInfo;
+      colid: string;
+      index: number;
+      $index: number;
+      _index: number;
+      items: VxeTableDefines.ColumnInfo[];
+      parent: VxeTableDefines.ColumnInfo;
+    }
+  };
+  fullColumnFieldData: {
+    [key: string]: {
+      column: VxeTableDefines.ColumnInfo;
+      colid: string;
+      index: number;
+      items: VxeTableDefines.ColumnInfo[];
+      parent: VxeTableDefines.ColumnInfo;
+    }
+  };
 
   // 特殊标识
   inited: boolean;
@@ -948,12 +1006,10 @@ export interface TableInternalData {
   _currMenuParams?: any;
 }
 
-export interface VxeTableOptions extends VxeTableProps, VxeTableListeners { }
-
 export namespace VxeTablePropTypes {
   export type Size = SizeType;
   export type ID = string;
-  export type Data = any[];
+  export type Data<T = any> = T[];
   export type Height = number | string;
   export type MaxHeight = number | string;
   export type Resizable = boolean;
@@ -1030,7 +1086,7 @@ export namespace VxeTablePropTypes {
     _columnIndex: number;
   }) => void | null | string | { [key: string]: boolean });
 
-  export type CellStyle = VNodeStyle | Array<string | number | boolean | VNodeStyle> | ((params: {
+  export type CellStyle = VNodeStyle | ((params: {
     row: any;
     rowIndex: number;
     $rowIndex: number;
@@ -1039,42 +1095,45 @@ export namespace VxeTablePropTypes {
     columnIndex: number;
     $columnIndex: number;
     _columnIndex: number;
-  }) => void | null | string | { [key: string]: boolean });
+  }) => void | null | VNodeStyle);
 
-  export type HeaderCellStyle = VNodeStyle | Array<string | number | boolean | VNodeStyle> | ((params: {
+  export type HeaderCellStyle = VNodeStyle | ((params: {
     $table: VxeTableConstructor & VxeTablePrivateMethods;
     $rowIndex: number;
-  }) => void | null | string | { [key: string]: boolean });
+    column: VxeTableDefines.ColumnInfo;
+    columnIndex: number;
+    _columnIndex: number;
+  }) => void | null | VNodeStyle);
 
-  export type FooterCellStyle = VNodeStyle | Array<string | number | boolean | VNodeStyle> | ((params: {
+  export type FooterCellStyle = VNodeStyle | ((params: {
     $rowIndex: number;
     column: VxeTableDefines.ColumnInfo;
     columnIndex: number;
     $columnIndex: number;
     _columnIndex: number;
-  }) => void | null | string | { [key: string]: boolean });
+  }) => void | null | VNodeStyle);
 
-  export type RowStyle = VNodeStyle | Array<string | number | boolean | VNodeStyle> | ((params: {
+  export type RowStyle = VNodeStyle | ((params: {
     row: any;
     rowIndex: number;
     $rowIndex: number;
     _rowIndex: number;
-  }) => void | null | string | { [key: string]: boolean });
+  }) => void | null | VNodeStyle);
 
-  export type HeaderRowStyle = VNodeStyle | Array<string | number | boolean | VNodeStyle> | ((params: {
+  export type HeaderRowStyle = VNodeStyle | ((params: {
     $table: & VxeTablePrivateMethods;
     $rowIndex: number;
     fixed: VxeColumnPropTypes.Fixed;
     type: string;
-  }) => void | null | string | { [key: string]: boolean });
+  }) => void | null | VNodeStyle);
 
-  export type FooterRowStyle = VNodeStyle | Array<string | number | boolean | VNodeStyle> | ((params: {
+  export type FooterRowStyle = VNodeStyle | ((params: {
     $table: VxeTableConstructor & VxeTablePrivateMethods;
     $rowIndex: number;
     _rowIndex: number;
     fixed: VxeColumnPropTypes.Fixed;
     type: string;
-  }) => void | null | string | { [key: string]: boolean });
+  }) => void | null | VNodeStyle);
 
   export type MergeCell = VxeTableDefines.MergeOptions;
   export type MergeCells = MergeCell[];
@@ -1161,7 +1220,7 @@ export namespace VxeTablePropTypes {
       row: any;
       rowIndex: number;
       $rowIndex: number;
-    }): number;
+    }): number | string;
   }
   export interface SeqOpts extends SeqConfig { }
 
@@ -1179,7 +1238,7 @@ export namespace VxeTablePropTypes {
     sortMethod?(params: {
       $table: VxeTableConstructor & VxeTablePrivateMethods;
       data: any[];
-      sortList: any[];
+      sortList: VxeTableDefines.SortCheckedParams[];
     }): any[];
     remote?: boolean;
     multiple?: boolean;
@@ -1197,7 +1256,13 @@ export namespace VxeTablePropTypes {
    * 筛选配置项
    */
   export interface FilterConfig {
-    filterMethod?: (params: { options: any[], values: any[], row: any, column: any }) => any;
+    filterMethod?: (params: {
+      options: VxeTableDefines.FilterOption[];
+      values: any[];
+      cellValue: any;
+      row: any;
+      column: VxeTableDefines.ColumnInfo;
+    }) => any;
     remote?: boolean;
     showIcon?: boolean;
     iconNone?: string;
@@ -1354,7 +1419,7 @@ export namespace VxeTablePropTypes {
     className?: string;
     visibleMethod?(params: {
       type: string;
-      options: (VxeTableDefines.MenuFirstOption | VxeTableDefines.MenuChildOption)[][];
+      options: VxeTableDefines.MenuFirstOption[][];
       columns: VxeTableDefines.ColumnInfo[];
       row?: any;
       rowIndex?: number;
@@ -1391,6 +1456,36 @@ export namespace VxeTablePropTypes {
      * 只对 mouse-config.extension 启用后有效，将被选取区域的值复制到扩展区域中
      */
     extendByCopy?: boolean;
+    /**
+     * 只对 mouse-config.extension 启用后有效，扩展区域时将自动识别数字规则进行计算
+     */
+    extendByCalc?: boolean;
+    /**
+     * 只对 extendByCalc 启用后有效，重写单元格扩展区域计算值的方法
+     * @param params
+     */
+    extendCalcMethod?(params: VxeTableProDefines.ExtendCellAreaCalcBaseParams): any[][];
+    /**
+     * 只对 extendByCopy | extendByCalc 启用后有效，重写单元格扩展区域赋值的方法
+     * @param params
+     */
+    extendSetMethod?(params: {
+      cellValue: any;
+      row: any;
+      column: VxeTableDefines.ColumnInfo;
+    } & VxeTableProDefines.ExtendCellAreaCalcBaseParams): void;
+    /**
+     * 只对 extendByCopy | extendByCalc 启用后有效，自定义单元格扩展区域赋值之前的方法，可以通过返回 false 阻止扩展行为
+     * @param params
+     */
+    beforeExtendSetMethod?(params: VxeTableProDefines.ExtendCellAreaCalcBaseParams): boolean;
+    /**
+     * 只对 extendByCopy | extendByCalc 启用后有效，自定义单元格扩展区域赋值之后的方法
+     * @param params
+     */
+     afterExtendSetMethod?(params: {
+      extendValues: any[][];
+     } & VxeTableProDefines.ExtendCellAreaCalcBaseParams): boolean;
   }
   export interface AreaOpts extends AreaConfig { }
 
@@ -1566,7 +1661,7 @@ export namespace VxeTablePropTypes {
     beforePasteMethod?(params: {
       currentAreas: VxeTableProDefines.CellAreaParams[];
       targetAreas: VxeTableProDefines.CellAreaParams[];
-      cellValues: string[][];
+      cellValues: any[][];
       $table: VxeTableConstructor & VxeTablePrivateMethods;
     }): boolean;
     /**
@@ -1575,7 +1670,7 @@ export namespace VxeTablePropTypes {
     afterPasteMethod?(params: {
       currentAreas: VxeTableProDefines.CellAreaParams[];
       targetAreas: VxeTableProDefines.CellAreaParams[];
-      cellValues: string[][];
+      cellValues: any[][];
       pasteCells: string[][];
       insertRows: any[];
       insertColumns: VxeTableDefines.ColumnInfo[];
@@ -1587,7 +1682,7 @@ export namespace VxeTablePropTypes {
     createRowsMethod?(params: {
       currentAreas: VxeTableProDefines.CellAreaParams[];
       targetAreas: VxeTableProDefines.CellAreaParams[];
-      cellValues: string[][];
+      cellValues: any[][];
       pasteCells: string[][];
       insertRows: any[];
       $table: VxeTableConstructor & VxeTablePrivateMethods;
@@ -1598,11 +1693,11 @@ export namespace VxeTablePropTypes {
     createColumnsMethod?(params: {
       currentAreas: VxeTableProDefines.CellAreaParams[];
       targetAreas: VxeTableProDefines.CellAreaParams[];
-      cellValues: string[][];
+      cellValues: any[][];
       pasteCells: string[][];
-      insertColumns: VxeColumnOptions[];
+      insertColumns: VxeTableDefines.ColumnOptions[];
       $table: VxeTableConstructor & VxeTablePrivateMethods;
-    }): VxeColumnOptions[];
+    }): VxeTableDefines.ColumnOptions[];
   }
   export interface ClipOpts extends ClipConfig { }
 
@@ -1701,6 +1796,7 @@ export namespace VxeTablePropTypes {
   }
 
   export interface ScrollY {
+    mode?: 'default' | 'wheel';
     gt?: number;
     oSize?: number;
     [key: string]: any;
@@ -1713,10 +1809,10 @@ export namespace VxeTablePropTypes {
   export type Params = any;
 }
 
-export type VxeTableProps = {
+export type VxeTableProps<D = any> = {
   size?: VxeTablePropTypes.Size;
   id?: VxeTablePropTypes.ID;
-  data?: VxeTablePropTypes.Data;
+  data?: VxeTablePropTypes.Data<D>;
   height?: VxeTablePropTypes.Height;
   maxHeight?: VxeTablePropTypes.MaxHeight;
   resizable?: VxeTablePropTypes.Resizable;
@@ -1860,6 +1956,11 @@ export namespace VxeTableDefines {
     _colspan: number;
   }
 
+  export interface ColumnOptions extends VxeColumnProps {
+    children?: ColumnOptions[];
+    slots?: VxeColumnPropTypes.Slots;
+  }
+
   /**
    * 列对象
    */
@@ -1912,6 +2013,7 @@ export namespace VxeTableDefines {
     halfChecked: boolean;
     disabled: boolean;
     order: VxeTablePropTypes.SortOrder;
+    sortTime: number;
     renderWidth: number;
     renderHeight: number;
     resizeWidth: number;
@@ -2062,8 +2164,8 @@ export namespace VxeTableDefines {
   }
   export interface CellClickEventParams extends TableEventParams, CellClickParams { }
 
-  export interface CellDBLClickParams extends CellClickParams, CellClickParams { }
-  export interface CellDBLClickEventParams extends TableEventParams, CellDBLClickParams { }
+  export interface CellDblclickParams extends CellClickParams, CellClickParams { }
+  export interface CellDblclickEventParams extends TableEventParams, CellDblclickParams { }
 
   export interface CellMenuParams extends TableBaseCellParams { }
   export interface CellMenuEventParams extends TableEventParams, CellMenuParams { }
@@ -2099,14 +2201,12 @@ export namespace VxeTableDefines {
   export interface SortCheckedParams {
     column: VxeTableDefines.ColumnInfo;
     property: VxeColumnPropTypes.Field;
-    sortBy: VxeColumnPropTypes.SortBy;
     order: VxeTablePropTypes.SortOrder;
   }
   export interface SortChangeParams extends SortCheckedParams {
     sortList: SortCheckedParams[];
   }
   export interface SortChangeEventParams extends TableEventParams, SortChangeParams { }
-
 
   export interface FilterCheckedParams {
     column: VxeTableDefines.ColumnInfo;
@@ -2178,7 +2278,7 @@ export interface VxeTableEventProps {
   onCheckboxRangeChange?: VxeTableEvents.CheckboxRangeChange;
   onCheckboxRangeEnd?: VxeTableEvents.CheckboxRangeEnd;
   onCellClick?: VxeTableEvents.CellClick;
-  onCellDBLClick?: VxeTableEvents.CellDBLClick;
+  onCellDblclick?: VxeTableEvents.CellDblclick;
   onCellMenu?: VxeTableEvents.CellMenu;
   onCellMouseenter?: VxeTableEvents.CellMouseenter;
   onCellMouseleave?: VxeTableEvents.CellMouseleave;
@@ -2215,7 +2315,7 @@ export interface VxeTableListeners {
   checkboxRangeChange?: VxeTableEvents.CheckboxRangeChange;
   checkboxRangeEnd?: VxeTableEvents.CheckboxRangeEnd;
   cellClick?: VxeTableEvents.CellClick;
-  cellDBLClick?: VxeTableEvents.CellDBLClick;
+  cellDBLClick?: VxeTableEvents.CellDblclick;
   cellMenu?: VxeTableEvents.CellMenu;
   cellMouseenter?: VxeTableEvents.CellMouseenter;
   cellMouseleave?: VxeTableEvents.CellMouseleave;
@@ -2252,7 +2352,7 @@ export namespace VxeTableEvents {
   export type CheckboxRangeChange = (params: VxeTableDefines.CheckboxRangeChangeEventParams) => void;
   export type CheckboxRangeEnd = (params: VxeTableDefines.CheckboxRangeEndEventParams) => void;
   export type CellClick = (params: VxeTableDefines.CellClickEventParams) => void;
-  export type CellDBLClick = (params: VxeTableDefines.CellDBLClickEventParams) => void;
+  export type CellDblclick = (params: VxeTableDefines.CellDblclickEventParams) => void;
   export type CellMenu = (params: VxeTableDefines.CellMenuEventParams) => void;
   export type CellMouseenter = (params: VxeTableDefines.CellMouseenterEventParams) => void;
   export type CellMouseleave = (params: VxeTableDefines.CellMouseleaveEventParams) => void;

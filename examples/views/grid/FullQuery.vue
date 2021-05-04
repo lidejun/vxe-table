@@ -32,7 +32,7 @@
 
 <script lang="ts">
 import { defineComponent, reactive, ref } from 'vue'
-import { VxeGridInstance, VxeGridOptions } from '../../../types/index'
+import { VxeGridInstance, VxeGridProps } from '../../../types/index'
 import XEUtils from 'xe-utils'
 import XEAjax from 'xe-ajax'
 
@@ -98,9 +98,10 @@ export default defineComponent({
         highlight: true
       },
       proxyConfig: {
-        seq: true, // 启用动态序号代理
-        sort: true, // 启用排序代理
-        filter: true, // 启用筛选代理
+        seq: true, // 启用动态序号代理，每一页的序号会根据当前页数变化
+        sort: true, // 启用排序代理，当点击排序时会自动触发 query 行为
+        filter: true, // 启用筛选代理，当点击筛选时会自动触发 query 行为
+        // 对应响应结果 { result: [], page: { total: 100 } }
         props: {
           result: 'result', // 配置响应结果列表字段
           total: 'page.total' // 配置响应结果总页数字段
@@ -119,10 +120,10 @@ export default defineComponent({
             filters.forEach(({ property, values }) => {
               queryParams[property] = values.join(',')
             })
-            return XEAjax.get(`https://api.xuliangzhan.com:10443/api/pub/page/list/${page.pageSize}/${page.currentPage}`, queryParams)
+            return XEAjax.get(`https://api.xuliangzhan.com:10443/demo/api/pub/page/list/${page.pageSize}/${page.currentPage}`, queryParams)
           },
           // 被某些特殊功能所触发，例如：导出数据 mode=all 时，会触发该方法并对返回的数据进行导出
-          queryAll: () => XEAjax.get('https://api.xuliangzhan.com:10443/api/pub/all')
+          queryAll: () => fetch('https://api.xuliangzhan.com:10443/demo/api/pub/all').then(response => response.json())
         }
       },
       toolbarConfig: {
@@ -182,7 +183,7 @@ export default defineComponent({
           }
         }
       ]
-    } as VxeGridOptions)
+    } as VxeGridProps)
 
     return {
       xGrid,
@@ -213,7 +214,7 @@ export default defineComponent({
         `,
         `
         import { defineComponent, reactive, ref } from 'vue'
-        import { VxeGridInstance, VxeGridOptions } from 'vxe-table'
+        import { VxeGridInstance, VxeGridProps } from 'vxe-table'
         import XEUtils from 'xe-utils'
         import XEAjax from 'xe-ajax'
 
@@ -274,9 +275,10 @@ export default defineComponent({
                 highlight: true
               },
               proxyConfig: {
-                seq: true, // 启用动态序号代理
-                sort: true, // 启用排序代理
-                filter: true, // 启用筛选代理
+                seq: true, // 启用动态序号代理，每一页的序号会根据当前页数变化
+                sort: true, // 启用排序代理，当点击排序时会自动触发 query 行为
+                filter: true, // 启用筛选代理，当点击筛选时会自动触发 query 行为
+                // 对应响应结果 { result: [], page: { total: 100 } }
                 props: {
                   result: 'result', // 配置响应结果列表字段
                   total: 'page.total' // 配置响应结果总页数字段
@@ -295,10 +297,10 @@ export default defineComponent({
                     filters.forEach(({ property, values }) => {
                       queryParams[property] = values.join(',')
                     })
-                    return XEAjax.get(\`https://api.xuliangzhan.com:10443/api/pub/page/list/\${page.pageSize}/\${page.currentPage}\`, queryParams)
+                    return XEAjax.get(\`https://api.xuliangzhan.com:10443/demo/api/pub/page/list/\${page.pageSize}/\${page.currentPage}\`, queryParams)
                   },
                   // 被某些特殊功能所触发，例如：导出数据 mode=all 时，会触发该方法并对返回的数据进行导出
-                  queryAll: () => XEAjax.get('https://api.xuliangzhan.com:10443/api/pub/all')
+                  queryAll: () => fetch('https://api.xuliangzhan.com:10443/demo/api/pub/all').then(response => response.json())
                 }
               },
               toolbarConfig: {
@@ -358,7 +360,7 @@ export default defineComponent({
                   }
                 }
               ]
-            } as VxeGridOptions)
+            } as VxeGridProps)
             
             return {
               xGrid,

@@ -2,7 +2,7 @@ import { defineComponent, h, ref, Ref, resolveComponent, ComponentOptions, Compu
 import XEUtils from 'xe-utils'
 import GlobalConfig from '../../v-x-e-table/src/conf'
 import { VXETable } from '../../v-x-e-table'
-import { UtilTools, isEnableConf } from '../../tools'
+import { errLog, getFuncText, isEnableConf, eqEmptyValue } from '../../tools/utils'
 import { createItem } from './util'
 import { useSize } from '../../hooks/size'
 
@@ -24,10 +24,33 @@ class Rule {
   }
 
   get message () {
-    return UtilTools.getFuncText(this.$options.message)
+    return getFuncText(this.$options.message)
   }
 
   [key: string]: any
+}
+
+const validErrorRuleValue = (rule: VxeFormDefines.FormRule, val: any) => {
+  const { type, min, max, pattern } = rule
+  const isNumType = type === 'number'
+  const numVal = isNumType ? XEUtils.toNumber(val) : XEUtils.getSize(val)
+  // 判断数值
+  if (isNumType && isNaN(val)) {
+    return true
+  }
+  // 如果存在 min，判断最小值
+  if (!XEUtils.eqNull(min) && numVal < XEUtils.toNumber(min)) {
+    return true
+  }
+  // 如果存在 max，判断最大值
+  if (!XEUtils.eqNull(max) && numVal > XEUtils.toNumber(max)) {
+    return true
+  }
+  // 如果存在 pattern，正则校验
+  if (pattern && !(XEUtils.isRegExp(pattern) ? pattern : new RegExp(pattern)).test(val)) {
+    return true
+  }
+  return false
 }
 
 function getResetValue (value: any, resetValue: any) {
@@ -50,6 +73,7 @@ export default defineComponent({
     titleColon: { type: Boolean as PropType<VxeFormPropTypes.TitleColon>, default: () => GlobalConfig.form.titleColon },
     titleAsterisk: { type: Boolean as PropType<VxeFormPropTypes.TitleAsterisk>, default: () => GlobalConfig.form.titleAsterisk },
     titleOverflow: { type: [Boolean, String] as PropType<VxeFormPropTypes.TitleOverflow>, default: null },
+    className: [String, Function] as PropType<VxeFormPropTypes.ClassName>,
     items: Array as PropType<VxeFormPropTypes.Items>,
     rules: Object as PropType<VxeFormPropTypes.Rules>,
     preventSubmit: { type: Boolean as PropType<VxeFormPropTypes.PreventSubmit>, default: () => GlobalConfig.form.preventSubmit },
@@ -127,7 +151,7 @@ export default defineComponent({
       return opts
     })
 
-    const callSlot = (slotFunc: Function | string | null, params: any): VNode[] => {
+    const callSlot = (slotFunc: ((params: any) => any) | string | null, params: any): VNode[] => {
       if (slotFunc) {
         if (XEUtils.isString(slotFunc)) {
           slotFunc = slots[slotFunc] || null
@@ -147,20 +171,24 @@ export default defineComponent({
               XEUtils.each(item.slots, (func) => {
                 if (!XEUtils.isFunction(func)) {
                   if (!slots[func]) {
-                    UtilTools.error('vxe.error.notSlot', [func])
+                    errLog('vxe.error.notSlot', [func])
                   }
                 }
               })
             }
           })
         }
-        reactData.staticItems = list.map((item) => createItem($xeform, item))
+        reactData.staticItems = XEUtils.mapTree(list, item => createItem($xeform, item), { children: 'children' })
       }
       return nextTick()
     }
 
     const getItems = () => {
-      return reactData.formItems.slice(0)
+      const itemList: VxeFormDefines.ItemInfo[] = []
+      XEUtils.eachTree(reactData.formItems, item => {
+        itemList.push(item)
+      }, { children: 'children' })
+      return itemList
     }
 
     const toggleCollapse = () => {
@@ -174,14 +202,14 @@ export default defineComponent({
     }
 
     const clearValidate = (field?: string) => {
-      const { formItems } = reactData
+      const itemList = getItems()
       if (field) {
-        const item = formItems.find((item) => item.field === field)
+        const item = itemList.find((item) => item.field === field)
         if (item) {
           item.showError = false
         }
       } else {
-        formItems.forEach((item) => {
+        itemList.forEach((item) => {
           item.showError = false
         })
       }
@@ -190,9 +218,9 @@ export default defineComponent({
 
     const reset = () => {
       const { data } = props
-      const { formItems } = reactData
+      const itemList = getItems()
       if (data) {
-        formItems.forEach((item) => {
+        itemList.forEach((item) => {
           const { field, resetValue, itemRender } = item
           if (isEnableConf(itemRender)) {
             const compConf = VXETable.renderer.get(itemRender.name)
@@ -214,10 +242,10 @@ export default defineComponent({
     }
 
     const handleFocus = (fields: string[]) => {
-      const { formItems } = reactData
+      const itemList = getItems()
       const el = refElem.value
       fields.some((property) => {
-        const item = formItems.find((item) => item.field === property)
+        const item = itemList.find((item) => item.field === property)
         if (item && isEnableConf(item.itemRender)) {
           const { itemRender } = item
           const compConf = VXETable.renderer.get(itemRender.name)
@@ -252,16 +280,17 @@ export default defineComponent({
      *  validator=Function({ itemValue, rule, rules, data, property }) 自定义校验，接收一个 Promise
      *  trigger=change 触发方式
      */
-    const validItemRules = (type: string, property: string, val?: any) => {
+    const validItemRules = (validType: string, property: string, val?: any) => {
       const { data, rules: formRules } = props
-      const errorRules: any[] = []
-      const syncVailds: any[] = []
+      const errorRules: Rule[] = []
+      const syncVailds: Promise<any>[] = []
       if (property && formRules) {
         const rules = XEUtils.get(formRules, property)
         if (rules) {
           const itemValue = XEUtils.isUndefined(val) ? XEUtils.get(data, property) : val
-          rules.forEach((rule: any) => {
-            if (type === 'all' || !rule.trigger || type === rule.trigger) {
+          rules.forEach((rule) => {
+            const { type, trigger, required } = rule
+            if (validType === 'all' || !trigger || validType === trigger) {
               if (XEUtils.isFunction(rule.validator)) {
                 const customValid = rule.validator({
                   itemValue,
@@ -273,29 +302,20 @@ export default defineComponent({
                 })
                 if (customValid) {
                   if (XEUtils.isError(customValid)) {
-                    errorRules.push(new Rule({ type: 'custom', trigger: rule.trigger, message: customValid.message, rule: new Rule(rule) }))
+                    errorRules.push(new Rule({ type: 'custom', trigger, message: customValid.message, rule: new Rule(rule) }))
                   } else if (customValid.catch) {
                     // 如果为异步校验（注：异步校验是并发无序的）
                     syncVailds.push(
                       customValid.catch((e: any) => {
-                        errorRules.push(new Rule({ type: 'custom', trigger: rule.trigger, message: e ? e.message : rule.message, rule: new Rule(rule) }))
+                        errorRules.push(new Rule({ type: 'custom', trigger, message: e ? e.message : rule.message, rule: new Rule(rule) }))
                       })
                     )
                   }
                 }
               } else {
-                const isNumber = rule.type === 'number'
-                const numVal = isNumber ? XEUtils.toNumber(itemValue) : XEUtils.getSize(itemValue)
-                if (itemValue === null || itemValue === undefined || itemValue === '') {
-                  if (rule.required) {
-                    errorRules.push(new Rule(rule))
-                  }
-                } else if (
-                  (isNumber && isNaN(itemValue)) ||
-                  (!isNaN(rule.min) && numVal < parseFloat(rule.min)) ||
-                  (!isNaN(rule.max) && numVal > parseFloat(rule.max)) ||
-                  (rule.pattern && !(rule.pattern.test ? rule.pattern : new RegExp(rule.pattern)).test(itemValue))
-                ) {
+                const isArrType = type === 'array'
+                const hasEmpty = isArrType ? (!XEUtils.isArray(itemValue) || !itemValue.length) : eqEmptyValue(itemValue)
+                if (required ? (hasEmpty || validErrorRuleValue(rule, itemValue)) : (!hasEmpty && validErrorRuleValue(rule, itemValue))) {
                   errorRules.push(new Rule(rule))
                 }
               }
@@ -315,15 +335,15 @@ export default defineComponent({
 
     const beginValidate = (type?: string, callback?: any) => {
       const { data, rules: formRules } = props
-      const { formItems } = reactData
       const validOpts = computeValidOpts.value
       const validRest: any = {}
       const validFields: string[] = []
       const itemValids: any[] = []
+      const itemList = getItems()
       clearValidate()
       clearTimeout(showErrTime)
       if (data && formRules) {
-        formItems.forEach((item) => {
+        itemList.forEach((item) => {
           const { field } = item
           if (field) {
             itemValids.push(
@@ -347,22 +367,26 @@ export default defineComponent({
             callback()
           }
         }).catch(() => {
-          showErrTime = window.setTimeout(() => {
-            formItems.forEach((item) => {
-              if (item.errRule) {
-                item.showError = true
-              }
-            })
-          }, 20)
-          if (callback) {
-            callback(validRest)
-          }
-          if (validOpts.autoPos !== false) {
-            nextTick(() => {
-              handleFocus(validFields)
-            })
-          }
-          return Promise.reject(validRest)
+          return new Promise<void>((resolve, reject) => {
+            showErrTime = window.setTimeout(() => {
+              itemList.forEach((item) => {
+                if (item.errRule) {
+                  item.showError = true
+                }
+              })
+            }, 20)
+            if (validOpts.autoPos !== false) {
+              nextTick(() => {
+                handleFocus(validFields)
+              })
+            }
+            if (callback) {
+              callback(validRest)
+              resolve()
+            } else {
+              reject(validRest)
+            }
+          })
         })
       }
       if (callback) {
@@ -372,7 +396,7 @@ export default defineComponent({
     }
 
     const validate = (callback: any) => {
-      return beginValidate(callback)
+      return beginValidate('', callback)
     }
 
     const submitEvent = (evnt: Event) => {
@@ -446,14 +470,14 @@ export default defineComponent({
      */
     const updateStatus = (scope: any, itemValue?: any) => {
       const { property } = scope
-      const { formItems } = reactData
       if (property) {
         validItemRules('change', property, itemValue)
           .then(() => {
             clearValidate(property)
           })
           .catch(({ rule }) => {
-            const item = formItems.find((item) => item.field === property)
+            const itemList = getItems()
+            const item = itemList.find((item) => item.field === property)
             if (item) {
               item.showError = true
               item.errRule = rule
@@ -493,7 +517,7 @@ export default defineComponent({
         tss.push(
           titlePrefix.message
             ? h(resolveComponent('vxe-tooltip') as ComponentOptions, {
-              content: UtilTools.getFuncText(titlePrefix.message),
+              content: getFuncText(titlePrefix.message),
               enterable: titlePrefix.enterable,
               theme: titlePrefix.theme
             }, {
@@ -505,13 +529,13 @@ export default defineComponent({
       tss.push(
         h('span', {
           class: 'vxe-form--item-title-label'
-        }, compConf && compConf.renderItemTitle ? compConf.renderItemTitle(itemRender, params) : (titleSlot ? callSlot(titleSlot, params) : UtilTools.getFuncText(item.title)))
+        }, compConf && compConf.renderItemTitle ? compConf.renderItemTitle(itemRender, params) : (titleSlot ? callSlot(titleSlot, params) : getFuncText(item.title)))
       )
       if (titleSuffix) {
         tss.push(
           titleSuffix.message
             ? h(resolveComponent('vxe-tooltip') as ComponentOptions, {
-              content: UtilTools.getFuncText(titleSuffix.message),
+              content: getFuncText(titleSuffix.message),
               enterable: titleSuffix.enterable,
               theme: titleSuffix.theme
             }, {
@@ -523,12 +547,12 @@ export default defineComponent({
       return tss
     }
 
-    const renderItems = () => {
+    const renderItems = (itemList: VxeFormDefines.ItemInfo[]): VNode[] => {
       const { rules, data, titleOverflow: allTitleOverflow } = props
-      const { formItems, collapseAll } = reactData
+      const { collapseAll } = reactData
       const validOpts = computeValidOpts.value
-      return formItems.map((item, index) => {
-        const { slots, title, visible, folding, visibleMethod, field, collapseNode, itemRender, showError, errRule, className, titleOverflow } = item
+      return itemList.map((item, index) => {
+        const { slots, title, visible, folding, visibleMethod, field, collapseNode, itemRender, showError, errRule, className, titleOverflow, children } = item
         const compConf = isEnableConf(itemRender) ? VXETable.renderer.get(itemRender.name) : null
         const defaultSlot = slots ? slots.default : null
         const titleSlot = slots ? slots.title : null
@@ -546,6 +570,14 @@ export default defineComponent({
         let isRequired
         if (visible === false) {
           return createCommentVNode()
+        }
+        // 如果为项集合
+        const isGather = children && children.length > 0
+        if (isGather) {
+          const childVNs = renderItems(item.children)
+          return childVNs.length ? h('div', {
+            class: ['vxe-form--gather vxe-row', item.id, span ? `vxe-col--${span} is--span` : '', className ? (XEUtils.isFunction(className) ? className(params) : className) : '']
+          }, childVNs) : createCommentVNode()
         }
         if (!itemVisibleMethod && compConf && compConf.itemVisibleMethod) {
           itemVisibleMethod = compConf.itemVisibleMethod
@@ -596,7 +628,7 @@ export default defineComponent({
           onMouseleave: handleTargetLeaveEvent
         } : {}
         return h('div', {
-          class: ['vxe-form--item', item.id, span ? `vxe-col--${span} is--span` : null, className ? (XEUtils.isFunction(className) ? className(params) : className) : '', {
+          class: ['vxe-form--item', item.id, span ? `vxe-col--${span} is--span` : '', className ? (XEUtils.isFunction(className) ? className(params) : className) : '', {
             'is--title': title,
             'is--required': isRequired,
             'is--hidden': folding && collapseAll,
@@ -615,7 +647,7 @@ export default defineComponent({
               style: titleWidth ? {
                 width: isNaN(titleWidth as number) ? titleWidth : `${titleWidth}px`
               } : null,
-              title: showTitle ? UtilTools.getFuncText(title) : null,
+              title: showTitle ? getFuncText(title) : null,
               ...ons
             }, renderTitle(item)) : null,
             h('div', {
@@ -654,12 +686,13 @@ export default defineComponent({
     })
 
     const renderVN = () => {
-      const { loading } = props
+      const { loading, className, data } = props
+      const { formItems } = reactData
       const vSize = computeSize.value
       const tooltipOpts = computeTooltipOpts.value
       return h('form', {
         ref: refElem,
-        class: ['vxe-form', 'vxe-row', {
+        class: ['vxe-form', className ? (XEUtils.isFunction(className) ? className({ items: formItems, data, $form: $xeform }) : className) : '', {
           [`size--${vSize}`]: vSize,
           'is--colon': props.titleColon,
           'is--asterisk': props.titleAsterisk,
@@ -667,7 +700,10 @@ export default defineComponent({
         }],
         onSubmit: submitEvent,
         onReset: resetEvent
-      }, renderItems().concat([
+      }, [
+        h('div', {
+          class: 'vxe-form--wrapper vxe-row'
+        }, renderItems(formItems)),
         h('div', {
           class: 'vxe-form-slots',
           ref: 'hideItem'
@@ -688,7 +724,7 @@ export default defineComponent({
           ref: refTooltip,
           ...tooltipOpts
         }) : createCommentVNode()
-      ]))
+      ])
     }
 
     $xeform.renderVN = renderVN

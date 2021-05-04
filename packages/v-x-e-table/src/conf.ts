@@ -25,15 +25,17 @@ const GlobalConfig: VXETableGlobalConfig = {
     // stripe: false,
     // border: false,
     // round: false,
+    // emptyText: '暂无数据',
     // emptyRender: {
     //   name: ''
     // },
     // radioConfig: {
     //   trigger: 'default'
     // },
-    // checkboxConfig: {
-    //   trigger: 'default'
-    // },
+    checkboxConfig: {
+      // trigger: 'default',
+      strict: true
+    },
     // tooltipConfig: {
     //   theme: 'dark',
     //   enterable: false
@@ -108,6 +110,7 @@ const GlobalConfig: VXETableGlobalConfig = {
     },
     scrollY: {
       enabled: true,
+      mode: 'wheel',
       gt: 100
       // oSize: 0
     }
@@ -135,6 +138,7 @@ const GlobalConfig: VXETableGlobalConfig = {
     BUTTON_LOADING: iconPrefix + 'refresh roll',
 
     // select
+    SELECT_LOADED: iconPrefix + 'refresh roll',
     SELECT_OPEN: iconPrefix + 'caret-bottom rotate180',
     SELECT_CLOSE: iconPrefix + 'caret-bottom',
 
@@ -305,6 +309,7 @@ const GlobalConfig: VXETableGlobalConfig = {
     dblclickZoom: true,
     showTitleOverflow: true,
     animat: true,
+    showClose: true,
     // storage: false,
     storageKey: 'VXE_MODAL_POSITION'
   },

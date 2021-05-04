@@ -8,7 +8,7 @@ const apis = [
     defVal: '',
     list: [
       {
-        name: 'v-model / modelValue',
+        name: 'modelValue',
         descKey: 'app.api.input.desc.value',
         version: '',
         type: 'any',
@@ -56,6 +56,15 @@ const apis = [
         name: 'placeholder',
         desc: '当值为空时，显示的占位符',
         version: '',
+        type: 'string',
+        enum: '',
+        defVal: '',
+        list: []
+      },
+      {
+        name: 'className',
+        desc: '附加 className',
+        version: '4.0.7',
         type: 'string',
         enum: '',
         defVal: '',

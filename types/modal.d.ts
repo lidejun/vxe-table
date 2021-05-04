@@ -1,10 +1,11 @@
-import { VNode, RenderFunction, SetupContext, ComponentPublicInstance, Ref, DefineComponent } from 'vue'
+import { VNode, RenderFunction, SetupContext, ComponentPublicInstance, Ref } from 'vue'
 import { VXEComponent, VxeComponentBase, VxeEvent, SizeType, ValueOf } from './component'
 
 /**
- * 组件 - 模态窗口
+ * 组件 - 弹窗
+ * @example import { Modal as VxeModal } from 'vxe-table'
  */
-export const Modal: VXEComponent<VxeModalProps & VxeModalEventProps>;
+export const Modal: VXEComponent<VxeModalProps, VxeModalEventProps>;
 
 export type VxeModalInstance = ComponentPublicInstance<VxeModalProps, VxeModalConstructor>;
 
@@ -100,9 +101,7 @@ export type ModalPosition = {
 /**
  * 窗口事件类型
  */
-export type ModalEventTypes = 'default' | 'mask' | 'close' | 'confirm' | 'cancel' | 'keydown' | 'exist'
-
-export interface VxeModalOptions extends VxeModalProps, VxeModalEventProps { }
+export type ModalEventTypes = 'model' | 'mask' | 'close' | 'confirm' | 'cancel' | 'exit' | 'exist'
 
 export namespace VxeModalPropTypes {
   export type Size = SizeType;
@@ -117,7 +116,12 @@ export namespace VxeModalPropTypes {
   export type Position = 'center' | ModalPosition;
   export type Title = string | number;
   export type Duration = number | string;
-  export type Message = number | string | ((params: { $modal: VxeModalConstructor & VxeModalMethods }) => VNode[] | string[] | JSX.Element[]);
+  export type Content = number | string;
+  /**
+   * 请使用 content
+   * @deprecated
+   */
+  export type Message = Content;
   export type CancelButtonText = string;
   export type ConfirmButtonText = string;
   export type LockView = boolean;
@@ -129,6 +133,7 @@ export namespace VxeModalPropTypes {
   export type ShowHeader = boolean;
   export type ShowFooter = boolean;
   export type ShowZoom = boolean;
+  export type ShowClose = boolean;
   export type DblclickZoom = boolean;
   export type Width = number | string;
   export type Height = number | string;
@@ -161,7 +166,12 @@ export type VxeModalProps = {
   position?: VxeModalPropTypes.Position;
   title?: VxeModalPropTypes.Title;
   duration?: VxeModalPropTypes.Duration;
-  message?: VxeModalPropTypes.Message;
+  /**
+   * 请使用 content
+   * @deprecated
+   */
+  message?: VxeModalPropTypes.Content;
+  content?: VxeModalPropTypes.Content;
   cancelButtonText?: VxeModalPropTypes.CancelButtonText;
   confirmButtonText?: VxeModalPropTypes.ConfirmButtonText;
   lockView?: VxeModalPropTypes.LockView;
@@ -173,6 +183,7 @@ export type VxeModalProps = {
   showHeader?: VxeModalPropTypes.ShowHeader;
   showFooter?: VxeModalPropTypes.ShowFooter;
   showZoom?: VxeModalPropTypes.ShowZoom;
+  showClose?: VxeModalPropTypes.ShowClose;
   dblclickZoom?: VxeModalPropTypes.DblclickZoom;
   width?: VxeModalPropTypes.Width;
   height?: VxeModalPropTypes.Height;
@@ -203,6 +214,7 @@ export type VxeModalEmits = [
   'update:modelValue',
   'show',
   'hide',
+  'before-hide',
   'close',
   'confirm',
   'cancel',
@@ -217,43 +229,43 @@ export interface ModalController {
    * 创建窗口
    * @param options 参数
    */
-  open(options: VxeModalOptions): Promise<ModalEventTypes>;
+  open(options: VxeModalDefines.ModalOptions): Promise<ModalEventTypes>;
   /**
    * 创建提示框
-   * @param message 消息内容
+   * @param content 消息内容
    * @param title 标题
    * @param options 参数
    */
-  alert(message: VxeModalPropTypes.Message, title?: VxeModalPropTypes.Title, options?: VxeModalOptions): Promise<ModalEventTypes>;
+  alert(content: VxeModalPropTypes.Content, title?: VxeModalPropTypes.Title, options?: VxeModalDefines.ModalOptions): Promise<ModalEventTypes>;
   /**
    * 创建提示框
    * @param options 参数
    */
-  alert(options: VxeModalOptions): Promise<ModalEventTypes>;
+  alert(options: VxeModalDefines.ModalOptions): Promise<ModalEventTypes>;
   /**
    * 创建确认框
-   * @param message 消息内容
+   * @param content 消息内容
    * @param title 标题
    * @param options 参数
    */
-  confirm(message: VxeModalPropTypes.Message, title?: VxeModalPropTypes.Title, options?: VxeModalOptions): Promise<ModalEventTypes>;
+  confirm(content: VxeModalPropTypes.Content, title?: VxeModalPropTypes.Title, options?: VxeModalDefines.ModalOptions): Promise<ModalEventTypes>;
   /**
    * 创建确认框
    * @param options 参数
    */
-  confirm(options: VxeModalOptions): Promise<ModalEventTypes>;
+  confirm(options: VxeModalDefines.ModalOptions): Promise<ModalEventTypes>;
   /**
    * 创建消息提示
-   * @param message 消息内容
+   * @param content 消息内容
    * @param title 标题
    * @param options 参数
    */
-  message(message: VxeModalPropTypes.Message, options?: VxeModalOptions): Promise<ModalEventTypes>;
+  message(content: VxeModalPropTypes.Content, options?: VxeModalDefines.ModalOptions): Promise<ModalEventTypes>;
   /**
    * 创建消息提示
    * @param options 参数
    */
-  message(options: VxeModalOptions): Promise<ModalEventTypes>;
+  message(options: VxeModalDefines.ModalOptions): Promise<ModalEventTypes>;
   /**
    * 获取动态的活动窗口
    * @param id 窗口唯一标识
@@ -279,6 +291,10 @@ interface ModalVisibleParams {
 }
 
 export namespace VxeModalDefines {
+  export interface ModalOptions extends VxeModalProps, VxeModalEventProps {
+    key?: string | number;
+  }
+
   interface ModalEventParams extends VxeEvent {
     $modal: VxeModalConstructor & VxeModalMethods;
   }
@@ -290,6 +306,9 @@ export namespace VxeModalDefines {
 
   export interface HideParams extends ModalBaseParams { }
   export interface HideEventParams extends ModalEventParams, HideParams { }
+
+  export interface BeforeHideParams extends ModalBaseParams { }
+  export interface BeforeHideEventParams extends ModalEventParams, BeforeHideParams { }
 
   export interface ConfirmParams extends ModalBaseParams { }
   export interface ConfirmEventParams extends ModalEventParams, ConfirmParams { }
@@ -307,6 +326,7 @@ export namespace VxeModalDefines {
 export type VxeModalEventProps = {
   onShow?: VxeModalEvents.Show;
   onHide?: VxeModalEvents.Hide;
+  onBeforeHide?: VxeModalEvents.BeforeHide;
   onConfirm?: VxeModalEvents.Confirm;
   onCancel?: VxeModalEvents.Cancel;
   onClose?: VxeModalEvents.Close;
@@ -316,6 +336,7 @@ export type VxeModalEventProps = {
 export interface VxeModalListeners {
   show?: VxeModalEvents.Show;
   hide?: VxeModalEvents.Hide;
+  beforeHide?: VxeModalEvents.BeforeHide;
   confirm?: VxeModalEvents.Confirm;
   cancel?: VxeModalEvents.Cancel;
   close?: VxeModalEvents.Close;
@@ -325,6 +346,7 @@ export interface VxeModalListeners {
 export namespace VxeModalEvents {
   export type Show = (params: VxeModalDefines.ShowEventParams) => void;
   export type Hide = (params: VxeModalDefines.HideEventParams) => void;
+  export type BeforeHide = (params: VxeModalDefines.BeforeHideEventParams) => void;
   export type Confirm = (params: VxeModalDefines.ConfirmEventParams) => void;
   export type Cancel = (params: VxeModalDefines.CancelEventParams) => void;
   export type Close = (params: VxeModalDefines.CloseEventParams) => void;

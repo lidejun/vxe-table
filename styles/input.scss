@@ -51,7 +51,6 @@ $iconWidth: 1.6em;
     }
   }
   &:not(.is--disabled) {
-    .vxe-input--date-picker-suffix,
     .vxe-input--search-suffix,
     .vxe-input--clear-icon,
     .vxe-input--password-suffix,
@@ -64,20 +63,19 @@ $iconWidth: 1.6em;
       }
     }
   }
-}
-
-.vxe-input--prefix,
-.vxe-input--suffix,
-.vxe-input--extra-suffix {
-  display: flex;
-  position: absolute;
-  top: 0;
-  width: $iconWidth;
-  height: 100%;
-  user-select: none;
-  align-items: center;
-  justify-content: center;
-  color: $vxe-table-column-icon-border-color;
+  .vxe-input--prefix,
+  .vxe-input--suffix,
+  .vxe-input--extra-suffix {
+    display: flex;
+    position: absolute;
+    top: 0;
+    width: $iconWidth;
+    height: 100%;
+    user-select: none;
+    align-items: center;
+    justify-content: center;
+    color: $vxe-table-column-icon-border-color;
+  }
 }
 
 // 前缀图标
@@ -131,7 +129,9 @@ $iconWidth: 1.6em;
     &.type--datetime,
     &.type--week,
     &.type--month,
-    &.type--year {
+    &.type--quarter,
+    &.type--year,
+    &.type--time {
       .vxe-input--inner {
         padding-right: #{$iconWidth + 0.2em};
       }
@@ -151,7 +151,9 @@ $iconWidth: 1.6em;
       &.type--datetime,
       &.type--week,
       &.type--month,
-      &.type--year {
+      &.type--quarter,
+      &.type--year,
+      &.type--time {
         .vxe-input--inner {
           padding-right: #{$iconWidth * 2};
         }
@@ -173,80 +175,92 @@ $iconWidth: 1.6em;
     }
   }
   &:not(.is--disabled) {
-    &:not(.is--readonly) {
-      .vxe-input--suffix {
-        &:hover {
-          .vxe-input--clear-icon {
-            color: $vxe-font-color;
-          }
-        }
-      }
-      .vxe-input--extra-suffix {
-        &:hover {
-          .vxe-input--password-suffix {
-            color: $vxe-font-color;
-          }
-        }
-      }
-      .vxe-input--number-prev,
-      .vxe-input--number-next {
-        &:hover {
+    .vxe-input--suffix {
+      &:hover {
+        .vxe-input--clear-icon {
           color: $vxe-font-color;
         }
-        &:active {
+      }
+      &:active {
+        .vxe-input--clear-icon {
           color: $vxe-primary-color;
         }
+      }
+    }
+    .vxe-input--extra-suffix {
+      &:hover {
+        .vxe-input--search-suffix,
+        .vxe-input--password-suffix {
+          color: $vxe-font-color;
+        }
+      }
+      &:active {
+        .vxe-input--search-suffix,
+        .vxe-input--password-suffix {
+          color: $vxe-primary-color;
+        }
+      }
+    }
+    .vxe-input--number-prev,
+    .vxe-input--number-next {
+      &:hover {
+        color: $vxe-font-color;
+      }
+      &:active {
+        color: $vxe-primary-color;
       }
     }
   }
 }
 
-.vxe-input--password-suffix,
-.vxe-input--number-suffix,
-.vxe-input--date-picker-suffix,
-.vxe-input--search-suffix {
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
-
-.vxe-input--date-picker-icon,
-.vxe-input--search-icon,
-.vxe-input--password-icon {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.vxe-input--date-picker-suffix {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  .vxe-input--panel-icon {
-    @include animatTransition(transform, .2s);
+.vxe-input {
+  .vxe-input--password-suffix,
+  .vxe-input--number-suffix,
+  .vxe-input--date-picker-suffix,
+  .vxe-input--search-suffix {
+    position: relative;
+    width: 100%;
+    height: 100%;
   }
-}
 
-.vxe-input--number-prev,
-.vxe-input--number-next {
-  position: relative;
-  display: block;
-  height: 50%;
-  width: 100%;
-  text-align: center;
-}
-.vxe-input--number-prev-icon,
-.vxe-input--number-next-icon {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-}
-.vxe-input--number-prev-icon {
-  bottom: 0;
-}
-.vxe-input--number-next-icon {
-  top: 0;
+  .vxe-input--date-picker-icon,
+  .vxe-input--search-icon,
+  .vxe-input--password-icon {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .vxe-input--date-picker-suffix {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    .vxe-input--panel-icon {
+      @include animatTransition(transform, .2s);
+    }
+  }
+
+  .vxe-input--number-prev,
+  .vxe-input--number-next {
+    position: relative;
+    display: block;
+    height: 50%;
+    width: 100%;
+    text-align: center;
+  }
+  .vxe-input--number-prev-icon,
+  .vxe-input--number-next-icon {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  .vxe-input--number-prev-icon {
+    bottom: 0;
+  }
+  .vxe-input--number-next-icon {
+    top: 0;
+  }
 }
 
 .vxe-input--panel {
@@ -303,6 +317,7 @@ $iconWidth: 1.6em;
   &.type--date,
   &.type--week,
   &.type--month,
+  &.type--quarter,
   &.type--year {
     user-select: none;
   }
@@ -329,6 +344,15 @@ $iconWidth: 1.6em;
           &:first-child {
             width: 14%;
           }
+        }
+      }
+    }
+  }
+  &.type--quarter {
+    .vxe-input--date-picker-body {
+      table {
+        th {
+          width: 50%;
         }
       }
     }
@@ -517,7 +541,6 @@ $iconWidth: 1.6em;
 
 .vxe-input--date-label {
   position: relative;
-  padding-top: 8%;
   &.is-notice {
     &:before {
       content: "";
@@ -525,7 +548,7 @@ $iconWidth: 1.6em;
       width: 4px;
       height: 4px;
       left: 0.8em;
-      top: 0.3em;
+      top: 0.1em;
       transform: translateX(-50%);
       border-radius: 100%;
       background-color: $vxe-input-date-notice-background-color;
@@ -535,7 +558,7 @@ $iconWidth: 1.6em;
 .vxe-input--date-label--extra {
   position: absolute;
   right: 0.1em;
-  top: 0;
+  top: -0.2em;
   font-size: 12px;
   line-height: 12px;
   transform: scale(0.7);
@@ -557,7 +580,7 @@ $iconWidth: 1.6em;
 .vxe-input--date-festival--label {
   display: block;
   font-size: 12px;
-  transform: scale(0.9);
+  transform: scale(0.8);
 }
 
 @keyframes festivalOverlap2 {
@@ -593,7 +616,7 @@ $iconWidth: 1.6em;
   & > span {
     height: 14px;
     display: block;
-    transform: scale(0.9);
+    transform: scale(0.8);
   }
 }
 
@@ -643,8 +666,8 @@ $iconWidth: 1.6em;
   height: $vxe-input-height-default;
   .vxe-input--inner {
     &[type="date"]::-webkit-inner-spin-button,
-      &[type="month"]::-webkit-inner-spin-button,
-      &[type="week"]::-webkit-inner-spin-button {
+    &[type="month"]::-webkit-inner-spin-button,
+    &[type="week"]::-webkit-inner-spin-button {
       margin-top: 6px;
     }
     &[type="date"]::-webkit-inner-spin-button,
@@ -693,6 +716,7 @@ $iconWidth: 1.6em;
   $fontSizeList: $vxe-font-size, $vxe-font-size-medium, $vxe-font-size-small, $vxe-font-size-mini;
   $timeWeekRowHeightList: $vxe-input-date-time-week-row-height-default, $vxe-input-date-time-week-row-height-medium, $vxe-input-date-time-week-row-height-small, $vxe-input-date-time-week-row-height-mini;
   $monthYearRowHeightList: $vxe-input-date-month-year-row-height-default, $vxe-input-date-month-year-row-height-medium, $vxe-input-date-month-year-row-height-small, $vxe-input-date-month-year-row-height-mini;
+  $quarterRowHeightList: $vxe-input-date-quarter-row-height-default, $vxe-input-date-quarter-row-height-medium, $vxe-input-date-quarter-row-height-small, $vxe-input-date-quarter-row-height-mini;
   $titleRowHeightList: $vxe-input-date-title-height-default, $vxe-input-date-title-height-medium, $vxe-input-date-title-height-small, $vxe-input-date-title-height-mini;
   
   font-size: nth($fontSizeList, $sizeIndex);
@@ -703,6 +727,7 @@ $iconWidth: 1.6em;
   &.type--time,
   &.type--week,
   &.type--month,
+  &.type--quarter,
   &.type--year {
     .vxe-input--panel-wrapper {
       padding: 12px - $sizeIndex;
@@ -710,6 +735,7 @@ $iconWidth: 1.6em;
   }
   &.type--date,
   &.type--month,
+  &.type--quarter,
   &.type--year {
     .vxe-input--panel-wrapper {
       $widthList: 336px, 336px, 312px, 288px;
@@ -794,6 +820,11 @@ $iconWidth: 1.6em;
   .vxe-input--date-week-view {
     td {
       height: nth($timeWeekRowHeightList, $sizeIndex);
+    }
+  }
+  .vxe-input--date-quarter-view {
+    td {
+      height: nth($quarterRowHeightList, $sizeIndex);
     }
   }
   .vxe-input--date-month-view,

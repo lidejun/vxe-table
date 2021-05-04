@@ -15,15 +15,15 @@
 A [vue](https://www.npmjs.com/package/vue) based PC form component, support add, delete, change, virtual scroll, lazy load, shortcut menu, data validation, tree structure, print export, form rendering, data paging, virtual list, modal window, custom template, renderer, flexible configuration items, extension interface, etc...
 
 * Design concept
-  * Efficient and concise API design for modern browsers
-  * Modular tables, on-demand loading, extended interfaces
-  * Designed for single row table editing, supports addition, deletion, modification and query as well as more expansion, with powerful functions and performance at the same time
+  * Efficient and concise API design for modern browsers.
+  * Modular tables, on-demand loading, extended interfaces.
+  * Designed for single row table editing, supports addition, deletion, modification and query as well as more expansion, with powerful functions and performance at the same time.
 
 * Plan
-  * [x] v1.0 Based on vue2.6+, Support for all major browsers
-  * [x] v2.0 Based on vue2.6+, Support for all major browsers
-  * [x] v3.0 Based on vue2.6+, Only supports modern browsers, improving rendering performance
-  * [x] v4.0 Based on vue3.0+, Only support modern browser, not IE
+  * [x] v1.0 Based on vue2.6+, Support for all major browsers.
+  * [x] v2.0 Based on vue2.6+, Support for all major browsers.
+  * [x] v3.0 Support modern browser and keep IE11 compatible to improve rendering performance.
+  * [x] v4.0 Based on vue3.0+, Only support modern browser, not IE.
 
 ## Browser Support
 
@@ -120,11 +120,13 @@ app.mount('#app')
 <template>
   <div>
     <vxe-table :data="tableData">
-      <vxe-table-column type="seq" title="Seq" width="60"></vxe-table-column>
-      <vxe-table-column field="name" title="Name"></vxe-table-column>
-      <vxe-table-column field="role" title="Role"></vxe-table-column>
-      <vxe-table-column field="sex" title="Sex"></vxe-table-column>
-      <vxe-table-column field="address" title="Address"></vxe-table-column>
+      <vxe-column type="seq" title="Seq" width="60"></vxe-column>
+      <vxe-column field="name" title="Name"></vxe-column>
+      <vxe-column field="role" title="Role"></vxe-column>
+      <vxe-colgroup title="Group1">
+        <vxe-column field="sex" title="Sex"></vxe-column>
+        <vxe-column field="address" title="Address"></vxe-column>
+      </vxe-colgroup>
     </vxe-table>
   </div>
 </template>
@@ -152,12 +154,6 @@ export default defineComponent({
 💡 [User guide](https://github.com/xuliangzhan/vxe-table-demo)  
 👉 [View example](https://x-extends.github.io/vxe-table/#/table/base/basic)  
 👉 [View API](https://x-extends.github.io/vxe-table/#/table/api)
-
-## Support the author
-
-If the open source software is helpful to you, you can scan the QR code below to support us.☕  
-
-👉 [Supports the author💰](https://x-extends.github.io/vxe-table/#/donation/api)  
 
 ## License
 

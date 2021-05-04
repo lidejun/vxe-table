@@ -1,31 +1,31 @@
 import XEUtils from 'xe-utils'
-import DomTools from './dom'
+import { browse } from './dom'
 
-import { VxeComponentBase } from '../../../types/all'
+import { VxeComponentBase } from '../../types/all'
 
 // 监听全局事件
-const browse = DomTools.browse
 const wheelName = browse.firefox ? 'DOMMouseScroll' : 'mousewheel'
 const eventStore: {
   comp: VxeComponentBase;
   type: string;
-  cb: Function;
+  cb: (evnt: Event) => void;
 }[] = []
 
 function triggerEvent (evnt: Event) {
   const isWheel = evnt.type === wheelName
   eventStore.forEach(({ type, cb }) => {
-    if (type === evnt.type || (isWheel && type === 'mousewheel')) {
-      cb(evnt)
+    // 如果被取消冒泡，不再执行
+    if (!evnt.cancelBubble) {
+      if (type === evnt.type || (isWheel && type === 'mousewheel')) {
+        cb(evnt)
+      }
     }
   })
 }
 
 export const GlobalEvent = {
-  on (comp: VxeComponentBase, type: string, cb: Function) {
-    if (cb) {
-      eventStore.push({ comp, type, cb })
-    }
+  on (comp: VxeComponentBase, type: string, cb: (evnt: any) => void) {
+    eventStore.push({ comp, type, cb })
   },
   off (comp: VxeComponentBase, type: string) {
     XEUtils.remove(eventStore, item => item.comp === comp && item.type === type)
@@ -53,5 +53,3 @@ if (browse.isDoc) {
   window.addEventListener('resize', triggerEvent, false)
   window.addEventListener(wheelName, XEUtils.throttle(triggerEvent, 100, { leading: true, trailing: false }), { passive: true, capture: false })
 }
-
-export default GlobalEvent

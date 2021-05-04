@@ -8,7 +8,7 @@ const apis = [
     defVal: '',
     list: [
       {
-        name: 'v-model / modelValue',
+        name: 'modelValue',
         descKey: 'app.api.select.desc.value',
         version: '',
         type: 'any',
@@ -57,6 +57,15 @@ const apis = [
         descKey: 'app.api.select.desc.placeholder',
         version: '',
         type: 'string',
+        enum: '',
+        defVal: '',
+        list: []
+      },
+      {
+        name: 'class-name',
+        desc: '给下拉框附加 className',
+        version: '4.0.7',
+        type: 'string | (({}) => string)',
         enum: '',
         defVal: '',
         list: []
@@ -169,7 +178,17 @@ const apis = [
     type: '',
     enum: '',
     defVal: '',
-    list: []
+    list: [
+      {
+        name: 'prefix',
+        desc: '前缀图标模板',
+        version: '4.0.14',
+        type: '',
+        enum: '',
+        defVal: '',
+        list: []
+      }
+    ]
   },
   {
     name: 'Events',

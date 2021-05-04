@@ -128,7 +128,7 @@
     }
     .vxe-modal--status-wrapper {
       font-size: 1.4em;
-      padding-right: 10px;
+      padding-left: 10px;
     }
   }
   &.type--modal,
@@ -145,12 +145,6 @@
         cursor: move;
       }
     }
-  }
-
-  &.type--modal {
-    .vxe-modal--header {
-      padding: 0.6em 4.6em 0.6em 1em;
-    }
     .vxe-modal--body {
       overflow: auto;
       .vxe-modal--content {
@@ -158,11 +152,17 @@
       }
     }
   }
+
+  &.type--modal {
+    .vxe-modal--header {
+      padding: 0.6em 4.6em 0.6em 1em;
+    }
+  }
   &.type--alert,
   &.type--confirm {
     .vxe-modal--status-wrapper {
       font-size: 1.6em;
-      padding: 0 10px 0 2px;
+      padding-left: 10px;
     }
   }
   .vxe-modal--box {
@@ -228,6 +228,7 @@
   }
   .vxe-modal--content {
     flex-grow: 1;
+    padding: 0.8em 1em;
   }
   .vxe-modal--header,
   .vxe-modal--body,
@@ -237,7 +238,6 @@
   .vxe-modal--body {
     display: flex;
     flex-grow: 1;
-    padding: 0.6em 1em;
   }
   .vxe-modal--header {
     flex-shrink: 0;
@@ -271,7 +271,7 @@
   .vxe-modal--footer {
     flex-shrink: 0;
     text-align: right;
-    padding: 0.8em 1em;
+    padding: 0.4em 1em 0.8em 1em;
   }
   &.is--maximize {
     .vxe-modal--box {

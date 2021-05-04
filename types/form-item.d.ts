@@ -1,10 +1,11 @@
-import { VNode, DefineComponent } from 'vue'
+import { VNode } from 'vue'
 import { VXEComponent } from './component'
 import { VxeFormConstructor, VxeFormDefines, VxeFormPropTypes } from './form'
 import { VxeGlobalRendererHandles } from './v-x-e-table'
 
 /**
  * 组件 - 表单项
+ * @example import { FormItem as VxeFormItem } from 'vxe-table'
  */
 export const FormItem: VXEComponent<VxeFormItemProps>;
 
@@ -71,6 +72,7 @@ export interface VxeFormItemProps {
    */
   itemRender?: FormItemRenderOptions;
   slots?: VxeFormItemPropTypes.Slots;
+  children?: VxeFormItemProps[];
 }
 
 export namespace VxeFormItemPropTypes {

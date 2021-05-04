@@ -1,6 +1,7 @@
 import { createCommentVNode, defineComponent, h, ref, Ref, PropType, inject, nextTick } from 'vue'
 import XEUtils from 'xe-utils'
-import { UtilTools, DomTools } from '../../tools'
+import { getPropClass } from '../../table/src/util'
+import { updateCellTitle } from '../../tools/dom'
 
 import { VxeTablePrivateMethods, VxeTableConstructor, VxeTableMethods, VxeColumnPropTypes, VxeTableDefines } from '../../../types/all'
 
@@ -23,7 +24,7 @@ function mergeFooterMethod (mergeFooterList: VxeTableDefines.MergeItem[], _rowIn
 export default defineComponent({
   name: 'VxeTableFooter',
   props: {
-    footerData: { type: Array as PropType<any[][]>, default: () => [] },
+    footerTableData: { type: Array as PropType<any[][]>, default: () => [] },
     tableColumn: { type: Array as PropType<VxeTableDefines.ColumnInfo[]>, default: () => [] },
     fixedColumn: { type: Array as PropType<VxeTableDefines.ColumnInfo[]>, default: () => [] },
     fixedType: { type: String as PropType<VxeColumnPropTypes.Fixed>, default: null }
@@ -87,7 +88,7 @@ export default defineComponent({
     })
 
     const renderVN = () => {
-      let { fixedType, fixedColumn, tableColumn, footerData } = props
+      let { fixedType, fixedColumn, tableColumn, footerTableData } = props
       const { footerRowClassName, footerCellClassName, footerRowStyle, footerCellStyle, footerAlign: allFooterAlign, footerSpanMethod, align: allAlign, columnKey, showFooterOverflow: allColumnFooterOverflow } = tableProps
       const { scrollXLoad, overflowX, scrollbarWidth, currentColumn, mergeFooterList } = tableReactData
       const tooltipOpts = computeTooltipOpts.value
@@ -135,7 +136,7 @@ export default defineComponent({
            */
           h('tfoot', {
             ref: refFooterTFoot
-          }, footerData.map((list, _rowIndex) => {
+          }, footerTableData.map((list, _rowIndex) => {
             const $rowIndex = _rowIndex
             return h('tr', {
               class: ['vxe-footer--row', footerRowClassName ? XEUtils.isFunction(footerRowClassName) ? footerRowClassName({ $table: $xetable, _rowIndex, $rowIndex, fixed: fixedType, type: renderType }) : footerRowClassName : ''],
@@ -156,7 +157,7 @@ export default defineComponent({
               const columnIndex = $xetable.getColumnIndex(column)
               const _columnIndex = $xetable.getVTColumnIndex(column)
               const itemIndex = _columnIndex
-              const params: VxeTableDefines.CellRenderFooterParams = { $table: $xetable, _rowIndex, $rowIndex, column, columnIndex, $columnIndex, _columnIndex, itemIndex, items: list, fixed: fixedType, type: renderType, data: footerData }
+              const params: VxeTableDefines.CellRenderFooterParams = { $table: $xetable, _rowIndex, $rowIndex, column, columnIndex, $columnIndex, _columnIndex, itemIndex, items: list, fixed: fixedType, type: renderType, data: footerTableData }
               // 虚拟滚动不支持动态高度
               if (scrollXLoad && !hasEllipsis) {
                 showEllipsis = hasEllipsis = true
@@ -164,7 +165,7 @@ export default defineComponent({
               if (showTitle || showTooltip || showAllTip) {
                 tfOns.onMouseenter = (evnt: MouseEvent) => {
                   if (showTitle) {
-                    DomTools.updateCellTitle(evnt.currentTarget, column)
+                    updateCellTitle(evnt.currentTarget, column)
                   } else if (showTooltip || showAllTip) {
                     $xetable.triggerFooterTooltipEvent(evnt, params)
                   }
@@ -219,7 +220,7 @@ export default defineComponent({
                   'fixed--hidden': fixedHiddenColumn,
                   'col--ellipsis': hasEllipsis,
                   'col--current': currentColumn === column
-                }, UtilTools.getClass(footerClassName, params), UtilTools.getClass(footerCellClassName, params)],
+                }, getPropClass(footerClassName, params), getPropClass(footerCellClassName, params)],
                 ...attrs,
                 style: footerCellStyle ? (XEUtils.isFunction(footerCellStyle) ? footerCellStyle(params) : footerCellStyle) : null,
                 ...tfOns,

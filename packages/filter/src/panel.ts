@@ -1,7 +1,7 @@
 import { defineComponent, h, computed, inject, nextTick } from 'vue'
 import GlobalConfig from '../../v-x-e-table/src/conf'
 import { VXETable } from '../../v-x-e-table'
-import { UtilTools } from '../../tools'
+import { formatText } from '../../tools/utils'
 
 import { VxeTableConstructor, VxeTableMethods, VxeTablePrivateMethods } from '../../../types/all'
 
@@ -84,7 +84,7 @@ export default defineComponent({
     }
 
     // （单选）筛选发生改变
-    const changeRadioOption = (evnt: Event, checked: any, item: any) => {
+    const changeRadioOption = (evnt: Event, checked: boolean, item: any) => {
       const { filterStore } = props
       filterStore.options.forEach((option: any) => {
         option._checked = false
@@ -106,13 +106,13 @@ export default defineComponent({
     }
 
     // （多选）筛选发生改变
-    const changeMultipleOption = (evnt: Event, checked: any, item: any) => {
+    const changeMultipleOption = (evnt: Event, checked: boolean, item: any) => {
       item._checked = checked
       $xetable.checkFilterOptions()
     }
 
     // 筛选发生改变
-    const changeOption = (evnt: Event, checked: any, item: any) => {
+    const changeOption = (evnt: Event, checked: boolean, item: any) => {
       const { filterStore } = props
       if (filterStore.multiple) {
         changeMultipleOption(evnt, checked, item)
@@ -121,7 +121,7 @@ export default defineComponent({
       }
     }
 
-    const changeAllOption = (evnt: Event, checked: any) => {
+    const changeAllOption = (evnt: Event, checked: boolean) => {
       const { filterStore } = props
       if (filterStore.multiple) {
         filterCheckAllEvent(evnt, checked)
@@ -144,7 +144,7 @@ export default defineComponent({
 
     const renderOptions = (filterRender: any, compConf: any) => {
       const { filterStore } = props
-      const { column, multiple } = filterStore
+      const { column, multiple, maxHeight } = filterStore
       const { slots } = column
       const filterSlot = slots ? slots.filter : null
       const params = Object.assign({}, tableInternalData._currFilterParams, { $panel, $table: $xetable })
@@ -171,7 +171,7 @@ export default defineComponent({
               'is--indeterminate': multiple && filterStore.isIndeterminate
             }],
             title: GlobalConfig.i18n(multiple ? 'vxe.table.allTitle' : 'vxe.table.allFilter'),
-            onClick: (evnt: Event) => {
+            onClick: (evnt: MouseEvent) => {
               changeAllOption(evnt, !filterStore.isAllSelected)
             }
           }, (multiple ? [
@@ -191,14 +191,17 @@ export default defineComponent({
           ]))
         ]),
         h('ul', {
-          class: 'vxe-table--filter-body'
+          class: 'vxe-table--filter-body',
+          style: maxHeight ? {
+            maxHeight: `${maxHeight}px`
+          } : {}
         }, filterStore.options.map((item: any) => {
           return h('li', {
             class: ['vxe-table--filter-option', {
               'is--checked': item._checked
             }],
             title: item.label,
-            onClick: (evnt: any) => {
+            onClick: (evnt: MouseEvent) => {
               changeOption(evnt, !item._checked, item)
             }
           }, (multiple ? [
@@ -214,7 +217,7 @@ export default defineComponent({
           ] : []).concat([
             h('span', {
               class: 'vxe-checkbox--label'
-            }, UtilTools.formatText(item.label, 1))
+            }, formatText(item.label, 1))
           ]))
         }))
       ]

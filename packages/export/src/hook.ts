@@ -2,13 +2,11 @@ import { inject, nextTick } from 'vue'
 import XEUtils from 'xe-utils'
 import GlobalConfig from '../../v-x-e-table/src/conf'
 import { VXETable } from '../../v-x-e-table'
-import { UtilTools } from '../../tools'
-import { isColumnInfo, mergeBodyMethod } from '../../table/src/util'
+import { isColumnInfo, mergeBodyMethod, getCellValue } from '../../table/src/util'
+import { errLog, parseFile, formatText } from '../../tools/utils'
 import { readLocalFile, handlePrint, saveLocalFile, createHtmlPage, getExportBlobByContent } from './util'
 
 import { VxeGlobalHooksHandles, VxeGridConstructor, VxeGridPrivateMethods, TableExportMethods } from '../../../types/all'
-
-const { formatText } = UtilTools
 
 let htmlCellElem: any
 
@@ -95,9 +93,9 @@ function getHeaderTitle (opts: any, column: any) {
   return (opts.original ? column.property : column.getTitle()) || ''
 }
 
-function getFooterData (opts: any, footerData: any) {
+function getFooterData (opts: any, footerTableData: any) {
   const { footerFilterMethod } = opts
-  return footerFilterMethod ? footerData.filter((items: any, index: any) => footerFilterMethod({ items, $rowIndex: index })) : footerData
+  return footerFilterMethod ? footerTableData.filter((items: any, index: any) => footerFilterMethod({ items, $rowIndex: index })) : footerTableData
 }
 
 function getCsvCellTypeLabel (column: any, cellValue: any) {
@@ -105,14 +103,14 @@ function getCsvCellTypeLabel (column: any, cellValue: any) {
     switch (column.cellType) {
       case 'string':
         if (!isNaN(cellValue)) {
-          return '\t' + cellValue
+          return `\t${cellValue}`
         }
         break
       case 'number':
         break
       default:
         if (cellValue.length >= 12 && !isNaN(cellValue)) {
-          return '\t' + cellValue
+          return `\t${cellValue}`
         }
         break
     }
@@ -121,7 +119,7 @@ function getCsvCellTypeLabel (column: any, cellValue: any) {
 }
 
 function toTxtCellLabel (val: any) {
-  if (/[",]/.test(val)) {
+  if (/[",\s\n]/.test(val)) {
     return `"${val.replace(/"/g, '""')}"`
   }
   return val
@@ -327,7 +325,7 @@ const tableExportHook: VxeGlobalHooksHandles.HookOptions = {
               _hasChild: hasRowChild,
               _expand: hasRowChild && $xetable.isTreeExpandByRow(row)
             }
-            columns.forEach((column: any, columnIndex: any) => {
+            columns.forEach((column, columnIndex) => {
               let cellValue: string | boolean = ''
               const renderOpts = column.editRender || column.cellRender
               let exportLabelMethod = column.exportMethod
@@ -356,7 +354,7 @@ const tableExportHook: VxeGlobalHooksHandles.HookOptions = {
                     break
                   default:
                     if (opts.original) {
-                      cellValue = UtilTools.getCellValue(row, column)
+                      cellValue = getCellValue(row, column)
                     } else {
                       cellValue = $xetable.getCellLabel(row, column)
                       if (column.type === 'html') {
@@ -378,7 +376,7 @@ const tableExportHook: VxeGlobalHooksHandles.HookOptions = {
         }, treeOpts)
         return rest
       }
-      return datas.map((row: any, rowIndex: any) => {
+      return datas.map((row, rowIndex) => {
         const item: any = {
           _row: row
         }
@@ -411,7 +409,7 @@ const tableExportHook: VxeGlobalHooksHandles.HookOptions = {
                 break
               default:
                 if (opts.original) {
-                  cellValue = UtilTools.getCellValue(row, column)
+                  cellValue = getCellValue(row, column)
                 } else {
                   cellValue = $xetable.getCellLabel(row, column)
                   if (column.type === 'html') {
@@ -464,8 +462,8 @@ const tableExportHook: VxeGlobalHooksHandles.HookOptions = {
         content += columns.map((column: any) => toTxtCellLabel(getCsvCellTypeLabel(column, row[column.id]))).join(',') + enterSymbol
       })
       if (opts.isFooter) {
-        const { footerData } = reactData
-        const footers = getFooterData(opts, footerData)
+        const { footerTableData } = reactData
+        const footers = getFooterData(opts, footerTableData)
         footers.forEach((rows: any) => {
           content += columns.map((column: any) => toTxtCellLabel(getFooterCellValue(opts, rows, column))).join(',') + enterSymbol
         })
@@ -482,8 +480,8 @@ const tableExportHook: VxeGlobalHooksHandles.HookOptions = {
         content += columns.map((column: any) => toTxtCellLabel(row[column.id])).join('\t') + enterSymbol
       })
       if (opts.isFooter) {
-        const { footerData } = reactData
-        const footers = getFooterData(opts, footerData)
+        const { footerTableData } = reactData
+        const footers = getFooterData(opts, footerTableData)
         footers.forEach((rows: any) => {
           content += columns.map((column: any) => toTxtCellLabel(getFooterCellValue(opts, rows, column))).join(',') + enterSymbol
         })
@@ -644,8 +642,8 @@ const tableExportHook: VxeGlobalHooksHandles.HookOptions = {
         tables.push('</tbody>')
       }
       if (isFooter) {
-        const { footerData } = reactData
-        const footers = getFooterData(opts, footerData)
+        const { footerTableData } = reactData
+        const footers = getFooterData(opts, footerTableData)
         if (footers.length) {
           tables.push('<tfoot>')
           footers.forEach((rows: any) => {
@@ -697,8 +695,8 @@ const tableExportHook: VxeGlobalHooksHandles.HookOptions = {
         xml += '<Row>' + columns.map((column: any) => `<Cell><Data ss:Type="String">${row[column.id]}</Data></Cell>`).join('') + '</Row>'
       })
       if (opts.isFooter) {
-        const { footerData } = reactData
-        const footers = getFooterData(opts, footerData)
+        const { footerTableData } = reactData
+        const footers = getFooterData(opts, footerTableData)
         footers.forEach((rows: any) => {
           xml += `<Row>${columns.map((column: any) => `<Cell><Data ss:Type="String">${getFooterCellValue(opts, rows, column)}</Data></Cell>`).join('')}</Row>`
         })
@@ -730,7 +728,7 @@ const tableExportHook: VxeGlobalHooksHandles.HookOptions = {
       }
       saveLocalFile({ filename, type, content }).then(() => {
         if (opts.message !== false) {
-          VXETable.modal.message({ message: GlobalConfig.i18n('vxe.table.expSuccess'), status: 'success' })
+          VXETable.modal.message({ content: GlobalConfig.i18n('vxe.table.expSuccess'), status: 'success' })
         }
       })
     }
@@ -801,7 +799,7 @@ const tableExportHook: VxeGlobalHooksHandles.HookOptions = {
               loadRest = $xetable.reloadData(data)
             }
             if (opts.message !== false) {
-              VXETable.modal.message({ message: GlobalConfig.i18n('vxe.table.impSuccess', [rows.length]), status: 'success' })
+              VXETable.modal.message({ content: GlobalConfig.i18n('vxe.table.impSuccess', [rows.length]), status: 'success' })
             }
             return loadRest.then(() => {
               if (_importResolve) {
@@ -810,7 +808,7 @@ const tableExportHook: VxeGlobalHooksHandles.HookOptions = {
             })
           })
       } else if (opts.message !== false) {
-        VXETable.modal.message({ message: GlobalConfig.i18n('vxe.error.impFields'), status: 'error' })
+        VXETable.modal.message({ content: GlobalConfig.i18n('vxe.error.impFields'), status: 'error' })
         if (_importReject) {
           _importReject({ status: false })
         }
@@ -819,12 +817,12 @@ const tableExportHook: VxeGlobalHooksHandles.HookOptions = {
 
     const handleFileImport = (file: File, opts: any) => {
       const { importMethod, afterImportMethod } = opts
-      const { type, filename } = UtilTools.parseFile(file)
+      const { type, filename } = parseFile(file)
 
       // 检查类型，如果为自定义导出，则不需要校验类型
       if (!importMethod && !XEUtils.includes(VXETable.config.importTypes, type)) {
         if (opts.message !== false) {
-          VXETable.modal.message({ message: GlobalConfig.i18n('vxe.error.notType', [type]), status: 'error' })
+          VXETable.modal.message({ content: GlobalConfig.i18n('vxe.error.notType', [type]), status: 'error' })
         }
         const params = { status: false }
         return Promise.reject(params)
@@ -860,7 +858,7 @@ const tableExportHook: VxeGlobalHooksHandles.HookOptions = {
             $xetable.preventEvent(null, 'event.import', { file, options, columns: tableFullColumn }, () => {
               const reader = new FileReader()
               reader.onerror = () => {
-                UtilTools.error('vxe.error.notType', [type])
+                errLog('vxe.error.notType', [type])
                 _importReject({ status: false })
               }
               reader.onload = (e: any) => {
@@ -872,7 +870,7 @@ const tableExportHook: VxeGlobalHooksHandles.HookOptions = {
         } else {
           // 不支持的浏览器
           if (process.env.VUE_APP_VXE_TABLE_ENV === 'development') {
-            UtilTools.error('vxe.error.notExp')
+            errLog('vxe.error.notExp')
           }
           _importResolve({ status: true })
         }
@@ -892,12 +890,12 @@ const tableExportHook: VxeGlobalHooksHandles.HookOptions = {
 
     const handleExportAndPrint = (options: any, isPrint?: boolean) => {
       const { treeConfig, showHeader, showFooter } = props
-      const { initStore, mergeList, isGroup, footerData, exportStore, exportParams } = reactData
+      const { initStore, mergeList, isGroup, footerTableData, exportStore, exportParams } = reactData
       const { collectColumn } = internalData
       const hasTree = treeConfig
       const customOpts = computeCustomOpts.value
       const selectRecords = $xetable.getCheckboxRecords()
-      const hasFooter = !!footerData.length
+      const hasFooter = !!footerTableData.length
       const hasMerge = !hasTree && mergeList.length
       const defOpts = Object.assign({ message: true, isHeader: showHeader, isFooter: showFooter }, options)
       const types: string[] = defOpts.types || VXETable.config.exportTypes
@@ -1079,7 +1077,7 @@ const tableExportHook: VxeGlobalHooksHandles.HookOptions = {
         // 检查类型，如果为自定义导出，则不需要校验类型
         if (!opts.exportMethod && !XEUtils.includes(VXETable.config.exportTypes, type)) {
           if (process.env.VUE_APP_VXE_TABLE_ENV === 'development') {
-            UtilTools.error('vxe.error.notType', [type])
+            errLog('vxe.error.notType', [type])
           }
           const params = { status: false }
           return Promise.reject(params)
@@ -1202,21 +1200,21 @@ const tableExportHook: VxeGlobalHooksHandles.HookOptions = {
         const isTree = !!treeConfig
         if (isTree) {
           if (defOpts.message) {
-            VXETable.modal.message({ message: GlobalConfig.i18n('vxe.error.treeNotImp'), status: 'error' })
+            VXETable.modal.message({ content: GlobalConfig.i18n('vxe.error.treeNotImp'), status: 'error' })
           }
           return
         }
         if (!importConfig) {
-          UtilTools.error('vxe.error.reqProp', ['import-config'])
+          errLog('vxe.error.reqProp', ['import-config'])
         }
         // 处理类型
-        const typeList = types.map((value: any) => {
+        const typeList = types.map((value) => {
           return {
             value,
             label: `vxe.export.types.${value}`
           }
         })
-        const modeList = defOpts.modes.map((value: any) => {
+        const modeList = defOpts.modes.map((value) => {
           return {
             value,
             label: `vxe.import.modes.${value}`
@@ -1237,7 +1235,7 @@ const tableExportHook: VxeGlobalHooksHandles.HookOptions = {
         const exportOpts = computeExportOpts.value
         if (process.env.VUE_APP_VXE_TABLE_ENV === 'development') {
           if (!props.exportConfig) {
-            UtilTools.error('vxe.error.reqProp', ['export-config'])
+            errLog('vxe.error.reqProp', ['export-config'])
           }
         }
         handleExportAndPrint(Object.assign({}, exportOpts, options))
@@ -1246,7 +1244,7 @@ const tableExportHook: VxeGlobalHooksHandles.HookOptions = {
         const printOpts = computePrintOpts.value
         if (process.env.VUE_APP_VXE_TABLE_ENV === 'development') {
           if (!props.printConfig) {
-            UtilTools.error('vxe.error.reqProp', ['print-config'])
+            errLog('vxe.error.reqProp', ['print-config'])
           }
         }
         handleExportAndPrint(Object.assign({}, printOpts, options), true)

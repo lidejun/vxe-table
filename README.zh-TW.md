@@ -12,7 +12,7 @@
 [![pull requests closed](https://img.shields.io/github/issues-pr-closed/x-extends/vxe-table.svg)](https://github.com/x-extends/vxe-table/pulls?q=is%3Apr+is%3Aclosed)
 [![npm license](https://img.shields.io/github/license/mashape/apistatus.svg)](LICENSE)
 
-一個基於 [vue](https://www.npmjs.com/package/vue) 的PC端表格組件，支持增删改查、虛擬滾動、懶加載、快捷選單、數據校驗、樹形結構、列印匯出、表單渲染、數據分頁、虛擬清單、模態視窗、自定義範本、渲染器、賊靈活的配寘項、擴展接口等…
+一個基於 [vue](https://www.npmjs.com/package/vue) 的PC端表格組件，支持增删改查、虛擬滾動、懶加載、快捷選單、數據校驗、樹形結構、列印匯出、表單渲染、數據分頁、虛擬清單、彈窗、自定義範本、渲染器、賊靈活的配寘項、擴展接口等…
 
 * 設計理念
   * 面向現代瀏覽器，高效的簡潔 API 設計
@@ -22,8 +22,12 @@
 * 計劃
   * [x] v1.0 基於 vue2.6+，支持所有主流的瀏覽器，實現表格的一切實用的功能
   * [x] v2.0 基於 vue2.6+，支持所有主流的瀏覽器，同時兼具功能與效能
-  * [x] v3.0 基於 vue2.6+，只支持現代瀏覽器，提升渲染效能
+  * [x] v3.0 基於 vue2.6+，支持現代瀏覽器並保留相容IE11，提升渲染效能
   * [x] v4.0 基于 vue3.0+，只支持現代瀏覽器，不支持IE
+
+## QQ 交流群
+
+![qq](https://gitee.com/xuliangzhan_admin/vxe-table/raw/master/public/static/donation/qq.png)
 
 ## 瀏覽器支持
 
@@ -72,7 +76,7 @@ Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | 8+ ✔ |
 * [x] 數據校驗
 * [x] 數據代理
 * [x] 鍵盤導航
-* [x] 模態視窗
+* [x] 彈窗
 * [x] 渲染器
 * [x] 虛擬滾動
 * [x] 虛擬合併
@@ -120,11 +124,13 @@ app.mount('#app')
 <template>
   <div>
     <vxe-table :data="tableData">
-      <vxe-table-column type="seq" title="Seq" width="60"></vxe-table-column>
-      <vxe-table-column field="name" title="Name"></vxe-table-column>
-      <vxe-table-column field="role" title="Role"></vxe-table-column>
-      <vxe-table-column field="sex" title="Sex"></vxe-table-column>
-      <vxe-table-column field="address" title="Address"></vxe-table-column>
+      <vxe-column type="seq" title="Seq" width="60"></vxe-column>
+      <vxe-column field="name" title="Name"></vxe-column>
+      <vxe-column field="role" title="Role"></vxe-column>
+      <vxe-colgroup title="Group1">
+        <vxe-column field="sex" title="Sex"></vxe-column>
+        <vxe-column field="address" title="Address"></vxe-column>
+      </vxe-colgroup>
     </vxe-table>
   </div>
 </template>
@@ -153,11 +159,6 @@ export default defineComponent({
 👉 [查看演示](https://xuliangzhan_admin.gitee.io/vxe-table/#/table/base/basic) [👀備用地址](https://x-extends.github.io/vxe-table/#/table/base/basic)  
 👉 [查看檔案](https://xuliangzhan_admin.gitee.io/vxe-table/#/table/api) [👀備用地址](https://x-extends.github.io/vxe-table/#/table/api)
 
-## 支持作者
-
-如果該開源軟件對您有所幫助，可以掃下方二維碼支持我們。☕  
-
-👉 [支持作者💰](https://xuliangzhan_admin.gitee.io/vxe-table/#/donation/api)  
 
 ## License
 

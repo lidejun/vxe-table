@@ -8,7 +8,7 @@ const apis = [
     defVal: '',
     list: [
       {
-        name: 'v-model / modelValue',
+        name: 'modelValue',
         descKey: 'app.api.modal.desc.value',
         version: '',
         type: 'any',
@@ -89,7 +89,17 @@ const apis = [
         list: []
       },
       {
+        name: 'content',
+        descKey: 'app.api.modal.desc.content',
+        version: '4.0.10',
+        type: 'string',
+        enum: '',
+        defVal: '',
+        list: []
+      },
+      {
         name: 'message',
+        abandoned: true,
         descKey: 'app.api.modal.desc.message',
         version: '',
         type: 'string',
@@ -185,6 +195,15 @@ const apis = [
         type: 'Boolean',
         enum: '',
         defVal: 'false',
+        list: []
+      },
+      {
+        name: 'show-close',
+        desc: '是否显示关闭按钮',
+        version: '4.0.14',
+        type: 'Boolean',
+        enum: '',
+        defVal: 'true',
         list: []
       },
       {

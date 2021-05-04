@@ -3,7 +3,7 @@
     <header class="page-header">
       <div class="left">
         <a href="/vxe-table/">
-          <img src="logo.png" width="18">
+          <img src="/vxe-table/logo.png" width="18">
           <span class="title">vxe-table</span>
         </a>
         <a href='https://gitee.com/xuliangzhan_admin/vxe-table/stargazers'>
@@ -28,15 +28,15 @@
           </vxe-select>
           <span>{{ $t('app.body.label.version') }}: </span>
           <vxe-select class="version-switch" size="mini" v-model="appData.version" @change="vChangeEvent">
-            <vxe-option value="1" :label="$t('app.body.other.v1')"></vxe-option>
-            <vxe-option value="2" :label="$t('app.body.other.v2')"></vxe-option>
-            <vxe-option value="3" :label="$t('app.body.other.v3')"></vxe-option>
-            <!-- <vxe-option value="3.5" :label="$t('app.body.other.v3d5')" disabled></vxe-option> -->
-            <vxe-option value="4" :label="$t('app.body.other.v4')"></vxe-option>
             <!-- <vxe-option value="4.5" :label="$t('app.body.other.v4d5')" disabled></vxe-option> -->
+            <vxe-option value="4" :label="$t('app.body.other.v4')"></vxe-option>
+            <!-- <vxe-option value="3.5" :label="$t('app.body.other.v3d5')" disabled></vxe-option> -->
+            <vxe-option value="3" :label="$t('app.body.other.v3')"></vxe-option>
+            <vxe-option value="2" :label="$t('app.body.other.v2')" class-name="due-to-stop"></vxe-option>
+            <vxe-option value="1" :label="$t('app.body.other.v1')" class-name="end-of-life"></vxe-option>
           </vxe-select>
           <router-link class="link donation" :title="$t('app.footer.donationDesc')" :to="{name: 'Donation'}">{{ $t('app.header.label.donation') }}</router-link>
-          <!-- <a class="link support" :title="$t('app.body.support.title')" @click="supportEvent">💡{{ $t('app.header.label.support') }}</a> -->
+          <a v-if="appData.showPlugin" class="link support" href="/vxe-table/plugins" target="_blank">💡插件</a>
         </div>
       </div>
     </header>
@@ -67,6 +67,11 @@
           <div class="docs">
             <template v-if="appData.apiList.length">
               <ul class="nav-menu">
+                <li class="is-warn">
+                  <router-link class="nav-link" :to="{name: 'StartUpgrade'}">
+                    <span>注意事项</span>
+                  </router-link>
+                </li>
                 <li v-for="(item, index) in appData.apiList" :key="index" :class="{expand: item.expand}">
                   <a class="nav-link" @click="linkEvent(item)" :title="item.disabled ? $t('app.body.other.newFunc') : item.label" :class="{disabled: item.disabled, active: pageKey === item.value}">
                     <i class="vxe-icon--arrow-right nav-link-icon"></i>
@@ -124,6 +129,7 @@ export default defineComponent({
       version: '4',
       usedJSHeapSize: '0',
       sponsorList: [],
+      showPlugin: false,
       tableList: [
         {
           label: 'app.aside.nav.start',
@@ -532,6 +538,18 @@ export default defineComponent({
               }
             },
             {
+              label: 'app.aside.nav.customCheckbox',
+              locat: {
+                name: 'TableCustomCheckbox'
+              }
+            },
+            {
+              label: 'app.aside.nav.customRadio',
+              locat: {
+                name: 'TableCustomRadio'
+              }
+            },
+            {
               label: 'app.aside.nav.sortIcon',
               locat: {
                 name: 'TableSortIcon'
@@ -619,12 +637,12 @@ export default defineComponent({
                 name: 'TablePrint'
               }
             },
-            {
-              label: 'app.aside.nav.customPrint',
-              locat: {
-                name: 'TableCustomPrint'
-              }
-            },
+            // {
+            //   label: 'app.aside.nav.customPrint',
+            //   locat: {
+            //     name: 'TableCustomPrint'
+            //   }
+            // },
             {
               label: 'app.aside.nav.fixedType',
               locat: {
@@ -669,12 +687,12 @@ export default defineComponent({
             //     name: 'TableExpandAccordion'
             //   }
             // },
-            // {
-            //   label: 'app.aside.nav.toolbar',
-            //   locat: {
-            //     name: 'Toolbar'
-            //   }
-            // },
+            {
+              label: 'app.aside.nav.toolbar',
+              locat: {
+                name: 'TableToolbar'
+              }
+            },
             // {
             //   label: 'app.aside.nav.customs',
             //   // demoUrl: 'https://jsrun.pro/PrXKp/edit',
@@ -1007,6 +1025,12 @@ export default defineComponent({
               }
             },
             {
+              label: 'app.aside.nav.cellPlaceholder',
+              locat: {
+                name: 'TableEditCellPlaceholder'
+              }
+            },
+            {
               label: 'app.aside.nav.insert',
               // demoUrl: 'https://jsrun.pro/vcWKp/edit',
               locat: {
@@ -1044,20 +1068,20 @@ export default defineComponent({
             //     name: 'TableEditRowDisable'
             //   }
             // },
-            // {
-            //   label: 'app.aside.nav.cellValid',
-            //   demoUrl: 'https://jsrun.pro/IcWKp/edit',
-            //   locat: {
-            //     name: 'TableEditCellValid'
-            //   }
-            // },
-            // {
-            //   label: 'app.aside.nav.rowValid',
-            //   demoUrl: 'https://jsrun.pro/wcWKp/edit',
-            //   locat: {
-            //     name: 'TableEditRowValid'
-            //   }
-            // },
+            {
+              label: 'app.aside.nav.cellValid',
+              // demoUrl: 'https://jsrun.pro/IcWKp/edit',
+              locat: {
+                name: 'TableEditCellValid'
+              }
+            },
+            {
+              label: 'app.aside.nav.rowValid',
+              // demoUrl: 'https://jsrun.pro/wcWKp/edit',
+              locat: {
+                name: 'TableEditRowValid'
+              }
+            },
             // {
             //   label: 'app.aside.nav.forceCellValid',
             //   disabled: true,
@@ -1114,18 +1138,18 @@ export default defineComponent({
                 name: 'TableEditMenu'
               }
             },
-            // {
-            //   label: 'app.aside.nav.span',
-            //   locat: {
-            //     name: 'TableEditSpan'
-            //   }
-            // },
-            // {
-            //   label: 'app.aside.nav.form',
-            //   locat: {
-            //     name: 'TableEditForm'
-            //   }
-            // },
+            {
+              label: 'app.aside.nav.span',
+              locat: {
+                name: 'TableEditSpan'
+              }
+            },
+            {
+              label: 'app.aside.nav.form',
+              locat: {
+                name: 'TableEditForm'
+              }
+            },
             {
               label: 'app.aside.nav.upload',
               locat: {
@@ -1229,12 +1253,12 @@ export default defineComponent({
                 name: 'GridPage'
               }
             },
-            // {
-            //   label: 'app.aside.nav.form',
-            //   locat: {
-            //     name: 'GridForm'
-            //   }
-            // },
+            {
+              label: 'app.aside.nav.form',
+              locat: {
+                name: 'GridForm'
+              }
+            },
             {
               label: 'app.aside.nav.proxy',
               // demoUrl: 'https://jsrun.pro/XwWKp/edit',
@@ -1249,12 +1273,12 @@ export default defineComponent({
                 name: 'GridPageProxy'
               }
             },
-            // {
-            //   label: 'app.aside.nav.formProxy',
-            //   locat: {
-            //     name: 'GridFormProxy'
-            //   }
-            // },
+            {
+              label: 'app.aside.nav.formProxy',
+              locat: {
+                name: 'GridFormProxy'
+              }
+            },
             {
               label: 'app.aside.nav.edit',
               locat: {
@@ -1479,6 +1503,12 @@ export default defineComponent({
               label: 'app.aside.nav.keepAlives',
               locat: {
                 name: 'TableScrollKeepAliveTable1'
+              }
+            },
+            {
+              label: 'app.aside.nav.scrollMode',
+              locat: {
+                name: 'TableScrollMode'
               }
             },
             {
@@ -1922,7 +1952,7 @@ export default defineComponent({
               locat: {
                 name: 'VXEAPI',
                 params: {
-                  name: 'table-colgroup'
+                  name: 'colgroup'
                 }
               }
             },
@@ -1931,7 +1961,7 @@ export default defineComponent({
               locat: {
                 name: 'VXEAPI',
                 params: {
-                  name: 'table-column'
+                  name: 'column'
                 }
               }
             },
@@ -2107,6 +2137,15 @@ export default defineComponent({
               }
             },
             {
+              label: 'app.aside.nav.vxeFormGather',
+              locat: {
+                name: 'VXEAPI',
+                params: {
+                  name: 'form-gather'
+                }
+              }
+            },
+            {
               label: 'app.aside.nav.vxeFormItem',
               locat: {
                 name: 'VXEAPI',
@@ -2139,14 +2178,15 @@ export default defineComponent({
     })
 
     const getVersion = () => {
-      XEAjax.get('https://api.xuliangzhan.com:10443/api/npm/versions/vxe-table').then(({ time, tags, versions }) => {
+      XEAjax.get('https://api.xuliangzhan.com:10443/demo/api/npm/versions/vxe-table').then(({ time, tags, versions }) => {
+        appData.showPlugin = true
         const stableVersionList: any = []
         const betaVersionList: any = []
         if (versions) {
           versions.forEach((version: any) => {
-            if (/^4.\d{1,3}.\d{1,3}$/.test(version)) {
+            if (new RegExp(`^${appData.version}.\\d{1,3}.\\d{1,3}$`).test(version)) {
               stableVersionList.push({ label: version, value: version })
-            } else if (/^4.\d{1,3}.\d{1,3}-beta.\d{1,3}$/.test(version)) {
+            } else if (new RegExp(`^${appData.version}.\\d{1,3}.\\d{1,3}-beta.\\d{1,3}$`).test(version)) {
               betaVersionList.push({ label: version, value: version })
             }
           })
@@ -2154,7 +2194,7 @@ export default defineComponent({
         appData.stableVersionList = stableVersionList
         appData.betaVersionList = betaVersionList
         if (stableVersionList.length) {
-          appData.selectStableVersion = tags && tags.next ? tags.next : stableVersionList[0].value
+          appData.selectStableVersion = tags && tags[`xtable-v${appData.version}`] ? tags[`xtable-v${appData.version}`] : stableVersionList[0].value
         }
         if (betaVersionList.length) {
           appData.selectBetaVersion = betaVersionList[0].value
@@ -2336,7 +2376,7 @@ export default defineComponent({
     }
 
     const loadSponsors = () => {
-      XEAjax.get('https://api.xuliangzhan.com:10443/api/pub/sponsors').then(data => {
+      XEAjax.get('https://api.xuliangzhan.com:10443/demo/api/pub/sponsors').then(data => {
         appData.sponsorList = data
       })
     }

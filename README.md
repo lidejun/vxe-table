@@ -12,7 +12,7 @@
 [![pull requests closed](https://img.shields.io/github/issues-pr-closed/x-extends/vxe-table.svg)](https://github.com/x-extends/vxe-table/pulls?q=is%3Apr+is%3Aclosed)
 [![npm license](https://img.shields.io/github/license/mashape/apistatus.svg)](LICENSE)
 
-一个基于 [vue](https://www.npmjs.com/package/vue) 的 PC 端表格组件，支持增删改查、虚拟滚动、懒加载、快捷菜单、数据校验、树形结构、打印导出、表单渲染、数据分页、虚拟列表、模态窗口、自定义模板、渲染器、贼灵活的配置项、扩展接口等...  
+一个基于 [vue](https://www.npmjs.com/package/vue) 的 PC 端表格组件，支持增删改查、虚拟滚动、懒加载、快捷菜单、数据校验、树形结构、打印导出、表单渲染、数据分页、虚拟列表、弹窗、自定义模板、渲染器、贼灵活的配置项、扩展接口等...  
 
 * 设计理念
   * 面向现代浏览器，高效的简洁 API 设计
@@ -22,8 +22,12 @@
 * 计划
   * [x] v1.0 基于 vue2.6+，支持所有主流的浏览器，实现表格的一切实用的功能
   * [x] v2.0 基于 vue2.6+，支持所有主流的浏览器，同时兼具功能与性能
-  * [x] v3.0 基于 vue2.6+，只支持现代浏览器，提升渲染性能
+  * [x] v3.0 基于 vue2.6+，支持现代浏览器并保留兼容 IE11，提升渲染性能
   * [x] v4.0 基于 vue3.0+，只支持现代浏览器，不支持 IE
+
+## QQ 交流群
+
+![qq](https://gitee.com/xuliangzhan_admin/vxe-table/raw/master/public/static/donation/qq.png)
 
 ## 浏览器支持
 
@@ -72,7 +76,7 @@ Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | 8+ ✔ |
 * [x] 数据校验
 * [x] 数据代理
 * [x] 键盘导航
-* [x] 模态窗口
+* [x] 弹窗
 * [x] 渲染器
 * [x] 虚拟滚动
 * [x] 虚拟合并
@@ -120,11 +124,13 @@ app.mount('#app')
 <template>
   <div>
     <vxe-table :data="tableData">
-      <vxe-table-column type="seq" title="Seq" width="60"></vxe-table-column>
-      <vxe-table-column field="name" title="Name"></vxe-table-column>
-      <vxe-table-column field="role" title="Role"></vxe-table-column>
-      <vxe-table-column field="sex" title="Sex"></vxe-table-column>
-      <vxe-table-column field="address" title="Address"></vxe-table-column>
+      <vxe-column type="seq" title="Seq" width="60"></vxe-column>
+      <vxe-column field="name" title="Name"></vxe-column>
+      <vxe-column field="role" title="Role"></vxe-column>
+      <vxe-colgroup title="Group1">
+        <vxe-column field="sex" title="Sex"></vxe-column>
+        <vxe-column field="address" title="Address"></vxe-column>
+      </vxe-colgroup>
     </vxe-table>
   </div>
 </template>
@@ -152,12 +158,6 @@ export default defineComponent({
 💡 [使用指南](https://github.com/xuliangzhan/vxe-table-demo)  
 👉 [查看演示](https://xuliangzhan_admin.gitee.io/vxe-table/#/table/base/basic) [👀备用地址](https://x-extends.github.io/vxe-table/#/table/base/basic)  
 👉 [查看文档](https://xuliangzhan_admin.gitee.io/vxe-table/#/table/api) [👀备用地址](https://x-extends.github.io/vxe-table/#/table/api)
-
-## 支持作者
-
-如果该开源软件对您有所帮助，可以扫下方二维码支持我们。☕  
-
-👉 [支持作者💰](https://xuliangzhan_admin.gitee.io/vxe-table/#/donation/api)  
 
 ## License
 

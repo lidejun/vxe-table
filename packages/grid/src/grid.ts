@@ -1,27 +1,15 @@
 import { defineComponent, h, PropType, ref, Ref, computed, provide, getCurrentInstance, resolveComponent, ComponentOptions, reactive, onUnmounted, watch, nextTick, VNode, ComponentPublicInstance } from 'vue'
 import XEUtils from 'xe-utils'
-import { UtilTools, DomTools, GlobalEvent, isEnableConf } from '../../tools'
+import { errLog, getLastZIndex, nextZIndex, isEnableConf } from '../../tools/utils'
+import { getOffsetHeight, getPaddingTopBottomSize, getDomNode } from '../../tools/dom'
 import GlobalConfig from '../../v-x-e-table/src/conf'
 import { VXETable } from '../../v-x-e-table'
 import tableComponentProps from '../../table/src/props'
 import tableComponentEmits from '../../table/src/emits'
 import { useSize } from '../../hooks/size'
+import { GlobalEvent } from '../../tools/event'
 
-import { TableMethods, VxeGridConstructor, VxeGridEmits, GridReactData, VxeGridPropTypes, VxeToolbarPropTypes, GridMethods, GridPrivateMethods, VxeGridPrivateComputed, VxeGridPrivateMethods, VxePagerInstance, VxeToolbarInstance, GridPrivateRef, VxeFormInstance, VxeTableProps, VxeTableConstructor, VxeTableMethods, VxeTablePrivateMethods, VxeTableEvents, VxePagerEvents, VxeFormEvents, VxeTableDefines, VxeTableEventProps } from '../../../types/all'
-
-function getOffsetHeight (elem: HTMLElement) {
-  return elem ? elem.offsetHeight : 0
-}
-
-function getPaddingTopBottomSize (elem: HTMLElement) {
-  if (elem) {
-    const computedStyle = getComputedStyle(elem)
-    const paddingTop = XEUtils.toNumber(computedStyle.paddingTop)
-    const paddingBottom = XEUtils.toNumber(computedStyle.paddingBottom)
-    return paddingTop + paddingBottom
-  }
-  return 0
-}
+import { TableMethods, VxeGridConstructor, VxeGridEmits, GridReactData, VxeGridPropTypes, VxeToolbarPropTypes, GridMethods, GridPrivateMethods, VxeGridPrivateComputed, VxeGridPrivateMethods, VxePagerInstance, VxeToolbarInstance, GridPrivateRef, VxeFormInstance, VxeTableProps, VxeTableConstructor, VxeTableMethods, VxeTablePrivateMethods, VxeTableEvents, VxePagerEvents, VxeFormEvents, VxeTableDefines, VxeTableEventProps, VxeFormItemProps } from '../../../types/all'
 
 const tableComponentPropKeys = Object.keys(tableComponentProps as any)
 
@@ -35,6 +23,7 @@ const gridComponentEmits: VxeGridEmits = [
   'form-reset',
   'form-toggle-collapse',
   'toolbar-button-click',
+  'toolbar-tool-click',
   'zoom'
 ]
 
@@ -52,11 +41,6 @@ export default defineComponent({
   },
   emits: gridComponentEmits,
   setup (props, context) {
-    const TableComponent = resolveComponent('vxe-table') as ComponentOptions
-    const FormComponent = resolveComponent('vxe-form') as ComponentOptions
-    const ToolbarComponent = resolveComponent('vxe-toolbar') as ComponentOptions
-    const PagerComponent = resolveComponent('vxe-pager') as ComponentOptions
-
     const { slots, emit } = context
 
     const xID = XEUtils.uniqueId()
@@ -226,11 +210,6 @@ export default defineComponent({
       return tableProps
     })
 
-    const computePagerProps = computed(() => {
-      const pagerOpts = computePagerOpts.value
-      return Object.assign({}, pagerOpts, props.proxyConfig ? reactData.tablePage : {})
-    })
-
     const initToolbar = () => {
       nextTick(() => {
         const $xetable = refTable.value
@@ -279,7 +258,7 @@ export default defineComponent({
         gridExtendTableMethods.clearCheckboxRow()
       } else {
         if (isMsg) {
-          VXETable.modal.message({ id: code, message: GlobalConfig.i18n('vxe.grid.selectOneRecord'), status: 'warning' })
+          VXETable.modal.message({ id: code, content: GlobalConfig.i18n('vxe.grid.selectOneRecord'), status: 'warning' })
         }
       }
     }
@@ -294,18 +273,18 @@ export default defineComponent({
       return msg || GlobalConfig.i18n(defaultMsg)
     }
 
-    const handleDeleteRow = (code: string, alertKey: string, callback: Function) => {
+    const handleDeleteRow = (code: string, alertKey: string, callback: () => void): Promise<void> => {
       const isMsg = computeIsMsg.value
       const selectRecords = gridExtendTableMethods.getCheckboxRecords()
       if (isMsg) {
         if (selectRecords.length) {
-          return VXETable.modal.confirm({ id: `cfm_${code}`, message: GlobalConfig.i18n(alertKey), escClosable: true }).then((type) => {
+          return VXETable.modal.confirm({ id: `cfm_${code}`, content: GlobalConfig.i18n(alertKey), escClosable: true }).then((type) => {
             if (type === 'confirm') {
               callback()
             }
           })
         } else {
-          VXETable.modal.message({ id: `msg_${code}`, message: GlobalConfig.i18n('vxe.grid.selectOneRecord'), status: 'warning' })
+          VXETable.modal.message({ id: `msg_${code}`, content: GlobalConfig.i18n('vxe.grid.selectOneRecord'), status: 'warning' })
         }
       } else {
         if (selectRecords.length) {
@@ -388,8 +367,8 @@ export default defineComponent({
       const { isZMax } = reactData
       if (isMax ? !isZMax : isZMax) {
         reactData.isZMax = !isZMax
-        if (reactData.tZindex < UtilTools.getLastZIndex()) {
-          reactData.tZindex = UtilTools.nextZIndex()
+        if (reactData.tZindex < getLastZIndex()) {
+          reactData.tZindex = nextZIndex()
         }
       }
       return nextTick().then(() => gridExtendTableMethods.recalculate(true)).then(() => reactData.isZMax)
@@ -403,7 +382,7 @@ export default defineComponent({
             return slots[funcSlot]
           } else {
             if (process.env.VUE_APP_VXE_TABLE_ENV === 'development') {
-              UtilTools.error('vxe.error.notSlot', [funcSlot])
+              errLog('vxe.error.notSlot', [funcSlot])
             }
           }
         } else {
@@ -428,6 +407,7 @@ export default defineComponent({
           slotVNs = slots.form({ $grid: $xegrid })
         } else {
           if (formOpts.items) {
+            const formSlots: { [key: string]: () => VNode[] } = {}
             if (!formOpts.inited) {
               formOpts.inited = true
               const beforeItem = proxyOpts.beforeItem
@@ -437,8 +417,18 @@ export default defineComponent({
                 })
               }
             }
+            // 处理插槽
+            formOpts.items.forEach((item) => {
+              XEUtils.each(item.slots, (func) => {
+                if (!XEUtils.isFunction(func)) {
+                  if (slots[func]) {
+                    formSlots[func] = slots[func] as any
+                  }
+                }
+              })
+            })
             slotVNs.push(
-              h(FormComponent, {
+              h(resolveComponent('vxe-form') as ComponentOptions, {
                 ref: refForm,
                 ...Object.assign({}, formOpts, {
                   data: proxyConfig && proxyOpts.form ? formData : formOpts.data
@@ -447,7 +437,7 @@ export default defineComponent({
                 onReset: resetFormEvent,
                 onSubmitInvalid: submitInvalidEvent,
                 onToggleCollapse: togglCollapseEvent
-              })
+              }, formSlots)
             )
           }
         }
@@ -488,7 +478,7 @@ export default defineComponent({
             }
           }
           slotVNs.push(
-            h(ToolbarComponent, {
+            h(resolveComponent('vxe-toolbar') as ComponentOptions, {
               ref: refToolbar,
               ...toolbarOpts
             }, toolbarSlots)
@@ -533,6 +523,7 @@ export default defineComponent({
       const tableProps = computeTableProps.value
       const proxyOpts = computeProxyOpts.value
       const tableOns = Object.assign({}, tableCompEvents)
+      const emptySlot = slots.empty
       if (proxyConfig) {
         if (proxyOpts.sort) {
           tableOns.onSortChange = sortChangeEvent
@@ -542,13 +533,13 @@ export default defineComponent({
         }
       }
       return [
-        h(TableComponent, {
+        h(resolveComponent('vxe-table') as ComponentOptions, {
           ref: refTable,
           ...tableProps,
           ...tableOns
-        }, {
-          empty: () => slots.empty ? slots.empty({}) : []
-        })
+        }, emptySlot ? {
+          empty: () => emptySlot({})
+        } : {})
       ]
     }
 
@@ -572,7 +563,6 @@ export default defineComponent({
      */
     const renderPagers = () => {
       const { pagerConfig } = props
-      const pagerProps = computePagerProps.value
       const pagerOpts = computePagerOpts.value
       const restVNs = []
       if (isEnableConf(pagerConfig) || slots.pager) {
@@ -595,9 +585,10 @@ export default defineComponent({
             }
           }
           slotVNs.push(
-            h(PagerComponent, {
+            h(resolveComponent('vxe-pager') as ComponentOptions, {
               ref: refPager,
-              ...pagerProps,
+              ...pagerOpts,
+              ...(props.proxyConfig ? reactData.tablePage : {}),
               onPageChange: pageChangeEvent
             }, pagerSlots)
           )
@@ -773,7 +764,7 @@ export default defineComponent({
                   }
                 })
             } else {
-              UtilTools.error('vxe.error.notFunc', ['query'])
+              errLog('vxe.error.notFunc', ['query'])
             }
             break
           }
@@ -791,7 +782,7 @@ export default defineComponent({
                       reactData.tableLoading = false
                       reactData.pendingRecords = reactData.pendingRecords.filter((row) => $xetable.findRowIndexOf(removeRecords, row) === -1)
                       if (isMsg) {
-                        VXETable.modal.message({ message: getRespMsg(rest, 'vxe.grid.delSuccess'), status: 'success' })
+                        VXETable.modal.message({ content: getRespMsg(rest, 'vxe.grid.delSuccess'), status: 'success' })
                       }
                       if (afterDelete) {
                         afterDelete(...applyArgs)
@@ -802,17 +793,17 @@ export default defineComponent({
                     .catch(rest => {
                       reactData.tableLoading = false
                       if (isMsg) {
-                        VXETable.modal.message({ id: code, message: getRespMsg(rest, 'vxe.grid.operError'), status: 'error' })
+                        VXETable.modal.message({ id: code, content: getRespMsg(rest, 'vxe.grid.operError'), status: 'error' })
                       }
                     })
                 })
               } else {
                 if (isMsg) {
-                  VXETable.modal.message({ id: code, message: GlobalConfig.i18n('vxe.grid.selectOneRecord'), status: 'warning' })
+                  VXETable.modal.message({ id: code, content: GlobalConfig.i18n('vxe.grid.selectOneRecord'), status: 'warning' })
                 }
               }
             } else {
-              UtilTools.error('vxe.error.notFunc', [code])
+              errLog('vxe.error.notFunc', [code])
             }
             break
           }
@@ -839,7 +830,7 @@ export default defineComponent({
                       reactData.tableLoading = false
                       reactData.pendingRecords = []
                       if (isMsg) {
-                        VXETable.modal.message({ message: getRespMsg(rest, 'vxe.grid.saveSuccess'), status: 'success' })
+                        VXETable.modal.message({ content: getRespMsg(rest, 'vxe.grid.saveSuccess'), status: 'success' })
                       }
                       if (afterSave) {
                         afterSave(...applyArgs)
@@ -850,17 +841,17 @@ export default defineComponent({
                     .catch(rest => {
                       reactData.tableLoading = false
                       if (isMsg) {
-                        VXETable.modal.message({ id: code, message: getRespMsg(rest, 'vxe.grid.operError'), status: 'error' })
+                        VXETable.modal.message({ id: code, content: getRespMsg(rest, 'vxe.grid.operError'), status: 'error' })
                       }
                     })
                 } else {
                   if (isMsg) {
-                    VXETable.modal.message({ id: code, message: GlobalConfig.i18n('vxe.grid.dataUnchanged'), status: 'info' })
+                    VXETable.modal.message({ id: code, content: GlobalConfig.i18n('vxe.grid.dataUnchanged'), status: 'info' })
                   }
                 }
               }).catch((errMap: any) => errMap)
             } else {
-              UtilTools.error('vxe.error.notFunc', [code])
+              errLog('vxe.error.notFunc', [code])
             }
             break
           }
@@ -888,11 +879,15 @@ export default defineComponent({
       revert () {
         return handleZoom()
       },
-      getFormItems () {
+      getFormItems (itemIndex?: number): any {
         const formOpts = computeFormOpts.value
         const { formConfig } = props
         const { items } = formOpts
-        return isEnableConf(formConfig) && items ? items : []
+        const itemList: VxeFormItemProps[] = []
+        XEUtils.eachTree(isEnableConf(formConfig) && items ? items : [], item => {
+          itemList.push(item)
+        }, { children: 'children' })
+        return XEUtils.isUndefined(itemIndex) ? itemList : itemList[itemIndex]
       },
       getPendingRecords () {
         return reactData.pendingRecords
@@ -923,7 +918,7 @@ export default defineComponent({
             XEUtils.each(column.slots, (func) => {
               if (!XEUtils.isFunction(func)) {
                 if (!slots[func]) {
-                  UtilTools.error('vxe.error.notSlot', [func])
+                  errLog('vxe.error.notSlot', [func])
                 }
               }
             })
@@ -967,11 +962,15 @@ export default defineComponent({
       },
       getParentHeight () {
         const el = refElem.value
-        return (reactData.isZMax ? DomTools.getDomNode().visibleHeight : XEUtils.toNumber(getComputedStyle(el.parentNode as HTMLElement).height)) - gridPrivateMethods.getExcludeHeight()
+        return (reactData.isZMax ? getDomNode().visibleHeight : XEUtils.toNumber(getComputedStyle(el.parentNode as HTMLElement).height)) - gridPrivateMethods.getExcludeHeight()
       },
       triggerToolbarBtnEvent (button, evnt) {
         gridMethods.commitProxy(button, evnt)
         gridMethods.dispatchEvent('toolbar-button-click', { code: button.code, button }, evnt)
+      },
+      triggerToolbarTolEvent (tool, evnt) {
+        gridMethods.commitProxy(tool, evnt)
+        gridMethods.dispatchEvent('toolbar-tool-click', { code: tool.code, tool, $event: evnt })
       },
       triggerZoomEvent (evnt) {
         gridMethods.zoom()
@@ -1022,7 +1021,7 @@ export default defineComponent({
       const proxyOpts = computeProxyOpts.value
       const formOpts = computeFormOpts.value
       if (proxyConfig && (data || (proxyOpts.form && formOpts.data))) {
-        UtilTools.error('errConflicts', ['grid.data', 'grid.proxy-config'])
+        errLog('errConflicts', ['grid.data', 'grid.proxy-config'])
       }
       if (columns && columns.length) {
         $xegrid.loadColumn(columns)

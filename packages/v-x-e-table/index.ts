@@ -7,7 +7,7 @@ import { menus } from './src/menus'
 import { formats } from './src/formats'
 import { hooks } from './src/hooks'
 import { setup } from './src/setup'
-import { UtilTools } from '../tools'
+import { getLastZIndex, nextZIndex } from '../tools/utils'
 
 import { VXETableCore } from '../../types/all'
 
@@ -38,19 +38,23 @@ export function t (key: any, args?: any) {
   return GlobalConfig.i18n(key, args)
 }
 
+export function _t (key: string, args?: any) {
+  return key ? XEUtils.toValueString(GlobalConfig.translate ? GlobalConfig.translate(key, args) : key) : ''
+}
+
 class VXETableConfig {
   /**
    * 获取当前的 zIndex
    */
   get zIndex () {
-    return UtilTools.getLastZIndex()
+    return getLastZIndex()
   }
 
   /**
    * 获取下一个 zIndex
    */
   get nextZIndex () {
-    return UtilTools.nextZIndex()
+    return nextZIndex()
   }
 
   /**
@@ -82,7 +86,8 @@ export const VXETable = {
   hooks,
   config,
   use,
-  t
+  t,
+  _t
 } as VXETableCore
 
 export * from './src/interceptor'

@@ -2,7 +2,8 @@ import { h, VNode } from 'vue'
 import XEUtils from 'xe-utils'
 import GlobalConfig from '../../v-x-e-table/src/conf'
 import { VXETable } from '../../v-x-e-table'
-import { UtilTools, DomTools, isEnableConf } from '../../tools'
+import { getFuncText, isEnableConf, formatText, eqEmptyValue } from '../../tools/utils'
+import { updateCellTitle } from '../../tools/dom'
 import { createColumn } from './util'
 
 import { VxeColumnProps, VxeTableConstructor, VxeTableDefines, VxeTablePrivateMethods } from '../../../types/all'
@@ -28,7 +29,7 @@ function renderTitleContent (params: VxeTableDefines.CellRenderHeaderParams, con
   const { props, internalData } = $table
   const { computeTooltipOpts } = $table.getComputeMaps()
   const { showHeaderOverflow: allColumnHeaderOverflow } = props
-  const { showHeaderOverflow } = column
+  const { type, showHeaderOverflow } = column
   const tooltipOpts = computeTooltipOpts.value
   const showAllTip = tooltipOpts.showAll
   const headOverflow = XEUtils.isUndefined(showHeaderOverflow) || XEUtils.isNull(showHeaderOverflow) ? allColumnHeaderOverflow : showHeaderOverflow
@@ -41,7 +42,7 @@ function renderTitleContent (params: VxeTableDefines.CellRenderHeaderParams, con
         return
       }
       if (showTitle) {
-        DomTools.updateCellTitle(evnt.currentTarget, column)
+        updateCellTitle(evnt.currentTarget, column)
       } else if (showTooltip || showAllTip) {
         $table.triggerHeaderTooltipEvent(evnt, params)
       }
@@ -58,7 +59,11 @@ function renderTitleContent (params: VxeTableDefines.CellRenderHeaderParams, con
     }
   }
   return [
-    h('span', {
+    type === 'html' && XEUtils.isString(content) ? h('span', {
+      class: 'vxe-cell--title',
+      innerHTML: content,
+      ...ons
+    }) : h('span', {
       class: 'vxe-cell--title',
       ...ons
     }, content)
@@ -79,12 +84,12 @@ function getFooterContent (params: VxeTableDefines.CellRenderFooterParams) {
       return compConf.renderFooter(renderOpts, params)
     }
   }
-  return [UtilTools.formatText(items[_columnIndex], 1)]
+  return [formatText(items[_columnIndex], 1)]
 }
 
 function getDefaultCellLabel (params: VxeTableDefines.CellRenderBodyParams) {
   const { $table, row, column } = params
-  return UtilTools.formatText($table.getCellLabel(row, column), 1)
+  return formatText($table.getCellLabel(row, column), 1)
 }
 
 export const Cell = {
@@ -158,13 +163,13 @@ export const Cell = {
         return renderTitleContent(params, compConf.renderHeader(renderOpts, params))
       }
     }
-    return renderTitleContent(params, UtilTools.formatText(column.getTitle(), 1))
+    return renderTitleContent(params, formatText(column.getTitle(), 1))
   },
   renderDefaultHeader (params: VxeTableDefines.CellRenderHeaderParams) {
     return renderHelpIcon(params).concat(Cell.renderHeaderTitle(params))
   },
   renderDefaultCell (params: VxeTableDefines.CellRenderBodyParams) {
-    const { $table, column } = params
+    const { $table, row, column } = params
     const { slots, editRender, cellRender } = column
     const renderOpts = editRender || cellRender
     const defaultSlot = slots ? slots.default : null
@@ -179,10 +184,17 @@ export const Cell = {
         return compFn(renderOpts, Object.assign({ $type: editRender ? 'edit' : 'cell' }, params))
       }
     }
+    const cellValue = $table.getCellLabel(row, column)
+    const cellPlaceholder = editRender ? editRender.placeholder : ''
     return [
       h('span', {
         class: 'vxe-cell--label'
-      }, getDefaultCellLabel(params))
+      }, editRender && eqEmptyValue(cellValue) ? [
+        // 如果设置占位符
+        h('span', {
+          class: 'vxe-cell--placeholder'
+        }, formatText(getFuncText(cellPlaceholder), 1))
+      ] : formatText(cellValue, 1))
     ]
   },
   renderTreeCell (params: VxeTableDefines.CellRenderBodyParams) {
@@ -260,7 +272,7 @@ export const Cell = {
     const { $table, column } = params
     const { slots } = column
     const headerSlot = slots ? slots.header : null
-    return renderTitleContent(params, headerSlot ? $table.callSlot(headerSlot, params) : UtilTools.formatText(column.getTitle(), 1))
+    return renderTitleContent(params, headerSlot ? $table.callSlot(headerSlot, params) : formatText(column.getTitle(), 1))
   },
   renderIndexCell (params: VxeTableDefines.CellRenderBodyParams) {
     const { $table, column } = params
@@ -273,7 +285,7 @@ export const Cell = {
     }
     const { $seq, seq, level } = params
     const seqMethod = seqOpts.seqMethod
-    return [UtilTools.formatText(seqMethod ? seqMethod(params) : level ? `${$seq}.${seq}` : (seqOpts.startIndex || 0) + seq, 1)]
+    return [formatText(seqMethod ? seqMethod(params) : level ? `${$seq}.${seq}` : (seqOpts.startIndex || 0) + seq, 1)]
   },
   renderTreeIndexCell (params: VxeTableDefines.CellRenderBodyParams) {
     return Cell.renderTreeIcon(params, Cell.renderIndexCell(params) as VNode[])
@@ -286,10 +298,11 @@ export const Cell = {
     const { $table, column } = params
     const { slots } = column
     const headerSlot = slots ? slots.header : null
+    const titleSlot = slots ? slots.title : null
     return renderTitleContent(params, headerSlot ? $table.callSlot(headerSlot, params) : [
       h('span', {
         class: 'vxe-radio--label'
-      }, UtilTools.formatText(column.getTitle(), 1))
+      }, titleSlot ? $table.callSlot(titleSlot, params) : formatText(column.getTitle(), 1))
     ])
   },
   renderRadioCell (params: VxeTableDefines.CellRenderBodyParams) {
@@ -302,6 +315,7 @@ export const Cell = {
     const { labelField, checkMethod } = radioOpts
     const { row } = params
     const defaultSlot = slots ? slots.default : null
+    const radioSlot = slots ? slots.radio : null
     const isChecked = row === selectRow
     let isDisabled = !!checkMethod
     let ons
@@ -317,7 +331,8 @@ export const Cell = {
         isDisabled = !checkMethod({ row })
       }
     }
-    return [
+    const radioParams = { ...params, checked: isChecked, disabled: isDisabled }
+    return radioSlot ? $table.callSlot(radioSlot, radioParams) : [
       h('span', {
         class: ['vxe-cell--radio', {
           'is--checked': isChecked,
@@ -331,11 +346,11 @@ export const Cell = {
         h('span', {
           class: 'vxe-radio--icon vxe-radio--unchecked-icon'
         })
-      ].concat(defaultSlot ? $table.callSlot(defaultSlot, params) : (labelField ? [
+      ].concat(defaultSlot || labelField ? [
         h('span', {
           class: 'vxe-radio--label'
-        }, XEUtils.get(row, labelField))
-      ] : [])))
+        }, defaultSlot ? $table.callSlot(defaultSlot, radioParams) : XEUtils.get(row, labelField as string))
+      ] : []))
     ]
   },
   renderTreeRadioCell (params: VxeTableDefines.CellRenderBodyParams) {
@@ -349,21 +364,15 @@ export const Cell = {
     const { $table, column, isHidden } = params
     const { reactData } = $table
     const { computeIsAllCheckboxDisabled, computeCheckboxOpts } = $table.getComputeMaps()
-    const { isIndeterminate, isAllSelected } = reactData
+    const { isIndeterminate: isAllCheckboxIndeterminate, isAllSelected } = reactData
     const isAllCheckboxDisabled = computeIsAllCheckboxDisabled.value
     const { slots } = column
+    const headerSlot = slots ? slots.header : null
+    const titleSlot = slots ? slots.title : null
     const checkboxOpts = computeCheckboxOpts.value
     const headerTitle = column.getTitle()
-    const headerSlot = slots ? slots.header : null
     let isChecked = false
     let ons
-    if (checkboxOpts.checkStrictly ? !checkboxOpts.showHeader : checkboxOpts.showHeader === false) {
-      return renderTitleContent(params, headerSlot ? $table.callSlot(headerSlot, params) : [
-        h('span', {
-          class: 'vxe-checkbox--label'
-        }, headerTitle)
-      ])
-    }
     if (!isHidden) {
       isChecked = isAllCheckboxDisabled ? false : isAllSelected
       ons = {
@@ -374,22 +383,23 @@ export const Cell = {
         }
       }
     }
-    let titles: VNode[] | string[] = []
+    const checkboxParams = { ...params, checked: isChecked, disabled: isAllCheckboxDisabled, indeterminate: isAllCheckboxIndeterminate }
     if (headerSlot) {
-      titles = $table.callSlot(headerSlot, params)
-    } else if (headerTitle) {
-      titles = [
+      return renderTitleContent(checkboxParams, $table.callSlot(headerSlot, checkboxParams))
+    }
+    if (checkboxOpts.checkStrictly ? !checkboxOpts.showHeader : checkboxOpts.showHeader === false) {
+      return renderTitleContent(checkboxParams, [
         h('span', {
           class: 'vxe-checkbox--label'
-        }, headerTitle)
-      ]
+        }, titleSlot ? $table.callSlot(titleSlot, checkboxParams) : headerTitle)
+      ])
     }
-    return renderTitleContent(params, [
+    return renderTitleContent(checkboxParams, [
       h('span', {
         class: ['vxe-cell--checkbox', {
           'is--checked': isChecked,
           'is--disabled': isAllCheckboxDisabled,
-          'is--indeterminate': isIndeterminate
+          'is--indeterminate': isAllCheckboxIndeterminate
         }],
         title: GlobalConfig.i18n('vxe.table.allTitle'),
         ...ons
@@ -402,9 +412,12 @@ export const Cell = {
         }),
         h('span', {
           class: 'vxe-checkbox--icon vxe-checkbox--indeterminate-icon'
-        }),
-        ...titles
-      ])
+        })
+      ].concat(titleSlot || headerTitle ? [
+        h('span', {
+          class: 'vxe-checkbox--label'
+        }, titleSlot ? $table.callSlot(titleSlot, checkboxParams) : headerTitle)
+      ] : []))
     ])
   },
   renderSelectionCell (params: VxeTableDefines.CellRenderBodyParams) {
@@ -417,6 +430,7 @@ export const Cell = {
     const { labelField, checkMethod } = checkboxOpts
     const { slots } = column
     const defaultSlot = slots ? slots.default : null
+    const checkboxSlot = slots ? slots.checkbox : null
     let indeterminate = false
     let isChecked = false
     let isDisabled = !!checkMethod
@@ -437,7 +451,8 @@ export const Cell = {
         indeterminate = treeIndeterminates.indexOf(row) > -1
       }
     }
-    return [
+    const checkboxParams = { ...params, checked: isChecked, disabled: isDisabled, indeterminate }
+    return checkboxSlot ? $table.callSlot(checkboxSlot, checkboxParams) : [
       h('span', {
         class: ['vxe-cell--checkbox', {
           'is--checked': isChecked,
@@ -455,11 +470,11 @@ export const Cell = {
         h('span', {
           class: 'vxe-checkbox--icon vxe-checkbox--indeterminate-icon'
         })
-      ].concat(defaultSlot ? $table.callSlot(defaultSlot, params) : (labelField ? [
+      ].concat(defaultSlot || labelField ? [
         h('span', {
           class: 'vxe-checkbox--label'
-        }, XEUtils.get(row, labelField))
-      ] : [])))
+        }, defaultSlot ? $table.callSlot(defaultSlot, checkboxParams) : XEUtils.get(row, labelField as string))
+      ] : []))
     ]
   },
   renderTreeSelectionCell (params: VxeTableDefines.CellRenderBodyParams) {
@@ -475,6 +490,7 @@ export const Cell = {
     const { labelField, checkField: property, halfField, checkMethod } = checkboxOpts
     const { slots } = column
     const defaultSlot = slots ? slots.default : null
+    const checkboxSlot = slots ? slots.checkbox : null
     let indeterminate = false
     let isChecked = false
     let isDisabled = !!checkMethod
@@ -495,7 +511,8 @@ export const Cell = {
         indeterminate = treeIndeterminates.indexOf(row) > -1
       }
     }
-    return [
+    const checkboxParams = { ...params, checked: isChecked, disabled: isDisabled, indeterminate }
+    return checkboxSlot ? $table.callSlot(checkboxSlot, checkboxParams) : [
       h('span', {
         class: ['vxe-cell--checkbox', {
           'is--checked': isChecked,
@@ -513,11 +530,11 @@ export const Cell = {
         h('span', {
           class: 'vxe-checkbox--icon vxe-checkbox--indeterminate-icon'
         })
-      ].concat(defaultSlot ? $table.callSlot(defaultSlot, params) : (labelField ? [
+      ].concat(defaultSlot || labelField ? [
         h('span', {
           class: 'vxe-checkbox--label'
-        }, XEUtils.get(row, labelField))
-      ] : [])))
+        }, defaultSlot ? $table.callSlot(defaultSlot, checkboxParams) : XEUtils.get(row, labelField as string))
+      ] : []))
     ]
   },
   renderTreeSelectionCellByProp (params: VxeTableDefines.CellRenderBodyParams) {

@@ -1,10 +1,11 @@
-import { RenderFunction, SetupContext, ComponentPublicInstance, Ref, DefineComponent } from 'vue'
+import { RenderFunction, SetupContext, ComponentPublicInstance, Ref } from 'vue'
 import { VXEComponent, VxeComponentBase, VxeEvent, SizeType, ValueOf } from './component'
 
 /**
  * 组件 - 虚拟列表
+ * @example import { List as VxeList } from 'vxe-table'
  */
-export const List: VXEComponent<VxeListProps & VxeListEventProps>;
+export const List: VXEComponent<VxeListProps, VxeListEventProps>;
 
 export type VxeListInstance = ComponentPublicInstance<VxeListProps, VxeListConstructor>;
 
@@ -85,10 +86,6 @@ export interface VxeListMethods extends ListMethods { }
 export interface ListPrivateMethods { }
 export interface VxeListPrivateMethods extends ListPrivateMethods { }
 
-export interface VxeListOptions extends VxeListProps, VxeListListeners {
-  onScroll?: VxeListEvents.Scroll;
-}
-
 export namespace VxeListPropTypes {
   export type Size = SizeType;
   export type Data = any[];
@@ -96,6 +93,7 @@ export namespace VxeListPropTypes {
   export type MaxHeight = number | string;
   export type Loading = boolean;
   export type AutoResize = boolean;
+  export type ClassName = string | ((params: { $list: VxeListConstructor }) => string);
   export type SyncResize = boolean | string | number;
   export interface ScrollY {
     /**
@@ -113,14 +111,15 @@ export namespace VxeListPropTypes {
   }
 }
 
-export type VxeListProps = {
+export type VxeListProps<D = any> = {
   size?: VxeListPropTypes.Size;
-  data?: VxeListPropTypes.Data;
+  data?: D[];
   height?: VxeListPropTypes.Height;
   maxHeight?: VxeListPropTypes.MaxHeight;
   loading?: VxeListPropTypes.Loading;
   autoResize?: VxeListPropTypes.AutoResize;
   syncResize?: VxeListPropTypes.SyncResize;
+  className?: VxeListPropTypes.ClassName;
   scrollY?: VxeListPropTypes.ScrollY;
 }
 

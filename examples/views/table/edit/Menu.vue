@@ -114,7 +114,7 @@ export default defineComponent({
           break
         case 'copy':
           if (XEClipboard.copy(row[column.property])) {
-            VXETable.modal.message({ message: '已复制到剪贴板！', status: 'success' })
+            VXETable.modal.message({ content: '已复制到剪贴板！', status: 'success' })
           }
           break
         case 'reload':
@@ -122,14 +122,14 @@ export default defineComponent({
           break
         case 'insertAt':
           $table.insertAt({}, row || -1).then(({ row }) => {
-            $table.setActiveCell(row, column ? column.property : 'name')
+            $table.setActiveCell(row, column || 'name')
           })
           break
         case 'remove':
           $table.remove(row)
           break
         case 'save':
-          VXETable.modal.message({ message: '保存成功', status: 'success' })
+          VXETable.modal.message({ content: '保存成功', status: 'success' })
           findList()
           break
       }
@@ -266,7 +266,7 @@ export default defineComponent({
                   break
                 case 'copy':
                   if (XEClipboard.copy(row[column.property])) {
-                    VXETable.modal.message({ message: '已复制到剪贴板！', status: 'success' })
+                    VXETable.modal.message({ content: '已复制到剪贴板！', status: 'success' })
                   }
                   break
                 case 'reload':
@@ -274,14 +274,14 @@ export default defineComponent({
                   break
                 case 'insertAt':
                   $table.insertAt({}, row || -1).then(({ row }) => {
-                    $table.setActiveCell(row, column ? column.property : 'name')
+                    $table.setActiveCell(row, column || 'name')
                   })
                   break
                 case 'remove':
                   $table.remove(row)
                   break
                 case 'save':
-                  VXETable.modal.message({ message: '保存成功', status: 'success' })
+                  VXETable.modal.message({ content: '保存成功', status: 'success' })
                   findList()
                   break
               }

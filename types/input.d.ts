@@ -1,10 +1,11 @@
-import { RenderFunction, SetupContext, ComponentPublicInstance, Ref, DefineComponent } from 'vue'
+import { RenderFunction, SetupContext, ComponentPublicInstance, Ref } from 'vue'
 import { VXEComponent, VxeComponentBase, VxeEvent, SizeType, VNodeStyle, ValueOf } from './component'
 
 /**
  * 组件 - 输入框
+ * @example import { Input as VxeInput } from 'vxe-table'
  */
-export const Input: VXEComponent<VxeInputProps & VxeInputEventProps>;
+export const Input: VXEComponent<VxeInputProps, VxeInputEventProps>;
 
 export type VxeInputInstance = ComponentPublicInstance<VxeInputProps, VxeInputConstructor>;
 
@@ -22,6 +23,8 @@ export interface InputPrivateRef {
 }
 export interface VxeInputPrivateRef extends InputPrivateRef { }
 
+type DatePanelType = 'year' | 'quarter' | 'month' | 'week' | 'day';
+
 export interface InputReactData {
   inited: boolean;
   panelIndex: number;
@@ -35,19 +38,18 @@ export interface InputReactData {
   datetimePanelValue: any;
   datePanelValue: Date | null;
   datePanelLabel: string;
-  datePanelType: string;
+  datePanelType: DatePanelType;
   selectMonth: any;
   currentDate: any;
 }
 
-export interface VxeInputOptions extends VxeInputProps, VxeInputListeners { }
-
 export namespace VxeInputPropTypes {
   export type Size = SizeType;
   export type ModelValue = string | number | Date | null;
+  export type ClassName = string;
   export type Immediate = boolean;
   export type Name = string;
-  export type Type = 'text' | 'search' | 'number' | 'integer' | 'float' | 'password' | 'date' | 'time' | 'datetime' | 'week' | 'month' | 'year';
+  export type Type = 'text' | 'search' | 'number' | 'integer' | 'float' | 'password' | 'date' | 'time' | 'datetime' | 'week' | 'month' | 'quarter' | 'year';
   export type Clearable = boolean;
   export type Readonly = boolean;
   export type Disabled = boolean;
@@ -78,6 +80,7 @@ export namespace VxeInputPropTypes {
 export type VxeInputProps = {
   size?: VxeInputPropTypes.Size;
   modelValue?: VxeInputPropTypes.ModelValue;
+  className?: VxeInputPropTypes.ClassName;
   immediate?: VxeInputPropTypes.Immediate;
   name?: VxeInputPropTypes.Name;
   type?: VxeInputPropTypes.Type;
@@ -139,7 +142,7 @@ export type VxeInputEmits = [
   'change',
   'keydown',
   'keyup',
-  'mousewheel',
+  'wheel',
   'click',
   'focus',
   'blur',
@@ -185,12 +188,16 @@ export namespace VxeInputDefines {
   }
 
   export interface DateFestivalParams {
-    date: Date;
+    $input: VxeInputConstructor;
     type: string;
+    viewType: DatePanelType;
+    date: Date;
   }
 
   export interface DateDisabledParams {
-    type: VxeInputPropTypes.Type;
+    $input: VxeInputConstructor;
+    type: string;
+    viewType: DatePanelType;
     date: Date;
   }
 

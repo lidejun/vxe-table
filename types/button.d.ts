@@ -1,10 +1,11 @@
-import { SetupContext, RenderFunction, Ref, ComponentPublicInstance, DefineComponent } from 'vue'
+import { SetupContext, RenderFunction, Ref, ComponentPublicInstance } from 'vue'
 import { VXEComponent, VxeComponentBase, VxeEvent, SizeType, ValueOf, VNodeStyle } from './component'
 
 /**
  * 组件 - 按钮
+ * @example import { Button as VxeButton } from 'vxe-table'
  */
-export const Button: VXEComponent<VxeButtonProps>;
+export const Button: VXEComponent<VxeButtonProps, VxeButtonEventProps>;
 
 export type VxeButtonInstance = ComponentPublicInstance<VxeButtonProps, VxeButtonConstructor>;
 
@@ -35,11 +36,10 @@ export interface ButtonInternalData {
   showTime: any;
 }
 
-export interface VxeButtonOptions extends VxeButtonProps, VxeButtonListeners { }
-
 export namespace VxeButtonPropTypes {
   export type Size = SizeType;
   export type Type = string;
+  export type ClassName = string;
   export type Name = string | number;
   export type Content = string;
   export type Placement = string;
@@ -58,51 +58,52 @@ export type VxeButtonProps = {
   /**
    * 按钮类型
    */
-  type: VxeButtonPropTypes.Type;
+  type?: VxeButtonPropTypes.Type;
+  className?: VxeButtonPropTypes.ClassName;
   /**
    * 用来标识这一项
    */
-  name: VxeButtonPropTypes.Name;
+  name?: VxeButtonPropTypes.Name;
   /**
    * 按钮内容
    */
-  content: VxeButtonPropTypes.Content;
+  content?: VxeButtonPropTypes.Content;
   /**
    * 固定显示下拉面板的方向
    */
-  placement: VxeButtonPropTypes.Placement;
+  placement?: VxeButtonPropTypes.Placement;
   /**
    * 按钮状态
    */
-  status: VxeButtonPropTypes.Status;
+  status?: VxeButtonPropTypes.Status;
   /**
    * 按钮的图标
    */
-  icon: VxeButtonPropTypes.Icon;
+  icon?: VxeButtonPropTypes.Icon;
   /**
    * 圆角边框
    */
-  round: VxeButtonPropTypes.Round;
+  round?: VxeButtonPropTypes.Round;
   /**
    * 圆角按钮
    */
-  circle: VxeButtonPropTypes.Circle;
+  circle?: VxeButtonPropTypes.Circle;
   /**
    * 是否禁用
    */
-  disabled: VxeButtonPropTypes.Disabled;
+  disabled?: VxeButtonPropTypes.Disabled;
   /**
    * 是否加载中
    */
-  loading: VxeButtonPropTypes.Loading;
+  loading?: VxeButtonPropTypes.Loading;
   /**
    * 在下拉面板关闭时销毁内容
    */
-  destroyOnClose: VxeButtonPropTypes.DestroyOnClose;
+  destroyOnClose?: VxeButtonPropTypes.DestroyOnClose;
   /**
    * 是否将弹框容器插入于 body 内
    */
-  transfer: VxeButtonPropTypes.Transfer;
+  transfer?: VxeButtonPropTypes.Transfer;
 }
 
 export interface ButtonMethods {
@@ -138,11 +139,13 @@ export namespace VxeButtonDefines {
   export interface DropdownClickEventParams extends ButtonEventParams, ClickParams { }
 }
 
-export interface VxeButtonListeners {
+export type VxeButtonEventProps = {
   onClick?: VxeButtonEvents.Click;
-  click?: VxeButtonEvents.Click;
-
   onDropdownClick?: VxeButtonEvents.DropdownClick;
+}
+
+export interface VxeButtonListeners {
+  click?: VxeButtonEvents.Click;
   dropdownClick?: VxeButtonEvents.DropdownClick;
 }
 

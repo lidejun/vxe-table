@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 
+import StartUpgrade from '../views/start/Upgrade.vue'
 import StartInstall from '../views/start/Install.vue'
 import StartUse from '../views/start/Use.vue'
 import StartIcons from '../views/start/Icons.vue'
@@ -58,6 +59,8 @@ import TableFull from '../views/table/base/Full.vue'
 import TableEvent from '../views/table/advanced/Event.vue'
 import TableTemplate from '../views/table/advanced/Template.vue'
 import TableDynamic from '../views/table/advanced/Dynamic.vue'
+import TableCustomCheckbox from '../views/table/advanced/CustomCheckbox.vue'
+import TableCustomRadio from '../views/table/advanced/CustomRadio.vue'
 import TableSortIcon from '../views/table/advanced/SortIcon.vue'
 import TableCustomSort from '../views/table/advanced/CustomSort.vue'
 import TableMultiSort from '../views/table/advanced/MultiSort.vue'
@@ -84,7 +87,7 @@ import TableSearch from '../views/table/advanced/Search.vue'
 // import TableGroupBy from '../views/table/advanced/GroupBy.vue'
 import TableDetails from '../views/table/advanced/Details.vue'
 // import TablePopupEdit from '../views/table/advanced/PopupEdit.vue'
-// import Toolbar from '../views/table/advanced/Toolbar.vue'
+import TableToolbar from '../views/table/advanced/Toolbar.vue'
 // import TableCustom from '../views/table/advanced/Custom.vue'
 import TableCustomStorage from '../views/table/advanced/CustomStorage.vue'
 import TableCustomlWidthStorage from '../views/table/advanced/CustomlWidthStorage.vue'
@@ -113,8 +116,8 @@ import GridPageProxy from '../views/grid/PageProxy.vue'
 import GridEdit from '../views/grid/Edit.vue'
 import GridCellDisable from '../views/grid/CellDisable.vue'
 import GridRowDisable from '../views/grid/RowDisable.vue'
-// import GridForm from '../views/grid/Form.vue'
-// import GridFormProxy from '../views/grid/FormProxy.vue'
+import GridForm from '../views/grid/Form.vue'
+import GridFormProxy from '../views/grid/FormProxy.vue'
 import GridToolbar from '../views/grid/Toolbar.vue'
 import GridCustomToolbar from '../views/grid/CustomToolbar.vue'
 import GridToolbarIcon from '../views/grid/ToolbarIcon.vue'
@@ -161,6 +164,7 @@ import TableTreeEdit from '../views/table/tree/Edit.vue'
 import TableTreeTemplate from '../views/table/tree/Template.vue'
 
 import TableScroll from '../views/table/scroll/Scroll.vue'
+import TableScrollMode from '../views/table/scroll/Mode.vue'
 import TableScrollRows from '../views/table/scroll/ScrollRows.vue'
 import TableScrollFullRows from '../views/table/scroll/ScrollFullRows.vue'
 import TableScrollCols from '../views/table/scroll/ScrollCols.vue'
@@ -205,6 +209,7 @@ import TableEditClick from '../views/table/edit/Click.vue'
 import TableEditDBLClick from '../views/table/edit/DBLClick.vue'
 import TableEditSelect from '../views/table/edit/Select.vue'
 import TableAutoClearManual from '../views/table/edit/AutoClear.vue'
+import TableEditCellPlaceholder from '../views/table/edit/CellPlaceholder.vue'
 import TableEditInsert from '../views/table/edit/Insert.vue'
 import TableEditRemove from '../views/table/edit/Remove.vue'
 import TableEditRevert from '../views/table/edit/Revert.vue'
@@ -214,16 +219,16 @@ import TableEditStatus from '../views/table/edit/Status.vue'
 // import TableEditHighlightCell from '../views/table/edit/HighlightCell.vue'
 import TableEditKeyboard from '../views/table/edit/Keyboard.vue'
 import TableEditKeyboardEdit from '../views/table/edit/KeyboardEdit.vue'
-// import TableEditCellValid from '../views/table/edit/CellValid.vue'
-// import TableEditRowValid from '../views/table/edit/RowValid.vue'
+import TableEditCellValid from '../views/table/edit/CellValid.vue'
+import TableEditRowValid from '../views/table/edit/RowValid.vue'
 // import TableEditForceCellValid from '../views/table/edit/ForceCellValid.vue'
 // import TableEditForceRowValid from '../views/table/edit/ForceRowValid.vue'
 import TableEditFooter from '../views/table/edit/Footer.vue'
 import TableEditFooterImmediately from '../views/table/edit/FooterImmediately.vue'
 import TableEditExpand from '../views/table/edit/Expand.vue'
 import TableEditMenu from '../views/table/edit/Menu.vue'
-// import TableEditSpan from '../views/table/edit/Span.vue'
-// import TableEditForm from '../views/table/edit/Form.vue'
+import TableEditSpan from '../views/table/edit/Span.vue'
+import TableEditForm from '../views/table/edit/Form.vue'
 import TableEditUpload from '../views/table/edit/Upload.vue'
 import TableEditRealtimeSave from '../views/table/edit/RealtimeSave.vue'
 import TableEditDataCount from '../views/table/edit/DataCount.vue'
@@ -236,6 +241,7 @@ import TableEditTemplate from '../views/table/edit/Template.vue'
 // import TableBadEdit from '../views/table/bad/Edit.vue'
 // import TableBadNonsupport from '../views/table/bad/Nonsupport.vue'
 // import TableBadLineHeight from '../views/table/bad/LineHeight.vue'
+import TableBadChange from '../views/table/bad/Change.vue'
 
 import ModuleIcon from '../views/icon/Icon.vue'
 import ModuleButton from '../views/button/Button.vue'
@@ -296,6 +302,11 @@ const routes: Array<RouteRecordRaw> = [
     redirect: {
       name: 'StartInstall'
     }
+  },
+  {
+    path: '/table/start/upgrade',
+    name: 'StartUpgrade',
+    component: StartUpgrade
   },
   {
     path: '/table/start/install',
@@ -568,6 +579,16 @@ const routes: Array<RouteRecordRaw> = [
     component: TableDynamic
   },
   {
+    path: '/table/advanced/customCheckbox',
+    name: 'TableCustomCheckbox',
+    component: TableCustomCheckbox
+  },
+  {
+    path: '/table/advanced/customRadio',
+    name: 'TableCustomRadio',
+    component: TableCustomRadio
+  },
+  {
     path: '/table/advanced/sortIcon',
     name: 'TableSortIcon',
     component: TableSortIcon
@@ -697,11 +718,11 @@ const routes: Array<RouteRecordRaw> = [
   //   name: 'TablePopupEdit',
   //   component: TablePopupEdit
   // },
-  // {
-  //   path: '/table/advanced/toolbar',
-  //   name: 'Toolbar',
-  //   component: Toolbar
-  // },
+  {
+    path: '/table/advanced/toolbar',
+    name: 'TableToolbar',
+    component: TableToolbar
+  },
   // {
   //   path: '/table/advanced/custom',
   //   name: 'TableCustom',
@@ -1048,16 +1069,16 @@ const routes: Array<RouteRecordRaw> = [
     name: 'GridRowDisable',
     component: GridRowDisable
   },
-  // {
-  //   path: '/table/grid/form',
-  //   name: 'GridForm',
-  //   component: GridForm
-  // },
-  // {
-  //   path: '/table/grid/formProxy',
-  //   name: 'GridFormProxy',
-  //   component: GridFormProxy
-  // },
+  {
+    path: '/table/grid/form',
+    name: 'GridForm',
+    component: GridForm
+  },
+  {
+    path: '/table/grid/formProxy',
+    name: 'GridFormProxy',
+    component: GridFormProxy
+  },
   {
     path: '/table/grid/toolbar',
     name: 'GridToolbar',
@@ -1132,6 +1153,11 @@ const routes: Array<RouteRecordRaw> = [
     path: '/table/scroll/scroll',
     name: 'TableScroll',
     component: TableScroll
+  },
+  {
+    path: '/table/scroll/mode',
+    name: 'TableScrollMode',
+    component: TableScrollMode
   },
   {
     path: '/table/scroll/rows',
@@ -1280,6 +1306,11 @@ const routes: Array<RouteRecordRaw> = [
     component: TableAutoClearManual
   },
   {
+    path: '/table/edit/cellPlaceholder',
+    name: 'TableEditCellPlaceholder',
+    component: TableEditCellPlaceholder
+  },
+  {
     path: '/table/edit/insert',
     name: 'TableEditInsert',
     component: TableEditInsert
@@ -1324,16 +1355,16 @@ const routes: Array<RouteRecordRaw> = [
     name: 'TableEditKeyboardEdit',
     component: TableEditKeyboardEdit
   },
-  // {
-  //   path: '/table/edit/cellValid',
-  //   name: 'TableEditCellValid',
-  //   component: TableEditCellValid
-  // },
-  // {
-  //   path: '/table/edit/rowValid',
-  //   name: 'TableEditRowValid',
-  //   component: TableEditRowValid
-  // },
+  {
+    path: '/table/edit/cellValid',
+    name: 'TableEditCellValid',
+    component: TableEditCellValid
+  },
+  {
+    path: '/table/edit/rowValid',
+    name: 'TableEditRowValid',
+    component: TableEditRowValid
+  },
   // {
   //   path: '/table/edit/forceCellValid',
   //   name: 'TableEditForceCellValid',
@@ -1364,16 +1395,16 @@ const routes: Array<RouteRecordRaw> = [
     name: 'TableEditMenu',
     component: TableEditMenu
   },
-  // {
-  //   path: '/table/edit/span',
-  //   name: 'TableEditSpan',
-  //   component: TableEditSpan
-  // },
-  // {
-  //   path: '/table/edit/form',
-  //   name: 'TableEditForm',
-  //   component: TableEditForm
-  // },
+  {
+    path: '/table/edit/span',
+    name: 'TableEditSpan',
+    component: TableEditSpan
+  },
+  {
+    path: '/table/edit/form',
+    name: 'TableEditForm',
+    component: TableEditForm
+  },
   {
     path: '/table/edit/upload',
     name: 'TableEditUpload',
@@ -1424,11 +1455,11 @@ const routes: Array<RouteRecordRaw> = [
   //   name: 'TableBadNonsupport',
   //   component: TableBadNonsupport
   // },
-  // {
-  //   path: '/table/bad/lineHeight',
-  //   name: 'TableBadLineHeight',
-  //   component: TableBadLineHeight
-  // },
+  {
+    path: '/table/bad/change',
+    name: 'TableBadChange',
+    component: TableBadChange
+  },
   {
     path: '/table/module/icon',
     name: 'ModuleIcon',

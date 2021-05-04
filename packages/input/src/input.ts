@@ -1,8 +1,10 @@
 import { defineComponent, h, Teleport, ref, Ref, computed, reactive, nextTick, watch, onUnmounted, PropType } from 'vue'
 import XEUtils from 'xe-utils'
 import GlobalConfig from '../../v-x-e-table/src/conf'
-import { UtilTools, DomTools, GlobalEvent } from '../../tools'
 import { useSize } from '../../hooks/size'
+import { getFuncText, getLastZIndex, nextZIndex } from '../../tools/utils'
+import { hasClass, getAbsolutePos, getEventTargetNode } from '../../tools/dom'
+import { GlobalEvent } from '../../tools/event'
 
 import { VNodeStyle, VxeInputConstructor, VxeInputEmits, InputReactData, InputMethods, VxeInputPropTypes, InputPrivateRef } from '../../../types/all'
 
@@ -22,6 +24,15 @@ interface DateMonthItem {
   month: number;
 }
 
+interface DateQuarterItem {
+  date: Date;
+  isPrev: boolean;
+  isCurrent: boolean;
+  isNow: boolean;
+  isNext: boolean;
+  quarter: number;
+}
+
 interface DateDayItem {
   date: Date;
   isWeekNumber?: boolean;
@@ -39,6 +50,7 @@ interface DateHourMinuteSecondItem {
 
 const yearSize = 20
 const monthSize = 20
+const quarterSize = 8
 
 function toStringTimeDate (str: VxeInputPropTypes.ModelValue) {
   if (str) {
@@ -82,6 +94,7 @@ export default defineComponent({
     autocomplete: { type: String as PropType<VxeInputPropTypes.Autocomplete>, default: 'off' },
     align: String as PropType<VxeInputPropTypes.Align>,
     form: String as PropType<VxeInputPropTypes.Form>,
+    className: String as PropType<VxeInputPropTypes.ClassName>,
     size: { type: String as PropType<VxeInputPropTypes.Size>, default: () => GlobalConfig.input.size || GlobalConfig.size },
 
     // number、integer、float
@@ -95,7 +108,7 @@ export default defineComponent({
     // float
     digits: { type: [String, Number] as PropType<VxeInputPropTypes.Digits>, default: () => GlobalConfig.input.digits },
 
-    // date、week、month、year
+    // date、week、month、quarter、year
     minDate: { type: [String, Number, Date] as PropType<VxeInputPropTypes.MinDate>, default: () => GlobalConfig.input.minDate },
     maxDate: { type: [String, Number, Date] as PropType<VxeInputPropTypes.MaxDate>, default: () => GlobalConfig.input.maxDate },
     startWeek: { type: Number as PropType<VxeInputPropTypes.StartWeek>, default: () => GlobalConfig.input.startWeek },
@@ -105,10 +118,10 @@ export default defineComponent({
     festivalMethod: { type: Function as PropType<VxeInputPropTypes.FestivalMethod>, default: () => GlobalConfig.input.festivalMethod },
     disabledMethod: { type: Function as PropType<VxeInputPropTypes.DisabledMethod>, default: () => GlobalConfig.input.disabledMethod },
 
-    prefixIcon: String,
-    suffixIcon: String,
-    placement: String,
-    transfer: { type: Boolean, default: () => GlobalConfig.input.transfer }
+    prefixIcon: String as PropType<VxeInputPropTypes.PrefixIcon>,
+    suffixIcon: String as PropType<VxeInputPropTypes.SuffixIcon>,
+    placement: String as PropType<VxeInputPropTypes.Placement>,
+    transfer: { type: Boolean as PropType<VxeInputPropTypes.Transfer>, default: () => GlobalConfig.input.transfer }
   },
   emits: [
     'update:modelValue',
@@ -116,7 +129,7 @@ export default defineComponent({
     'change',
     'keydown',
     'keyup',
-    'mousewheel',
+    'wheel',
     'click',
     'focus',
     'blur',
@@ -187,7 +200,7 @@ export default defineComponent({
 
     const computeIsDatePickerType = computed(() => {
       const isDateTimeType = computeIsDateTimeType.value
-      return isDateTimeType || ['date', 'week', 'month', 'year'].indexOf(props.type) > -1
+      return isDateTimeType || ['date', 'week', 'month', 'quarter', 'year'].indexOf(props.type) > -1
     })
 
     const computeIsPawdType = computed(() => {
@@ -237,16 +250,15 @@ export default defineComponent({
 
     const computeDateValue = computed(() => {
       const { modelValue, type } = props
-      const { inputValue } = reactData
       const isDatePickerType = computeIsDatePickerType.value
       const dateValueFormat = computeDateValueFormat.value
       let val = null
-      if (inputValue && isDatePickerType) {
+      if (modelValue && isDatePickerType) {
         let date
         if (type === 'time') {
-          date = toStringTimeDate(inputValue)
+          date = toStringTimeDate(modelValue)
         } else {
-          date = XEUtils.toStringDate(type === 'week' ? modelValue : inputValue, dateValueFormat)
+          date = XEUtils.toStringDate(modelValue, dateValueFormat)
         }
         if (XEUtils.isValidDate(date)) {
           val = date
@@ -326,7 +338,9 @@ export default defineComponent({
           year = selectMonth.getFullYear()
           month = selectMonth.getMonth() + 1
         }
-        if (datePanelType === 'month') {
+        if (datePanelType === 'quarter') {
+          return GlobalConfig.i18n('vxe.input.date.quarterLabel', [year])
+        } else if (datePanelType === 'month') {
           return GlobalConfig.i18n('vxe.input.date.monthLabel', [year])
         } else if (datePanelType === 'year') {
           return yearList.length ? `${yearList[0].year} - ${yearList[yearList.length - 1].year}` : ''
@@ -381,6 +395,49 @@ export default defineComponent({
     const computeYearDatas = computed(() => {
       const yearList = computeYearList.value
       return XEUtils.chunk(yearList, 4)
+    })
+
+    const getDateQuarter = (date: Date) => {
+      const month = date.getMonth()
+      if (month < 3) {
+        return 1
+      } else if (month < 6) {
+        return 2
+      } else if (month < 9) {
+        return 3
+      }
+      return 4
+    }
+
+    const computeQuarterList = computed(() => {
+      const { selectMonth, currentDate } = reactData
+      const quarters: DateQuarterItem[] = []
+      if (selectMonth && currentDate) {
+        const currFullYear = currentDate.getFullYear()
+        const currQuarter = getDateQuarter(currentDate)
+        const firstYear = XEUtils.getWhatYear(selectMonth, 0, 'first')
+        const selFullYear = firstYear.getFullYear()
+        for (let index = -2; index < quarterSize - 2; index++) {
+          const date = XEUtils.getWhatQuarter(firstYear, index)
+          const itemFullYear = date.getFullYear()
+          const itemQuarter = getDateQuarter(date)
+          const isPrev = itemFullYear < selFullYear
+          quarters.push({
+            date,
+            isPrev,
+            isCurrent: itemFullYear === selFullYear,
+            isNow: itemFullYear === currFullYear && itemQuarter === currQuarter,
+            isNext: !isPrev && itemFullYear > selFullYear,
+            quarter: itemQuarter
+          })
+        }
+      }
+      return quarters
+    })
+
+    const computeQuarterDatas = computed(() => {
+      const quarterList = computeQuarterList.value
+      return XEUtils.chunk(quarterList, 2)
     })
 
     const computeMonthList = computed(() => {
@@ -501,9 +558,9 @@ export default defineComponent({
       return minuteList
     })
 
-    const computeIsReadonly = computed(() => {
+    const computeInpReadonly = computed(() => {
       const { type, readonly, editable } = props
-      return readonly || type === 'week' || !editable
+      return readonly || !editable || type === 'week' || type === 'quarter'
     })
 
     const computeInputType = computed(() => {
@@ -521,7 +578,7 @@ export default defineComponent({
     const computeInpPlaceholder = computed(() => {
       const { placeholder } = props
       if (placeholder) {
-        return UtilTools.getFuncText(placeholder)
+        return getFuncText(placeholder)
       }
       return ''
     })
@@ -544,15 +601,15 @@ export default defineComponent({
       return type === 'float' ? XEUtils.toFixed(XEUtils.floor(val, digitsValue), digitsValue) : XEUtils.toValueString(val)
     }
 
-    const triggerEvent = (evnt: Event & { type: 'input' | 'change' | 'keydown' | 'keyup' | 'mousewheel' | 'click' | 'focus' | 'blur' }) => {
+    const triggerEvent = (evnt: Event & { type: 'input' | 'change' | 'keydown' | 'keyup' | 'wheel' | 'click' | 'focus' | 'blur' }) => {
       const { inputValue } = reactData
       inputMethods.dispatchEvent(evnt.type, { value: inputValue }, evnt)
     }
 
     const emitModel = (value: VxeInputPropTypes.ModelValue, evnt: Event | { type: string }) => {
       reactData.inputValue = value
-      inputMethods.dispatchEvent('input', { value }, evnt)
       emit('update:modelValue', value)
+      inputMethods.dispatchEvent('input', { value }, evnt)
       if (XEUtils.toValueString(props.modelValue) !== value) {
         inputMethods.dispatchEvent('change', { value }, evnt)
       }
@@ -579,10 +636,8 @@ export default defineComponent({
 
     const changeEvent = (evnt: Event & { type: 'change' }) => {
       const inpImmediate = computeInpImmediate.value
-      if (inpImmediate) {
+      if (!inpImmediate) {
         triggerEvent(evnt)
-      } else {
-        emitModel(reactData.inputValue, evnt)
       }
     }
 
@@ -624,7 +679,7 @@ export default defineComponent({
     const clickSuffixEvent = (evnt: Event) => {
       const { disabled } = props
       if (!disabled) {
-        if (DomTools.hasClass(evnt.currentTarget, 'is--clear')) {
+        if (hasClass(evnt.currentTarget, 'is--clear')) {
           emitModel('', evnt)
           clearValueEvent(evnt, '')
         } else {
@@ -733,45 +788,43 @@ export default defineComponent({
       const isNumType = computeIsNumType.value
       const isDatePickerType = computeIsDatePickerType.value
       const dateLabelFormat = computeDateLabelFormat.value
-      const isReadonly = computeIsReadonly.value
-      let inpVal: VxeInputPropTypes.ModelValue
-      if (!isReadonly) {
+      const inpReadonly = computeInpReadonly.value
+      if (!inpReadonly) {
         if (isNumType) {
           if (inputValue) {
-            inpVal = type === 'integer' ? XEUtils.toInteger(inputValue) : XEUtils.toNumber(inputValue)
-            if (!vaildMinNum(inpVal)) {
-              inpVal = min
-            } else if (!vaildMaxNum(inpVal)) {
-              inpVal = max
+            let inpNumVal: VxeInputPropTypes.ModelValue = type === 'integer' ? XEUtils.toInteger(inputValue) : XEUtils.toNumber(inputValue)
+            if (!vaildMinNum(inpNumVal)) {
+              inpNumVal = min
+            } else if (!vaildMaxNum(inpNumVal)) {
+              inpNumVal = max
             }
-            emitModel(getNumberValue(inpVal), { type: 'check' })
+            emitModel(getNumberValue(inpNumVal), { type: 'check' })
           }
         } else if (isDatePickerType) {
-          inpVal = inputValue
-          if (inpVal) {
+          if (inputValue) {
+            let inpDateVal: VxeInputPropTypes.ModelValue
             if (type === 'time') {
-              inpVal = toStringTimeDate(inpVal)
+              inpDateVal = toStringTimeDate(inputValue)
             } else {
-              inpVal = XEUtils.toStringDate(inpVal, dateLabelFormat)
+              inpDateVal = XEUtils.toStringDate(inputValue, dateLabelFormat)
             }
-            if (XEUtils.isValidDate(inpVal)) {
+            if (XEUtils.isValidDate(inpDateVal)) {
               if (type === 'time') {
-                inpVal = XEUtils.toDateString(inpVal, dateLabelFormat)
-                if (inputValue !== inpVal) {
-                  emitModel(inpVal, { type: 'check' })
+                inpDateVal = XEUtils.toDateString(inpDateVal, dateLabelFormat)
+                if (inputValue !== inpDateVal) {
+                  emitModel(inpDateVal, { type: 'check' })
                 }
-                reactData.inputValue = inpVal
+                reactData.inputValue = inpDateVal
               } else {
-                if (!XEUtils.isDateSame(inputValue, inpVal, dateLabelFormat)) {
-                  if (type === 'datetime') {
-                    datetimePanelValue.setHours(inpVal.getHours())
-                    datetimePanelValue.setMinutes(inpVal.getMinutes())
-                    datetimePanelValue.setSeconds(inpVal.getSeconds())
+                if (type === 'datetime') {
+                  if (!XEUtils.isDateSame(inputValue, inpDateVal, dateLabelFormat)) {
+                    datetimePanelValue.setHours(inpDateVal.getHours())
+                    datetimePanelValue.setMinutes(inpDateVal.getMinutes())
+                    datetimePanelValue.setSeconds(inpDateVal.getSeconds())
                   }
-                } else {
-                  reactData.inputValue = XEUtils.toDateString(inpVal, dateLabelFormat)
                 }
-                dateChange(inpVal)
+                reactData.inputValue = XEUtils.toDateString(inpDateVal, dateLabelFormat)
+                dateChange(inpDateVal)
               }
             } else {
               dateRevert()
@@ -798,10 +851,9 @@ export default defineComponent({
 
     // 密码
     const passwordToggleEvent = (evnt: Event) => {
-      const { disabled } = props
+      const { readonly, disabled } = props
       const { showPwd } = reactData
-      const isReadonly = computeIsReadonly.value
-      if (!disabled && !isReadonly) {
+      if (!disabled && !readonly) {
         reactData.showPwd = !showPwd
       }
       inputMethods.dispatchEvent('toggle-visible', { visible: reactData.showPwd }, evnt)
@@ -835,10 +887,9 @@ export default defineComponent({
     let downbumTimeout: number
 
     const numberNextEvent = (evnt: Event) => {
-      const { disabled } = props
-      const isReadonly = computeIsReadonly.value
+      const { readonly, disabled } = props
       clearTimeout(downbumTimeout)
-      if (!disabled && !isReadonly) {
+      if (!disabled && !readonly) {
         numberChange(false, evnt)
       }
       inputMethods.dispatchEvent('next-number', {}, evnt)
@@ -852,10 +903,9 @@ export default defineComponent({
     }
 
     const numberPrevEvent = (evnt: Event) => {
-      const { disabled } = props
-      const isReadonly = computeIsReadonly.value
+      const { readonly, disabled } = props
       clearTimeout(downbumTimeout)
-      if (!disabled && !isReadonly) {
+      if (!disabled && !readonly) {
         numberChange(true, evnt)
       }
       inputMethods.dispatchEvent('prev-number', {}, evnt)
@@ -876,16 +926,19 @@ export default defineComponent({
     }
 
     const keydownEvent = (evnt: KeyboardEvent & { type: 'keydown' }) => {
+      const { controls } = props
       const isNumType = computeIsNumType.value
       if (isNumType) {
         const isCtrlKey = evnt.ctrlKey
         const isShiftKey = evnt.shiftKey
         const isAltKey = evnt.altKey
         const keyCode = evnt.keyCode
-        if (!isCtrlKey && !isShiftKey && !isAltKey && (keyCode === 32 || (keyCode >= 65 && keyCode <= 90))) {
+        if (!isCtrlKey && !isShiftKey && !isAltKey && (keyCode === 32 || (keyCode >= 65 && keyCode <= 90) || (keyCode >= 186 && keyCode <= 188) || keyCode >= 191)) {
           evnt.preventDefault()
         }
-        numberKeydownEvent(evnt)
+        if (controls) {
+          numberKeydownEvent(evnt)
+        }
       }
       triggerEvent(evnt)
     }
@@ -910,7 +963,7 @@ export default defineComponent({
     const numberMousedownEvent = (evnt: MouseEvent) => {
       numberStopDown()
       if (evnt.button === 0) {
-        const isPrevNumber = DomTools.hasClass(evnt.currentTarget, 'is--prev')
+        const isPrevNumber = hasClass(evnt.currentTarget, 'is--prev')
         if (isPrevNumber) {
           numberPrevEvent(evnt)
         } else {
@@ -926,14 +979,14 @@ export default defineComponent({
       }
     }
 
-    const mousewheelEvent = (evnt: MouseEvent & {
-      type: 'mousewheel';
+    const wheelEvent = (evnt: WheelEvent & {
+      type: 'wheel';
       wheelDelta: number;
     }) => {
       const isNumType = computeIsNumType.value
       if (isNumType && props.controls) {
         if (reactData.isActivated) {
-          const delta = -evnt.wheelDelta || evnt.detail
+          const delta = evnt.deltaY
           if (delta > 0) {
             numberNextEvent(evnt)
           } else if (delta < 0) {
@@ -958,7 +1011,7 @@ export default defineComponent({
 
     const dateToggleTypeEvent = () => {
       let { datePanelType } = reactData
-      if (datePanelType === 'month') {
+      if (datePanelType === 'month' || datePanelType === 'quarter') {
         datePanelType = 'year'
       } else {
         datePanelType = 'month'
@@ -973,7 +1026,7 @@ export default defineComponent({
       if (!isDisabledPrevDateBtn) {
         if (type === 'year') {
           reactData.selectMonth = XEUtils.getWhatYear(selectMonth, -yearSize, 'first')
-        } else if (type === 'month') {
+        } else if (type === 'month' || type === 'quarter') {
           if (datePanelType === 'year') {
             reactData.selectMonth = XEUtils.getWhatYear(selectMonth, -yearSize, 'first')
           } else {
@@ -1006,7 +1059,7 @@ export default defineComponent({
       if (!isDisabledNextDateBtn) {
         if (type === 'year') {
           reactData.selectMonth = XEUtils.getWhatYear(selectMonth, yearSize, 'first')
-        } else if (type === 'month') {
+        } else if (type === 'month' || type === 'quarter') {
           if (datePanelType === 'year') {
             reactData.selectMonth = XEUtils.getWhatYear(selectMonth, yearSize, 'first')
           } else {
@@ -1026,8 +1079,9 @@ export default defineComponent({
     }
 
     const isDateDisabled = (item: { date: Date }) => {
-      const { type, disabledMethod } = props
-      return disabledMethod && disabledMethod({ type, date: item.date })
+      const { disabledMethod } = props
+      const { datePanelType } = reactData
+      return disabledMethod && disabledMethod({ type: datePanelType, viewType: datePanelType, date: item.date, $input: $xeinput })
     }
 
     const dateSelectItem = (date: Date) => {
@@ -1044,6 +1098,14 @@ export default defineComponent({
       } else if (type === 'year') {
         dateChange(date)
         hidePanel()
+      } else if (type === 'quarter') {
+        if (datePanelType === 'year') {
+          reactData.datePanelType = 'quarter'
+          dateCheckMonth(date)
+        } else {
+          dateChange(date)
+          hidePanel()
+        }
       } else {
         if (datePanelType === 'month') {
           reactData.datePanelType = type === 'week' ? type : 'day'
@@ -1058,7 +1120,7 @@ export default defineComponent({
       }
     }
 
-    const dateSelectEvent = (item: DateYearItem | DateMonthItem | DateDayItem) => {
+    const dateSelectEvent = (item: DateYearItem | DateQuarterItem | DateMonthItem | DateDayItem) => {
       if (!isDateDisabled(item)) {
         dateSelectItem(item.date)
       }
@@ -1067,7 +1129,7 @@ export default defineComponent({
     const dateMoveDay = (offsetDay: Date) => {
       if (!isDateDisabled({ date: offsetDay })) {
         const dayList = computeDayList.value
-        if (!dayList.some((item) => XEUtils.isDateSame(item.date, offsetDay, 'yyyy-MM-dd'))) {
+        if (!dayList.some((item) => XEUtils.isDateSame(item.date, offsetDay, 'yyyyMMdd'))) {
           dateCheckMonth(offsetDay)
         }
         dateParseValue(offsetDay)
@@ -1084,21 +1146,33 @@ export default defineComponent({
       }
     }
 
+    const dateMoveQuarter = (offsetQuarter: Date) => {
+      if (!isDateDisabled({ date: offsetQuarter })) {
+        const quarterList = computeQuarterList.value
+        if (!quarterList.some((item) => XEUtils.isDateSame(item.date, offsetQuarter, 'yyyyq'))) {
+          dateCheckMonth(offsetQuarter)
+        }
+        dateParseValue(offsetQuarter)
+      }
+    }
+
     const dateMoveMonth = (offsetMonth: Date) => {
       if (!isDateDisabled({ date: offsetMonth })) {
         const monthList = computeMonthList.value
-        if (!monthList.some((item) => XEUtils.isDateSame(item.date, offsetMonth, 'yyyy-MM'))) {
+        if (!monthList.some((item) => XEUtils.isDateSame(item.date, offsetMonth, 'yyyyMM'))) {
           dateCheckMonth(offsetMonth)
         }
         dateParseValue(offsetMonth)
       }
     }
 
-    const dateMouseenterEvent = (item: DateYearItem | DateMonthItem | DateDayItem) => {
+    const dateMouseenterEvent = (item: DateYearItem | DateQuarterItem | DateMonthItem | DateDayItem) => {
       if (!isDateDisabled(item)) {
         const { datePanelType } = reactData
         if (datePanelType === 'month') {
           dateMoveMonth(item.date)
+        } else if (datePanelType === 'quarter') {
+          dateMoveQuarter(item.date)
         } else if (datePanelType === 'year') {
           dateMoveYear(item.date)
         } else {
@@ -1162,6 +1236,18 @@ export default defineComponent({
             offsetYear = XEUtils.getWhatYear(offsetYear, 4)
           }
           dateMoveYear(offsetYear)
+        } else if (datePanelType === 'quarter') {
+          let offsetQuarter = XEUtils.getWhatQuarter(datePanelValue || Date.now(), 0, 'first')
+          if (isLeftArrow) {
+            offsetQuarter = XEUtils.getWhatQuarter(offsetQuarter, -1)
+          } else if (isUpArrow) {
+            offsetQuarter = XEUtils.getWhatQuarter(offsetQuarter, -2)
+          } else if (isRightArrow) {
+            offsetQuarter = XEUtils.getWhatQuarter(offsetQuarter, 1)
+          } else if (isDwArrow) {
+            offsetQuarter = XEUtils.getWhatQuarter(offsetQuarter, 2)
+          }
+          dateMoveQuarter(offsetQuarter)
         } else if (datePanelType === 'month') {
           let offsetMonth = XEUtils.getWhatMonth(datePanelValue || Date.now(), 0, 'first')
           if (isLeftArrow) {
@@ -1207,8 +1293,8 @@ export default defineComponent({
       const { type } = props
       const isDateTimeType = computeIsDateTimeType.value
       const dateValue = computeDateValue.value
-      if (['year', 'month', 'week'].indexOf(type) > -1) {
-        reactData.datePanelType = type
+      if (['year', 'quarter', 'month', 'week'].indexOf(type) > -1) {
+        reactData.datePanelType = type as 'year' | 'quarter' | 'month' | 'week'
       } else {
         reactData.datePanelType = 'day'
       }
@@ -1232,8 +1318,8 @@ export default defineComponent({
 
     // 弹出面板
     const updateZindex = () => {
-      if (reactData.panelIndex < UtilTools.getLastZIndex()) {
-        reactData.panelIndex = UtilTools.nextZIndex()
+      if (reactData.panelIndex < getLastZIndex()) {
+        reactData.panelIndex = nextZIndex()
       }
     }
 
@@ -1252,7 +1338,7 @@ export default defineComponent({
           const panelStyle: VNodeStyle = {
             zIndex: panelIndex
           }
-          const { boundingTop, boundingLeft, visibleHeight, visibleWidth } = DomTools.getAbsolutePos(targetElem)
+          const { boundingTop, boundingLeft, visibleHeight, visibleWidth } = getAbsolutePos(targetElem)
           let panelPlacement: VxeInputPropTypes.Placement = 'bottom'
           if (transfer) {
             let left = boundingLeft
@@ -1355,7 +1441,7 @@ export default defineComponent({
       const el = refElem.value
       const panelElem = refInputPanel.value
       if (!disabled && isActivated) {
-        reactData.isActivated = DomTools.getEventTargetNode(evnt, el).flag || DomTools.getEventTargetNode(evnt, panelElem).flag
+        reactData.isActivated = getEventTargetNode(evnt, el).flag || getEventTargetNode(evnt, panelElem).flag
         if (!reactData.isActivated) {
           // 如果是日期类型
           if (isDatePickerType) {
@@ -1441,7 +1527,7 @@ export default defineComponent({
       if (!disabled) {
         if (visiblePanel) {
           const panelElem = refInputPanel.value
-          if (DomTools.getEventTargetNode(evnt, panelElem).flag) {
+          if (getEventTargetNode(evnt, panelElem).flag) {
             updatePlacement()
           } else {
             hidePanel()
@@ -1461,10 +1547,11 @@ export default defineComponent({
       }
     }
 
-    const renderDateLabel = (item: DateYearItem | DateMonthItem | DateDayItem, label: string | number) => {
+    const renderDateLabel = (item: DateYearItem | DateQuarterItem | DateMonthItem | DateDayItem, label: string | number) => {
       const { festivalMethod } = props
       if (festivalMethod) {
-        const festivalRest = festivalMethod({ type: reactData.datePanelType, date: item.date })
+        const { datePanelType } = reactData
+        const festivalRest = festivalMethod({ type: datePanelType, viewType: datePanelType, date: item.date, $input: $xeinput })
         const festivalItem = festivalRest ? (XEUtils.isString(festivalRest) ? { label: festivalRest } : festivalRest) : {}
         const extraItem = festivalItem.extra ? (XEUtils.isString(festivalItem.extra) ? { label: festivalItem.extra } : festivalItem.extra) : null
         const labels = [
@@ -1507,7 +1594,7 @@ export default defineComponent({
       const dateValue = computeDateValue.value
       const dateHeaders = computeDateHeaders.value
       const dayDatas = computeDayDatas.value
-      const matchFormat = 'yyyy-MM-dd'
+      const matchFormat = 'yyyyMMdd'
       return [
         h('table', {
           class: `vxe-input--date-${datePanelType}-view`,
@@ -1546,7 +1633,7 @@ export default defineComponent({
       const dateValue = computeDateValue.value
       const weekHeaders = computeWeekHeaders.value
       const weekDates = computeWeekDates.value
-      const matchFormat = 'yyyy-MM-dd'
+      const matchFormat = 'yyyyMMdd'
       return [
         h('table', {
           class: `vxe-input--date-${datePanelType}-view`,
@@ -1587,7 +1674,7 @@ export default defineComponent({
       const { datePanelType, datePanelValue } = reactData
       const dateValue = computeDateValue.value
       const monthDatas = computeMonthDatas.value
-      const matchFormat = 'yyyy-MM'
+      const matchFormat = 'yyyyMM'
       return [
         h('table', {
           class: `vxe-input--date-${datePanelType}-view`,
@@ -1610,6 +1697,39 @@ export default defineComponent({
                 onClick: () => dateSelectEvent(item),
                 onMouseenter: () => dateMouseenterEvent(item)
               }, renderDateLabel(item, GlobalConfig.i18n(`vxe.input.date.months.m${item.month}`)))
+            }))
+          }))
+        ])
+      ]
+    }
+
+    const renderDateQuarterTable = () => {
+      const { datePanelType, datePanelValue } = reactData
+      const dateValue = computeDateValue.value
+      const quarterDatas = computeQuarterDatas.value
+      const matchFormat = 'yyyyq'
+      return [
+        h('table', {
+          class: `vxe-input--date-${datePanelType}-view`,
+          cellspacing: 0,
+          cellpadding: 0,
+          border: 0
+        }, [
+          h('tbody', quarterDatas.map((rows) => {
+            return h('tr', rows.map((item) => {
+              return h('td', {
+                class: {
+                  'is--prev': item.isPrev,
+                  'is--current': item.isCurrent,
+                  'is--now': item.isNow,
+                  'is--next': item.isNext,
+                  'is--disabled': isDateDisabled(item),
+                  'is--selected': XEUtils.isDateSame(dateValue, item.date, matchFormat),
+                  'is--hover': XEUtils.isDateSame(datePanelValue, item.date, matchFormat)
+                },
+                onClick: () => dateSelectEvent(item),
+                onMouseenter: () => dateMouseenterEvent(item)
+              }, renderDateLabel(item, GlobalConfig.i18n(`vxe.input.date.quarters.q${item.quarter}`)))
             }))
           }))
         ])
@@ -1654,6 +1774,8 @@ export default defineComponent({
           return renderDateWeekTable()
         case 'month' :
           return renderDateMonthTable()
+        case 'quarter' :
+          return renderDateQuarterTable()
         case 'year' :
           return renderDateYearTable()
       }
@@ -1894,12 +2016,13 @@ export default defineComponent({
 
     const rendePrefixIcon = () => {
       const { prefixIcon } = props
+      const prefixSlot = slots.prefix
       const icons = []
-      if (slots.prefix) {
+      if (prefixSlot) {
         icons.push(
           h('span', {
             class: 'vxe-input--prefix-icon'
-          }, slots.prefix({}))
+          }, prefixSlot({}))
         )
       } else if (prefixIcon) {
         icons.push(
@@ -1917,13 +2040,14 @@ export default defineComponent({
     const renderSuffixIcon = () => {
       const { disabled, suffixIcon } = props
       const { inputValue } = reactData
+      const suffixSlot = slots.suffix
       const isClearable = computeIsClearable.value
       const icons = []
-      if (slots.suffix) {
+      if (suffixSlot) {
         icons.push(
           h('span', {
             class: 'vxe-input--suffix-icon'
-          }, slots.suffix({}))
+          }, suffixSlot({}))
         )
       } else if (suffixIcon) {
         icons.push(
@@ -2019,11 +2143,11 @@ export default defineComponent({
     initValue()
 
     const renderVN = () => {
-      const { controls, type, align, name, disabled, autocomplete } = props
+      const { className, controls, type, align, name, disabled, readonly, autocomplete } = props
       const { inputValue, visiblePanel, isActivated } = reactData
       const vSize = computeSize.value
       const isDatePickerType = computeIsDatePickerType.value
-      const isReadonly = computeIsReadonly.value
+      const inpReadonly = computeInpReadonly.value
       const inpMaxlength = computeInpMaxlength.value
       const inputType = computeInputType.value
       const inpPlaceholder = computeInpPlaceholder.value
@@ -2044,17 +2168,17 @@ export default defineComponent({
           type: inputType,
           placeholder: inpPlaceholder,
           maxlength: inpMaxlength,
-          readonly: isReadonly,
+          readonly: inpReadonly,
           disabled,
           autocomplete,
           onKeydown: keydownEvent,
           onKeyup: keyupEvent,
-          onMousewheel: mousewheelEvent,
+          onWheel: wheelEvent,
           onClick: clickEvent,
           onInput: inputEvent,
           onChange: changeEvent,
           onFocus: focusEvent,
-          onBlu: blurEvent
+          onBlur: blurEvent
         })
       )
       // 后缀图标
@@ -2069,13 +2193,13 @@ export default defineComponent({
       }
       return h('div', {
         ref: refElem,
-        class: ['vxe-input', `type--${type}`, {
+        class: ['vxe-input', `type--${type}`, className, {
           [`size--${vSize}`]: vSize,
           [`is--${align}`]: align,
           'is--controls': controls,
           'is--prefix': !!prefix,
           'is--suffix': !!suffix,
-          'is--readonly': isReadonly,
+          'is--readonly': readonly,
           'is--visivle': visiblePanel,
           'is--disabled': disabled,
           'is--active': isActivated

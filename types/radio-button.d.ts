@@ -1,10 +1,12 @@
-import { SetupContext, RenderFunction, ComponentPublicInstance, DefineComponent } from 'vue'
+import { SetupContext, RenderFunction, ComponentPublicInstance } from 'vue'
 import { SizeType, VXEComponent, VxeComponentBase, VxeEvent, ValueOf } from './component'
+import { VxeRadioPropTypes } from './radio'
 
 /**
  * 组件 - 单选框按钮
+ * @example import { RadioButton as VxeRadioButton } from 'vxe-table'
  */
-export const RadioButton: VXEComponent<VxeRadioButtonProps & VxeRadioButtonEventProps>;
+export const RadioButton: VXEComponent<VxeRadioButtonProps, VxeRadioButtonEventProps>;
 
 export type VxeRadioButtonInstance = ComponentPublicInstance<VxeRadioButtonProps, VxeRadioButtonConstructor>;
 
@@ -13,8 +15,6 @@ export interface VxeRadioButtonConstructor extends VxeComponentBase, VxeRadioBut
   context: SetupContext<VxeRadioButtonEmits>;
   renderVN: RenderFunction;
 }
-
-export interface RadioButtonOptions extends VxeRadioButtonProps, VxeRadioButtonListeners { }
 
 export interface RadioButtonMethods {
   dispatchEvent(type: ValueOf<VxeRadioButtonEmits>, params: any, evnt: Event): void;
@@ -30,12 +30,21 @@ export type VxeRadioButtonEmits = [
 ]
 
 export type VxeRadioButtonProps = {
-  size?: SizeType;
-  modelValue: any;
-  label: any;
-  title: string | number;
-  content: string | number;
-  disabled: boolean;
+  size?: VxeRadioButtonPropTypes.Size;
+  modelValue?: VxeRadioButtonPropTypes.ModelValue;
+  label?: VxeRadioButtonPropTypes.Label;
+  title?: VxeRadioButtonPropTypes.Title;
+  content?: VxeRadioButtonPropTypes.Content;
+  disabled?: VxeRadioButtonPropTypes.Disabled;
+}
+
+export namespace VxeRadioButtonPropTypes {
+  export type Size = VxeRadioPropTypes.Size;
+  export type ModelValue = any;
+  export type Label = VxeRadioPropTypes.Label;
+  export type Title = string | number;
+  export type Content = string | number;
+  export type Disabled = boolean;
 }
 
 export namespace VxeRadioButtonDefines {

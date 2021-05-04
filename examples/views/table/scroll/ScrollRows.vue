@@ -1,7 +1,7 @@
 <template>
   <div>
     <p class="tip">
-      虚拟滚动渲染<span class="orange">（最大可以支撑 5w 列、30w 行）</span><br>
+      虚拟滚动渲染<br>
       大数据不建议使用双向绑定的 <table-api-link name="data"/> 属性，建议使用 <table-api-link prop="loadData"/>/<table-api-link prop="reloadData"/> 函数<br>
       <table-api-link prop="data"/> 和 <table-api-link prop="loadData"/>/<table-api-link prop="reloadData"/> 不应该同时使用，请根据数据量决定使用哪种方式，保证一致性<br>
       <span class="red">（注：启用纵向虚拟滚的后不支持动态行高；如果需要支持，将虚拟滚动关闭即可）</span>
@@ -9,11 +9,15 @@
 
     <vxe-toolbar>
       <template #buttons>
+        <vxe-button @click="loadList(50)">50条</vxe-button>
+        <vxe-button @click="loadList(100)">100条</vxe-button>
         <vxe-button @click="loadList(1000)">1k条</vxe-button>
         <vxe-button @click="loadList(5000)">5k条</vxe-button>
         <vxe-button @click="loadList(10000)">1w条</vxe-button>
         <vxe-button @click="loadList(50000)">5w条</vxe-button>
         <vxe-button @click="loadList(100000)">10w条</vxe-button>
+        <vxe-button @click="loadList(200000)">20w条</vxe-button>
+        <vxe-button @click="loadList(300000)">30w条</vxe-button>
       </template>
     </vxe-toolbar>
 
@@ -23,7 +27,7 @@
       show-overflow
       show-header-overflow
       ref="xTable"
-      height="300"
+      height="600"
       :export-config="{}"
       :sort-config="{trigger: 'cell'}"
       :loading="demo1.loading">
@@ -115,7 +119,7 @@ export default defineComponent({
         // 使用函数式加载
         if ($table) {
           $table.reloadData(data).then(() => {
-            VXETable.modal.message({ message: `渲染 ${rowSize} 行，用时 ${Date.now() - startTime}毫秒`, status: 'info' })
+            VXETable.modal.message({ content: `渲染 ${rowSize} 行，用时 ${Date.now() - startTime}毫秒`, status: 'info' })
             demo1.loading = false
           })
         } else {
@@ -136,11 +140,15 @@ export default defineComponent({
         `
         <vxe-toolbar>
           <template #buttons>
+            <vxe-button @click="loadList(50)">50条</vxe-button>
+            <vxe-button @click="loadList(100)">100条</vxe-button>
             <vxe-button @click="loadList(1000)">1k条</vxe-button>
             <vxe-button @click="loadList(5000)">5k条</vxe-button>
             <vxe-button @click="loadList(10000)">1w条</vxe-button>
             <vxe-button @click="loadList(50000)">5w条</vxe-button>
             <vxe-button @click="loadList(100000)">10w条</vxe-button>
+            <vxe-button @click="loadList(200000)">20w条</vxe-button>
+            <vxe-button @click="loadList(300000)">30w条</vxe-button>
           </template>
         </vxe-toolbar>
 
@@ -150,7 +158,7 @@ export default defineComponent({
           show-overflow
           show-header-overflow
           ref="xTable"
-          height="300"
+          height="600"
           :export-config="{}"
           :sort-config="{trigger: 'cell'}"
           :loading="demo1.loading">
@@ -232,7 +240,7 @@ export default defineComponent({
                 // 使用函数式加载
                 if ($table) {
                   $table.reloadData(data).then(() => {
-                    VXETable.modal.message({ message: \`渲染 \${rowSize} 行，用时 \${Date.now() - startTime}毫秒\`, status: 'info' })
+                    VXETable.modal.message({ content: \`渲染 \${rowSize} 行，用时 \${Date.now() - startTime}毫秒\`, status: 'info' })
                     demo1.loading = false
                   })
                 } else {

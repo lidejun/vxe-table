@@ -1,12 +1,13 @@
 import { defineComponent, h, PropType, ref, Ref, computed, onUnmounted, watch, reactive, nextTick } from 'vue'
-import { DomTools, GlobalEvent, createResizeEvent, XEResizeObserver, UtilTools } from '../../tools'
 import XEUtils from 'xe-utils'
 import GlobalConfig from '../../v-x-e-table/src/conf'
 import { useSize } from '../../hooks/size'
+import { createResizeEvent, XEResizeObserver } from '../../tools/resize'
+import { browse } from '../../tools/dom'
+import { isNumVal } from '../../tools/utils'
+import { GlobalEvent } from '../../tools/event'
 
 import { VxeListConstructor, VxeListPropTypes, VxeListEmits, ListReactData, ListInternalData, ListMethods, ListPrivateRef, VxeListMethods } from '../../../types/all'
-
-const { browse } = DomTools
 
 export default defineComponent({
   name: 'VxeList',
@@ -15,6 +16,7 @@ export default defineComponent({
     height: [Number, String] as PropType<VxeListPropTypes.Height>,
     maxHeight: [Number, String] as PropType<VxeListPropTypes.MaxHeight>,
     loading: Boolean as PropType<VxeListPropTypes.Loading>,
+    className: [String, Function] as PropType<VxeListPropTypes.ClassName>,
     size: { type: String as PropType<VxeListPropTypes.Size>, default: () => GlobalConfig.list.size || GlobalConfig.size },
     autoResize: { type: Boolean as PropType<VxeListPropTypes.AutoResize>, default: () => GlobalConfig.list.autoResize },
     syncResize: [Boolean, String, Number] as PropType<VxeListPropTypes.SyncResize>,
@@ -79,10 +81,10 @@ export default defineComponent({
       const { height, maxHeight } = props
       const style: { [key: string]: string | number } = {}
       if (height) {
-        style.height = UtilTools.isNumVal(height) ? `${height}px` : height
+        style.height = isNumVal(height) ? `${height}px` : height
       } else if (maxHeight) {
         style.height = 'auto'
-        style.maxHeight = UtilTools.isNumVal(maxHeight) ? `${maxHeight}px` : maxHeight
+        style.maxHeight = isNumVal(maxHeight) ? `${maxHeight}px` : maxHeight
       }
       return style
     })
@@ -114,11 +116,13 @@ export default defineComponent({
         const sYOpts = computeSYOpts.value
         let rowHeight = 0
         let firstItemElem
-        if (sYOpts.sItem) {
-          firstItemElem = virtualBodyElem.querySelector(sYOpts.sItem)
-        }
-        if (!firstItemElem) {
-          firstItemElem = virtualBodyElem.children[0]
+        if (virtualBodyElem) {
+          if (sYOpts.sItem) {
+            firstItemElem = virtualBodyElem.querySelector(sYOpts.sItem)
+          }
+          if (!firstItemElem) {
+            firstItemElem = virtualBodyElem.children[0]
+          }
         }
         if (firstItemElem) {
           rowHeight = firstItemElem.offsetHeight
@@ -149,11 +153,7 @@ export default defineComponent({
       if (scrollBodyElem) {
         scrollBodyElem.scrollTop = 0
       }
-      return new Promise(resolve => {
-        setTimeout(() => {
-          resolve(nextTick())
-        })
-      })
+      return nextTick()
     }
 
     /**
@@ -301,13 +301,13 @@ export default defineComponent({
     })
 
     const renderVN = () => {
-      const { loading } = props
+      const { className, loading } = props
       const { bodyHeight, topSpaceHeight, items } = reactData
       const vSize = computeSize.value
       const styles = computeStyles.value
       return h('div', {
         ref: refElem,
-        class: ['vxe-list', {
+        class: ['vxe-list', className ? (XEUtils.isFunction(className) ? className({ $list: $xelist }) : className) : '', {
           [`size--${vSize}`]: vSize,
           'is--loading': loading
         }]

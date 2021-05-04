@@ -25,8 +25,15 @@
       <vxe-select v-model="demo1.value21" placeholder="可清除" clearable>
         <vxe-option v-for="num in 5" :key="num" :value="num" :label="`选项${num}`"></vxe-option>
       </vxe-select>
-      <vxe-select v-model="demo1.value22" placeholder="请选择" clearable>
-        <vxe-option v-for="num in 10" :key="num" :value="num" :label="`选项${num}`"></vxe-option>
+      <vxe-select v-model="demo1.value22" placeholder="自定义选项样式" clearable>
+        <vxe-option value="1" label="选项1"></vxe-option>
+        <vxe-option value="2" label="选项2" class-name="red"></vxe-option>
+        <vxe-option value="3" label="选项3" class-name="green"></vxe-option>
+        <vxe-option value="4" label="选项4"></vxe-option>
+        <vxe-option value="5" label="选项5" class-name="red"></vxe-option>
+        <vxe-option value="6" label="选项6"></vxe-option>
+        <vxe-option value="7" label="选项7"></vxe-option>
+        <vxe-option value="8" label="选项8"></vxe-option>
       </vxe-select>
       <vxe-select v-model="demo1.value23" placeholder="分组" clearable transfer>
         <vxe-optgroup label="选项2">
@@ -101,6 +108,7 @@
     </p>
 
     <p>
+      <vxe-select v-model="demo1.value45" placeholder="加载中" :options="demo1.list45" loading></vxe-select>
       <vxe-select v-model="demo1.value40" placeholder="空数据" :options="demo1.list40"></vxe-select>
       <vxe-select v-model="demo1.value41" placeholder="分组配置式" :option-groups="demo1.list41"></vxe-select>
       <vxe-select v-model="demo1.value42" placeholder="禁用选项" :options="demo1.list42"></vxe-select>
@@ -140,7 +148,7 @@ export default defineComponent({
       value13: null,
       value20: null,
       value21: null,
-      value22: 2,
+      value22: null,
       value23: null,
       value30: null,
       value31: null,
@@ -220,7 +228,9 @@ export default defineComponent({
         { label: '9999', value: '9', disabled: false },
         { label: '1010', value: '10', disabled: false },
         { label: '1111', value: '11', disabled: false }
-      ]
+      ],
+      value45: null,
+      list45: []
     })
     return {
       demo1,
@@ -248,8 +258,15 @@ export default defineComponent({
           <vxe-select v-model="demo1.value21" placeholder="可清除" clearable>
             <vxe-option v-for="num in 5" :key="num" :value="num" :label="\`选项\${num}\`"></vxe-option>
           </vxe-select>
-          <vxe-select v-model="demo1.value22" placeholder="请选择" clearable>
-            <vxe-option v-for="num in 10" :key="num" :value="num" :label="\`选项\${num}\`"></vxe-option>
+          <vxe-select v-model="demo1.value22" placeholder="自定义选项样式" clearable>
+            <vxe-option value="1" label="选项1"></vxe-option>
+            <vxe-option value="2" label="选项2" class-name="red"></vxe-option>
+            <vxe-option value="3" label="选项3" class-name="green"></vxe-option>
+            <vxe-option value="4" label="选项4"></vxe-option>
+            <vxe-option value="5" label="选项5" class-name="red"></vxe-option>
+            <vxe-option value="6" label="选项6"></vxe-option>
+            <vxe-option value="7" label="选项7"></vxe-option>
+            <vxe-option value="8" label="选项8"></vxe-option>
           </vxe-select>
           <vxe-select v-model="demo1.value23" placeholder="分组" clearable transfer>
             <vxe-optgroup label="选项2">
@@ -324,6 +341,7 @@ export default defineComponent({
         </p>
 
         <p>
+          <vxe-select v-model="demo1.value45" placeholder="加载中" :options="demo1.list45" loading></vxe-select>
           <vxe-select v-model="demo1.value40" placeholder="空数据" :options="demo1.list40"></vxe-select>
           <vxe-select v-model="demo1.value41" placeholder="分组配置式" :option-groups="demo1.list41"></vxe-select>
           <vxe-select v-model="demo1.value42" placeholder="禁用选项" :options="demo1.list42"></vxe-select>
@@ -343,7 +361,7 @@ export default defineComponent({
               value13: null,
               value20: null,
               value21: null,
-              value22: 2,
+              value22: null,
               value23: null,
               value30: null,
               value31: null,
@@ -423,13 +441,23 @@ export default defineComponent({
                 { label: '9999', value: '9', disabled: false },
                 { label: '1010', value: '10', disabled: false },
                 { label: '1111', value: '11', disabled: false }
-              ]
+              ],
+              value45: null,
+              list45: []
             })
             return {
               demo1
             }
           }
         })
+        `,
+        `
+        .red {
+          color: red;
+        }
+        .green {
+          color: green;
+        }
         `
       ]
     }

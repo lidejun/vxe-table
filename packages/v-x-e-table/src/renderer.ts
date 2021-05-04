@@ -1,19 +1,15 @@
 import { h, resolveComponent, ComponentOptions } from 'vue'
 import XEUtils from 'xe-utils'
 import GlobalConfig from './conf'
-import { VNTools, UtilTools } from '../../tools'
+import { getCellValue, setCellValue } from '../../table/src/util'
+import { warnLog, getFuncText, formatText, isEmptyValue } from '../../tools/utils'
+import { getOnName } from '../../tools/vn'
 
 import { VxeGlobalRendererHandles, VxeGlobalRenderer, VxeColumnPropTypes } from '../../../types/all'
-
-const { getOnName } = VNTools
 
 const componentDefaultModelProp = 'modelValue'
 
 const defaultCompProps = { transfer: true }
-
-function isEmptyValue (cellValue: any) {
-  return cellValue === null || cellValue === undefined || cellValue === ''
-}
 
 function getModelEvent (renderOpts: any) {
   switch (renderOpts.name) {
@@ -98,6 +94,19 @@ function getComponentFormItemProps (renderOpts: any, params: any, value: any, de
 
 function isImmediateCell (renderOpts: VxeColumnPropTypes.EditRender, params: any) {
   return params.$type === 'cell' || getInputImmediateModel(renderOpts)
+}
+
+function getCellLabelVNs (renderOpts: any, params: any, cellLabel: any) {
+  const { placeholder } = renderOpts
+  return [
+    h('span', {
+      class: 'vxe-cell--label'
+    }, placeholder && isEmptyValue(cellLabel) ? [
+      h('span', {
+        class: 'vxe-cell--placeholder'
+      }, formatText(getFuncText(placeholder), 1))
+    ] : formatText(cellLabel, 1))
+  ]
 }
 
 /**
@@ -186,7 +195,7 @@ function getEditOns (renderOpts: any, params: any) {
   return getComponentOns(renderOpts, params, (cellValue: any) => {
     // 处理 model 值双向绑定
     if (isImmediate) {
-      UtilTools.setCellValue(row, column, cellValue)
+      setCellValue(row, column, cellValue)
     } else {
       model.update = true
       model.value = cellValue
@@ -194,7 +203,10 @@ function getEditOns (renderOpts: any, params: any) {
   }, (eventParams: any) => {
     // 处理 change 事件相关逻辑
     if (!isImmediate && (name === '$input' || name === '$textarea')) {
-      $table.updateStatus(params, eventParams.value)
+      const cellValue = eventParams.value
+      model.update = true
+      model.value = cellValue
+      $table.updateStatus(params, cellValue)
     } else {
       $table.updateStatus(params)
     }
@@ -228,7 +240,7 @@ function getNativeEditOns (renderOpts: any, params: any) {
     // 处理 model 值双向绑定
     const cellValue = evnt.target.value
     if (isImmediateCell(renderOpts, params)) {
-      UtilTools.setCellValue(row, column, cellValue)
+      setCellValue(row, column, cellValue)
     } else {
       model.update = true
       model.value = cellValue
@@ -268,7 +280,7 @@ function getNativeItemOns (renderOpts: any, params: any) {
 function nativeEditRender (renderOpts: any, params: any) {
   const { row, column } = params
   const { name } = renderOpts
-  const cellValue = isImmediateCell(renderOpts, params) ? UtilTools.getCellValue(row, column) : column.model.value
+  const cellValue = isImmediateCell(renderOpts, params) ? getCellValue(row, column) : column.model.value
   return [
     h(name, {
       class: `vxe-default-${name}`,
@@ -281,7 +293,7 @@ function nativeEditRender (renderOpts: any, params: any) {
 
 function defaultEditRender (renderOpts: VxeGlobalRendererHandles.RenderEditOptions, params: VxeGlobalRendererHandles.RenderEditParams) {
   const { row, column } = params
-  const cellValue = UtilTools.getCellValue(row, column)
+  const cellValue = getCellValue(row, column)
   return [
     h(getDefaultComponent(renderOpts), {
       ...getCellEditProps(renderOpts, params, cellValue),
@@ -324,7 +336,7 @@ function renderNativeOptions (options: any, renderOpts: any, params: any) {
   const labelProp = optionProps.label || 'label'
   const valueProp = optionProps.value || 'value'
   const disabledProp = optionProps.disabled || 'disabled'
-  const cellValue = isImmediateCell(renderOpts, params) ? UtilTools.getCellValue(row, column) : column.model.value
+  const cellValue = isImmediateCell(renderOpts, params) ? getCellValue(row, column) : column.model.value
   return options.map((option: any, oIndex: any) => {
     return h('option', {
       key: oIndex,
@@ -384,7 +396,7 @@ function nativeSelectEditRender (renderOpts: any, params: any) {
 function defaultSelectEditRender (renderOpts: any, params: any) {
   const { row, column } = params
   const { options, optionProps, optionGroups, optionGroupProps } = renderOpts
-  const cellValue = UtilTools.getCellValue(row, column)
+  const cellValue = getCellValue(row, column)
   return [
     h(getDefaultComponent(renderOpts), {
       ...getCellEditProps(renderOpts, params, cellValue, { options, optionProps, optionGroups, optionGroupProps }),
@@ -416,7 +428,7 @@ function getSelectCellValue (renderOpts: any, { row, column }: any) {
       return selectItem ? selectItem[labelProp] : value
     }).join(', ')
   }
-  return null
+  return ''
 }
 
 /**
@@ -485,7 +497,7 @@ function renderNativeFormOptions (options: any, renderOpts: any, params: any) {
 
 function handleExportSelectMethod (params: any) {
   const { row, column, options } = params
-  return options.original ? UtilTools.getCellValue(row, column) : getSelectCellValue(column.editRender || column.cellRender, params)
+  return options.original ? getCellValue(row, column) : getSelectCellValue(column.editRender || column.cellRender, params)
 }
 
 /**
@@ -540,7 +552,7 @@ const renderMap: { [name: string]: any } = {
     renderEdit: nativeSelectEditRender,
     renderDefault: nativeSelectEditRender,
     renderCell (renderOpts: any, params: any) {
-      return getSelectCellValue(renderOpts, params)
+      return getCellLabelVNs(renderOpts, params, getSelectCellValue(renderOpts, params))
     },
     renderFilter (renderOpts: any, params: any) {
       const { column } = params
@@ -588,7 +600,7 @@ const renderMap: { [name: string]: any } = {
             break
         }
       }
-      return cellValue
+      return getCellLabelVNs(renderOpts, params, cellValue)
     },
     renderDefault: defaultEditRender,
     renderFilter: defaultFilterRender,
@@ -612,7 +624,7 @@ const renderMap: { [name: string]: any } = {
     renderEdit: defaultSelectEditRender,
     renderDefault: defaultSelectEditRender,
     renderCell (renderOpts: any, params: any) {
-      return getSelectCellValue(renderOpts, params)
+      return getCellLabelVNs(renderOpts, params, getSelectCellValue(renderOpts, params))
     },
     renderFilter (renderOpts: any, params: any) {
       const { column } = params
@@ -671,6 +683,15 @@ export const renderer: VxeGlobalRenderer = {
     if (name && options) {
       const renders = renderMap[name]
       if (renders) {
+        // 检测是否覆盖
+        if (process.env.VUE_APP_VXE_TABLE_ENV === 'development') {
+          XEUtils.each(options, (val, key) => {
+            if (!XEUtils.eqNull(renders[key]) && renders[key] !== val) {
+              warnLog('vxe.error.coverProp', [`Renderer.${name}`, key])
+            }
+          })
+        }
+
         Object.assign(renders, options)
       } else {
         renderMap[name] = options

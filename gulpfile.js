@@ -18,6 +18,7 @@ const time = Date.now()
 
 const components = [
   'v-x-e-table',
+  'vxe-table',
 
   'icon',
   'filter',
@@ -46,6 +47,7 @@ const components = [
   'tooltip',
   'form',
   'form-item',
+  'form-gather',
   'select',
   'optgroup',
   'option',
@@ -78,6 +80,7 @@ gulp.task('build_modules', () => {
       target: 'esnext',
       lib: ['dom', 'esnext']
     }))
+    .pipe(gulp.dest('es'))
     .pipe(babel({
       presets: ['@babel/env']
     }))
@@ -93,6 +96,7 @@ gulp.task('build_modules', () => {
 gulp.task('build_i18n', () => {
   languages.forEach(code => {
     fs.writeFileSync(`lib/locale/lang/${code}.d.ts`, `declare const langMsgs: { [key: string]: any }\nexport default langMsgs`)
+    fs.writeFileSync(`es/locale/lang/${code}.d.ts`, `declare const langMsgs: { [key: string]: any }\nexport default langMsgs`)
   })
   const rest = languages.map(code => {
     const name = XEUtils.camelCase(code).replace(/^[a-z]/, firstChat => firstChat.toUpperCase())
@@ -136,11 +140,19 @@ gulp.task('build_i18n', () => {
 
 gulp.task('copy_ts', () => {
   return gulp.src('packages/**/*.d.ts')
+    .pipe(gulp.dest('es'))
     .pipe(gulp.dest('lib'))
 })
 
 gulp.task('build_lib', () => {
   return merge(
+    gulp.src('es/index.common.js')
+      .pipe(rename({
+        basename: 'index',
+        suffix: '.esm',
+        extname: '.js'
+      }))
+      .pipe(gulp.dest('es')),
     gulp.src('lib_temp/index.umd.js')
       .pipe(gulp.dest('lib')),
     gulp.src('lib_temp/index.umd.min.js')
@@ -150,17 +162,19 @@ gulp.task('build_lib', () => {
         basename: 'style',
         extname: '.css'
       }))
+      .pipe(gulp.dest('es'))
       .pipe(gulp.dest('lib'))
       .pipe(rename({
         basename: 'style',
         suffix: '.min',
         extname: '.css'
       }))
+      .pipe(gulp.dest('es'))
       .pipe(gulp.dest('lib'))
   )
 })
 
-gulp.task('build_style', gulp.series('build_modules', 'build_i18n', 'copy_ts', () => {
+gulp.task('build_style', () => {
   const rest = components.map(name => {
     return gulp.src(`styles/${name}.scss`)
       .pipe(replace(/(\/\*\*Variable\*\*\/)/, `@import './variable.scss';\n`))
@@ -170,6 +184,11 @@ gulp.task('build_style', gulp.series('build_modules', 'build_i18n', 'copy_ts', (
         cascade: true,
         remove: true
       }))
+      .pipe(rename({
+        basename: 'style',
+        extname: '.css'
+      }))
+      .pipe(gulp.dest(`es/${name}`))
       .pipe(rename({
         basename: 'style',
         extname: '.css'
@@ -184,18 +203,21 @@ gulp.task('build_style', gulp.series('build_modules', 'build_i18n', 'copy_ts', (
       .pipe(gulp.dest(`lib/${name}/style`))
   })
   return merge(...rest)
-}))
-
-gulp.task('build_clean', () => {
-  return del('lib')
 })
 
-gulp.task('build', gulp.series('build_clean', 'build_style', 'build_lib', () => {
+gulp.task('build_clean', () => {
+  return del(['lib', 'es'])
+})
+
+gulp.task('build', gulp.series('build_clean', 'build_modules', 'build_i18n', 'copy_ts', 'build_style', 'build_lib', () => {
   components.forEach(name => {
     fs.writeFileSync(`lib/${name}/style/index.js`, styleCode)
   })
   return del([
-    'lib_temp'
+    'lib_temp',
+    'lib/index.esm.js',
+    'lib/index.esm.min.js',
+    'es/index.common.js'
   ])
 }))
 
@@ -210,6 +232,7 @@ gulp.task('move_docs_root', () => {
   return gulp.src([
     'docs/favicon.ico',
     'docs/index.html',
+    'docs/issues.html',
     'docs/logo.png'
   ])
     .pipe(gulp.dest('docs/v4'))
@@ -217,74 +240,20 @@ gulp.task('move_docs_root', () => {
 
 gulp.task('clear_docs_temp', () => {
   return del([
-    'docs/static',
-    'docs/favicon.ico',
-    'docs/index.html',
-    'docs/logo.png',
     '../branches/docs/vxe-table/docs'
   ], { force: true })
 })
 
 gulp.task('move_docs_latest', gulp.series('clear_docs_temp', () => {
   return gulp.src([
-    'docs/v3/**'
+    'docs/v3/index.html',
+    'docs/v4/404.html'
   ])
     .pipe(gulp.dest('docs'))
 }))
 
 gulp.task('build_docs_v4', gulp.parallel('move_docs_static', 'move_docs_root'))
 
-// gulp.task('build_html_docs', () => {
-//   return gulp.src([
-//     '../branches/docs/vxe-table/plugins/_index.html'
-//   ])
-//     .pipe(replace('href="./_index.css"', `href="./${time}.css"`))
-//     .pipe(replace('src="./_index.js"', `src="./${time}.js"`))
-//     .pipe(rename({
-//       basename: 'index',
-//       extname: '.html'
-//     }))
-//     .pipe(gulp.dest('../branches/docs/vxe-table/docs/plugins'))
-//     .pipe(rename({
-//       basename: '404',
-//       extname: '.html'
-//     }))
-//     .pipe(gulp.dest('../branches/docs/vxe-table/docs/plugins'))
-// })
-
-// gulp.task('build_js_docs', () => {
-//   return gulp.src([
-//     '../branches/docs/vxe-table/plugins/_index.js'
-//   ])
-//     .pipe(rename({
-//       basename: time,
-//       extname: '.js'
-//     }))
-//     .pipe(gulp.dest('../branches/docs/vxe-table/docs/plugins'))
-// })
-
-// gulp.task('build_css_docs', () => {
-//   return gulp.src([
-//     '../branches/docs/vxe-table/plugins/_index.css'
-//   ])
-//     .pipe(prefixer({
-//       borwsers: ['last 1 version', '> 1%', 'not ie <= 8'],
-//       cascade: true,
-//       remove: true
-//     }))
-//     .pipe(cleanCSS())
-//     .pipe(rename({
-//       basename: time,
-//       extname: '.css'
-//     }))
-//     .pipe(gulp.dest('../branches/docs/vxe-table/docs/plugins'))
-// })
-
-// gulp.task('update_plugin_docs', gulp.series('build_html_docs', 'build_css_docs', 'build_css_docs', 'build_js_docs', () => {
-//   return gulp.src([
-//     '../branches/docs/vxe-table/plugins/**'
-//   ]).pipe(gulp.dest('../branches/docs/vxe-table/docs/plugins'))
-// }))
 gulp.task('update_plugin_docs', () => {
   return gulp.src([
     '../branches/docs/vxe-table/plugins/**'
@@ -324,7 +293,7 @@ gulp.task('copy_docs_v3d5', () => {
 })
 
 gulp.task('copy_docs_index', gulp.parallel('copy_docs_v1', 'copy_docs_v2', 'copy_docs_v3', () => {
-  return gulp.src('docs/index.html')
+  return gulp.src('docs/v4/index.html')
     .pipe(rename({
       basename: '404'
     }))

@@ -8,7 +8,7 @@ const apis = [
     defVal: '',
     list: [
       {
-        name: 'v-model / modelValue',
+        name: 'modelValue',
         descKey: 'app.api.input.desc.value',
         version: '',
         type: 'any',
@@ -39,7 +39,7 @@ const apis = [
         desc: '渲染类型',
         version: '',
         type: 'string',
-        enum: 'text, search, number, integer, float, password, date, time, datetime, week, month, year',
+        enum: 'text, search, number, integer, float, password, date, time, datetime, week, month, quarter, year',
         defVal: 'text',
         list: []
       },
@@ -113,6 +113,15 @@ const apis = [
         type: 'boolean',
         enum: '',
         defVal: 'false',
+        list: []
+      },
+      {
+        name: 'className',
+        desc: '附加 className',
+        version: '4.0.7',
+        type: 'string',
+        enum: '',
+        defVal: '',
         list: []
       },
       {
@@ -190,7 +199,7 @@ const apis = [
       {
         name: 'min-date',
         abandoned: true,
-        desc: '只对 type=date|datetime|week|month|year 有效，设置日期可选范围的最小值',
+        desc: '只对 type=date|datetime|week|month|quarter|year 有效，设置日期可选范围的最小值',
         version: '',
         type: 'number | string | Date',
         enum: '',
@@ -200,7 +209,7 @@ const apis = [
       {
         name: 'max-date',
         abandoned: true,
-        desc: '只对 type=date|datetime|week|month|year 有效，设置日期可选范围的最大值',
+        desc: '只对 type=date|datetime|week|month|quarter|year 有效，设置日期可选范围的最大值',
         version: '',
         type: 'number | string | Date',
         enum: '',
@@ -218,7 +227,7 @@ const apis = [
       },
       {
         name: 'label-format',
-        desc: '只对 type=date|datetime|week|month|year 有效，输入框中显示的日期格式',
+        desc: '只对 type=date|datetime|week|month|quarter|year 有效，输入框中显示的日期格式',
         version: '',
         type: 'string',
         enum: '',
@@ -227,7 +236,7 @@ const apis = [
       },
       {
         name: 'value-format',
-        desc: '只对 type=date|datetime|week|month|year 有效，绑定值的返回格式，默认返回 Date 类型，如果指定格式则返回字符串',
+        desc: '只对 type=date|datetime|week|month|quarter|year 有效，绑定值的返回格式，默认返回 Date 类型，如果指定格式则返回字符串',
         version: '',
         type: 'string',
         enum: '',
@@ -236,7 +245,7 @@ const apis = [
       },
       {
         name: 'editable',
-        desc: '只对 type=date|time|datetime|week|month|year 有效，文本框是否允许输入',
+        desc: '只对 type=date|time|datetime|week|month|quarter|year 有效，文本框是否允许输入',
         version: '',
         type: 'boolean',
         enum: '',
@@ -245,25 +254,25 @@ const apis = [
       },
       {
         name: 'disabled-method',
-        desc: '只对 type=date|datetime|week|month|year 有效，该方法的返回值用来决定该日期是否允许选中',
+        desc: '只对 type=date|datetime|week|month|quarter|year 有效，该方法的返回值用来决定该日期是否允许选中',
         version: '',
-        type: '({ date, type }) => boolean',
+        type: '({ date, viewType }) => boolean',
         enum: '',
         defVal: '',
         list: []
       },
       {
         name: 'festival-method',
-        desc: '只对 type=date|datetime|week|month|year 有效，该方法用于返回对应日期显示的节日',
+        desc: '只对 type=date|datetime|week|month|quarter|year 有效，该方法用于返回对应日期显示的节日',
         version: '',
-        type: '({ date, type }) => any',
+        type: '({ date, viewType }) => any',
         enum: '',
         defVal: '',
         list: []
       },
       {
         name: 'transfer',
-        desc: '只对 type=date|time|datetime|week|month|year 有效，是否将弹框容器插入于 body 内（对于嵌入到表格或者弹窗中被遮挡时需要设置为 true）',
+        desc: '只对 type=date|time|datetime|week|month|quarter|year 有效，是否将弹框容器插入于 body 内（对于嵌入到表格或者弹窗中被遮挡时需要设置为 true）',
         version: '',
         type: 'boolean',
         enum: '',
@@ -279,7 +288,26 @@ const apis = [
     type: '',
     enum: '',
     defVal: '',
-    list: []
+    list: [
+      {
+        name: 'prefix',
+        desc: '前缀图标模板',
+        version: '',
+        type: '',
+        enum: '',
+        defVal: '',
+        list: []
+      },
+      {
+        name: 'suffix',
+        desc: '后缀图标模板',
+        version: '',
+        type: '',
+        enum: '',
+        defVal: '',
+        list: []
+      }
+    ]
   },
   {
     name: 'Events',
@@ -325,15 +353,15 @@ const apis = [
         defVal: '{ value, $event }',
         list: []
       },
-      {
-        name: 'mousewheel',
-        desc: '在鼠标在输入框内滚动时触发该事件',
-        version: '',
-        type: '',
-        enum: '',
-        defVal: '{ value, $event }',
-        list: []
-      },
+      // {
+      //   name: 'wheel',
+      //   desc: '在鼠标在输入框内滚动时触发该事件',
+      //   version: '',
+      //   type: '',
+      //   enum: '',
+      //   defVal: '{ value, $event }',
+      //   list: []
+      // },
       {
         name: 'click',
         desc: '在点击输入框时触发该事件',

@@ -80,51 +80,51 @@
     "description": "鼠标移到列是否要高亮显示"
   },
   "vxe-table/row-class-name": {
-    "type": "string | ((params: { row, rowindex, $rowindex }) => any)",
+    "type": "string | (({ row, rowindex, $rowindex }) => any)",
     "description": "给行附加 className"
   },
   "vxe-table/cell-class-name": {
-    "type": "string | ((params: { row, rowindex, $rowindex, column, columnindex, $columnindex }) => any)",
+    "type": "string | (({ row, rowindex, $rowindex, column, columnindex, $columnindex }) => any)",
     "description": "给单元格附加 className"
   },
   "vxe-table/header-row-class-name": {
-    "type": "string | ((params: { $rowindex }) => any)",
+    "type": "string | (({ $rowindex }) => any)",
     "description": "给表头的行附加 className"
   },
   "vxe-table/header-cell-class-name": {
-    "type": "string | ((params: { $rowindex, column, columnindex, $columnindex }) => any)",
+    "type": "string | (({ $rowindex, column, columnindex, $columnindex }) => any)",
     "description": "给表头的单元格附加 className"
   },
   "vxe-table/footer-row-class-name": {
-    "type": "string | ((params: { $rowindex }) => any)",
+    "type": "string | (({ $rowindex }) => any)",
     "description": "给表尾的行附加 className"
   },
   "vxe-table/footer-cell-class-name": {
-    "type": "string | ((params: { $rowindex, column, columnindex, $columnindex }) => any)",
+    "type": "string | (({ $rowindex, column, columnindex, $columnindex }) => any)",
     "description": "给表尾的单元格附加 className"
   },
   "vxe-table/cell-style": {
-    "type": "any | ((params: { row, rowindex, $rowindex, column, columnindex, $columnindex }) => any)",
+    "type": "any | (({ row, rowindex, $rowindex, column, columnindex, $columnindex }) => any)",
     "description": "给单元格附加样式"
   },
   "vxe-table/header-cell-style": {
-    "type": "any | ((params: { $rowindex, column, columnindex, $columnindex }) => any)",
+    "type": "any | (({ $rowindex, column, columnindex, $columnindex }) => any)",
     "description": "给表头单元格附加样式"
   },
   "vxe-table/footer-cell-style": {
-    "type": "any | ((params: { $rowindex, column, columnindex, $columnindex }) => any)",
+    "type": "any | (({ $rowindex, column, columnindex, $columnindex }) => any)",
     "description": "给表尾单元格附加样式"
   },
   "vxe-table/row-style": {
-    "type": "any | ((params: { row, rowindex, $rowindex }) => any)",
+    "type": "any | (({ row, rowindex, $rowindex }) => any)",
     "description": "给行附加样式，也可以是函数"
   },
   "vxe-table/header-row-style": {
-    "type": "any | ((params: { $rowindex, column, columnindex, $columnindex }) => any)",
+    "type": "any | (({ $rowindex, column, columnindex, $columnindex }) => any)",
     "description": "给表头行附加样式"
   },
   "vxe-table/footer-row-style": {
-    "type": "any | ((params: { $rowindex }) => any)",
+    "type": "any | (({ $rowindex }) => any)",
     "description": "给表尾行附加样式"
   },
   "vxe-table/show-footer": {
@@ -132,23 +132,23 @@
     "description": "是否显示表尾"
   },
   "vxe-table/footer-method": {
-    "type": "(params: { columns, data }) => any[][]",
+    "type": "({ columns, data }) => any[][]",
     "description": "表尾的数据获取方法，返回一个二维数组"
   },
   "vxe-table/merge-cells": {
     "type": "array<{ row: number, col: number, rowspan: number, colspan: number }>",
-    "description": "临时合并指定的单元格 (不能用于展开行、树形结构，不建议用于固定列)"
+    "description": "临时合并指定的单元格 (不能用于展开行，不建议用于固定列、树形结构)"
   },
   "vxe-table/merge-footer-items": {
     "type": "array<{ row: number, col: number, rowspan: number, colspan: number }>",
-    "description": "临时合并表尾 (不能用于展开行、树形结构，不建议用于固定列)"
+    "description": "临时合并表尾 (不能用于展开行，不建议用于固定列、树形结构)"
   },
   "vxe-table/span-method": {
-    "type": "(params: { row, rowindex, $rowindex, _rowindex, column, columnindex, $columnindex, _columnindex, data }) => { rowspan: number, colspan: number}",
+    "type": "({ row, rowindex, $rowindex, _rowindex, column, columnindex, $columnindex, _columnindex, data }) => { rowspan: number, colspan: number}",
     "description": "自定义合并函数，返回计算后的值 (不能用于虚拟滚动、展开行，不建议用于固定列、树形结构)"
   },
   "vxe-table/footer-span-method": {
-    "type": "(params: { $rowindex, column, columnindex, $columnindex, _columnindex, data }) => { rowspan: number, colspan: number}",
+    "type": "({ $rowindex, column, columnindex, $columnindex, _columnindex, data }) => { rowspan: number, colspan: number}",
     "description": "表尾合并行或列，返回计算后的值 (不能用于虚拟滚动、展开行，不建议用于固定列、树形结构)"
   },
   "vxe-table/show-overflow": {
@@ -225,11 +225,11 @@
   },
   "vxe-table/expand-config": {
     "type": "any",
-    "description": "展开行配置项（不能用于虚拟滚动）"
+    "description": "展开行配置项（不支持虚拟滚动）"
   },
   "vxe-table/tree-config": {
     "type": "any",
-    "description": "树形结构配置项（不能用于虚拟滚动）"
+    "description": "树形结构配置项（不支持虚拟滚动）"
   },
   "vxe-table/menu-config": {
     "type": "any",
@@ -264,7 +264,7 @@
     "description": "校验配置项"
   },
   "vxe-table/edit-rules": {
-    "type": "{ [field: string]: columneditrule[] }",
+    "type": "{ [field: string]: vxetabledefines.validatorrule[] }",
     "description": "校验规则配置项"
   },
   "vxe-table/empty-text": {
@@ -273,7 +273,7 @@
   },
   "vxe-table/empty-render": {
     "type": "any",
-    "description": "空内容渲染配置项"
+    "description": "空内容渲染配置项，empty-render 的优先级大于 empty-text"
   },
   "vxe-table/custom-config": {
     "type": "any",
@@ -290,6 +290,54 @@
   "vxe-table/params": {
     "type": "any",
     "description": "自定义参数（可以用来存放一些自定义的数据）"
+  },
+  "vxe-colgroup/field": {
+    "type": "string",
+    "description": "列字段名（注：属性层级越深，渲染性能就越差，例如：aa.bb.cc.dd.ee）"
+  },
+  "vxe-colgroup/title": {
+    "type": "string",
+    "description": "列标题（支持开启国际化）"
+  },
+  "vxe-colgroup/width": {
+    "type": "number | string",
+    "description": "列宽度（如果为空则均匀分配剩余宽度，如果全部列固定了，可能会存在宽屏下不会铺满，可以配合 \"%\" 或者 \"min-width\" 布局）"
+  },
+  "vxe-colgroup/min-width": {
+    "type": "number | string",
+    "description": "最小列宽度；会自动将剩余空间按比例分配"
+  },
+  "vxe-colgroup/resizable": {
+    "type": "boolean",
+    "description": "列是否允许拖动列宽调整大小"
+  },
+  "vxe-colgroup/visible": {
+    "type": "boolean",
+    "description": "默认是否显示"
+  },
+  "vxe-colgroup/fixed": {
+    "type": "string",
+    "description": "将列固定在左侧或者右侧（注意：固定列应该放在左右两侧的位置）"
+  },
+  "vxe-colgroup/align": {
+    "type": "string",
+    "description": "列对齐方式"
+  },
+  "vxe-colgroup/header-align": {
+    "type": "string",
+    "description": "表头列的对齐方式"
+  },
+  "vxe-colgroup/show-overflow": {
+    "type": "string | boolean",
+    "description": "当内容过长时显示为省略号"
+  },
+  "vxe-colgroup/show-header-overflow": {
+    "type": "string | boolean",
+    "description": "当表头内容过长时显示为省略号"
+  },
+  "vxe-colgroup/header-class-name": {
+    "type": "string | (({ $rowindex, column, columnindex, $columnindex }) => any)",
+    "description": "给表头的单元格附加 className"
   },
   "vxe-table-colgroup/field": {
     "type": "string",
@@ -338,6 +386,154 @@
   "vxe-table-colgroup/header-class-name": {
     "type": "string | (({ $rowindex, column, columnindex, $columnindex }) => any)",
     "description": "给表头的单元格附加 className"
+  },
+  "vxe-column/type": {
+    "type": "string",
+    "description": "列的类型"
+  },
+  "vxe-column/field": {
+    "type": "string",
+    "description": "列字段名（注：属性层级越深，渲染性能就越差，例如：aa.bb.cc.dd.ee）"
+  },
+  "vxe-column/title": {
+    "type": "string",
+    "description": "列标题（支持开启国际化）"
+  },
+  "vxe-column/width": {
+    "type": "number | string",
+    "description": "列宽度（如果为空则均匀分配剩余宽度，如果全部列固定了，可能会存在宽屏下不会铺满，可以配合 \"%\" 或者 \"min-width\" 布局）"
+  },
+  "vxe-column/min-width": {
+    "type": "number | string",
+    "description": "最小列宽度；会自动将剩余空间按比例分配"
+  },
+  "vxe-column/resizable": {
+    "type": "boolean",
+    "description": "列是否允许拖动列宽调整大小"
+  },
+  "vxe-column/visible": {
+    "type": "boolean",
+    "description": "默认是否显示"
+  },
+  "vxe-column/fixed": {
+    "type": "string",
+    "description": "将列固定在左侧或者右侧（注意：固定列应该放在左右两侧的位置）"
+  },
+  "vxe-column/align": {
+    "type": "string",
+    "description": "列对齐方式"
+  },
+  "vxe-column/header-align": {
+    "type": "string",
+    "description": "表头列的对齐方式"
+  },
+  "vxe-column/footer-align": {
+    "type": "string",
+    "description": "表尾列的对齐方式"
+  },
+  "vxe-column/show-overflow": {
+    "type": "string | boolean",
+    "description": "当内容过长时显示为省略号"
+  },
+  "vxe-column/show-header-overflow": {
+    "type": "string | boolean",
+    "description": "当表头内容过长时显示为省略号"
+  },
+  "vxe-column/show-footer-overflow": {
+    "type": "boolean | string",
+    "description": "当表尾内容过长时显示为省略号"
+  },
+  "vxe-column/class-name": {
+    "type": "string | (({row, rowindex, $rowindex, column, columnindex, $columnindex}) => any)",
+    "description": "给单元格附加 className"
+  },
+  "vxe-column/header-class-name": {
+    "type": "string | (({ $rowindex, column, columnindex, $columnindex }) => any)",
+    "description": "给表头的单元格附加 className"
+  },
+  "vxe-column/footer-class-name": {
+    "type": "string | (({ $rowindex, column, columnindex, $columnindex }) => any)",
+    "description": "给表尾的单元格附加 className"
+  },
+  "vxe-column/formatter": {
+    "type": "(({ cellvalue, row, column }) => string) | any[] | string",
+    "description": "格式化显示内容"
+  },
+  "vxe-column/sortable": {
+    "type": "boolean",
+    "description": "是否允许列排序"
+  },
+  "vxe-column/sort-by": {
+    "type": "string | (({ row, column }) => string | number)",
+    "description": "只对 sortable 有效，指定排序的字段（当值 formatter 格式化后，可以设置该字段，使用值进行排序）"
+  },
+  "vxe-column/sort-type": {
+    "type": "string",
+    "description": "排序的字段类型，比如字符串转数值等"
+  },
+  "vxe-column/filters": {
+    "type": "any[]",
+    "description": "配置筛选条件（注：筛选只能用于列表，如果是树结构则过滤根节点）"
+  },
+  "vxe-column/filter-multiple": {
+    "type": "boolean",
+    "description": "只对 filters 有效，筛选是否允许多选"
+  },
+  "vxe-column/filter-method": {
+    "type": "({ value, option, cellvalue, row, column }) => boolean",
+    "description": "只对 filters 有效，列的筛选方法，该方法的返回值用来决定该行是否显示"
+  },
+  "vxe-column/filter-reset-method": {
+    "type": "({ options, column }) => void",
+    "description": "只对 filters 有效，自定义筛选重置方法"
+  },
+  "vxe-column/filter-recover-method": {
+    "type": "({ option, column }) => void",
+    "description": "只对 filters 有效，自定义筛选复原方法（使用自定义筛选时可能会用到）"
+  },
+  "vxe-column/filter-render": {
+    "type": "any",
+    "description": "筛选渲染器配置项"
+  },
+  "vxe-column/export-method": {
+    "type": "({ row, column }) => string",
+    "description": "自定义单元格数据导出方法，返回自定义的值"
+  },
+  "vxe-column/footer-export-method": {
+    "type": "({ items, _columnindex }) => string",
+    "description": "自定义表尾单元格数据导出方法，返回自定义的值"
+  },
+  "vxe-column/title-help": {
+    "type": "any",
+    "description": "标题帮助图标配置项"
+  },
+  "vxe-column/cell-type": {
+    "type": "string",
+    "description": "只对特定功能有效，单元格值类型（例如：导出数据类型设置）"
+  },
+  "vxe-column/cell-render": {
+    "type": "any",
+    "description": "默认的渲染器配置项"
+  },
+  "vxe-column/edit-render": {
+    "type": "any",
+    "description": "可编辑渲染器配置项"
+  },
+  "vxe-column/content-render": {
+    "type": "any",
+    "description": "内容渲染配置项"
+  },
+  "vxe-column/tree-node": {
+    "type": "boolean",
+    "description": "只对 tree-config 配置时有效，指定为树节点"
+  },
+  "vxe-column/params": {
+    "type": "any",
+    "description": "额外的参数（可以用来存放一些私有参数）"
+  },
+  "vxe-column/col-id": {
+    "type": "string | number",
+    "description": "自定义列的唯一主键（注：99%的场景不应该设置，操作不正确将导致出现问题）"
   },
   "vxe-table-column/type": {
     "type": "string",
@@ -408,20 +604,16 @@
     "description": "给表尾的单元格附加 className"
   },
   "vxe-table-column/formatter": {
-    "type": "(({ cellvalue, row, column }) => any) | any[] | string",
+    "type": "(({ cellvalue, row, column }) => string) | any[] | string",
     "description": "格式化显示内容"
-  },
-  "vxe-table-column/seq-method": {
-    "type": "({ row, rowindex, column, columnindex }) => number",
-    "description": "只对 type=seq 有效，自定义索引方法"
   },
   "vxe-table-column/sortable": {
     "type": "boolean",
     "description": "是否允许列排序"
   },
   "vxe-table-column/sort-by": {
-    "type": "string | ((row) => string | number)",
-    "description": "只对 sortable 有效，自定义排序的属性"
+    "type": "string | (({ row, column }) => string | number)",
+    "description": "只对 sortable 有效，指定排序的字段（当值 formatter 格式化后，可以设置该字段，使用值进行排序）"
   },
   "vxe-table-column/sort-type": {
     "type": "string",
@@ -436,7 +628,7 @@
     "description": "只对 filters 有效，筛选是否允许多选"
   },
   "vxe-table-column/filter-method": {
-    "type": "function",
+    "type": "({ value, option, cellvalue, row, column }) => boolean",
     "description": "只对 filters 有效，列的筛选方法，该方法的返回值用来决定该行是否显示"
   },
   "vxe-table-column/filter-reset-method": {
@@ -452,12 +644,12 @@
     "description": "筛选渲染器配置项"
   },
   "vxe-table-column/export-method": {
-    "type": "function",
-    "description": "自定义单元格数据导出方法，该方法 Function({ row, column }) 的返回值将会被导出"
+    "type": "({ row, column }) => string",
+    "description": "自定义单元格数据导出方法，返回自定义的值"
   },
   "vxe-table-column/footer-export-method": {
-    "type": "function",
-    "description": "自定义表尾单元格数据导出方法，该方法 Function({ items, _columnIndex }) 的返回值将会被导出"
+    "type": "({ items, _columnindex }) => string",
+    "description": "自定义表尾单元格数据导出方法，返回自定义的值"
   },
   "vxe-table-column/title-help": {
     "type": "any",
@@ -576,51 +768,51 @@
     "description": "鼠标移到列是否要高亮显示"
   },
   "vxe-grid/row-class-name": {
-    "type": "string | ((params: { row, rowindex, $rowindex }) => any)",
+    "type": "string | (({ row, rowindex, $rowindex }) => any)",
     "description": "给行附加 className"
   },
   "vxe-grid/cell-class-name": {
-    "type": "string | ((params: { row, rowindex, $rowindex, column, columnindex, $columnindex }) => any)",
+    "type": "string | (({ row, rowindex, $rowindex, column, columnindex, $columnindex }) => any)",
     "description": "给单元格附加 className"
   },
   "vxe-grid/header-row-class-name": {
-    "type": "string | ((params: { $rowindex }) => any)",
+    "type": "string | (({ $rowindex }) => any)",
     "description": "给表头的行附加 className"
   },
   "vxe-grid/header-cell-class-name": {
-    "type": "string | ((params: { $rowindex, column, columnindex, $columnindex }) => any)",
+    "type": "string | (({ $rowindex, column, columnindex, $columnindex }) => any)",
     "description": "给表头的单元格附加 className"
   },
   "vxe-grid/footer-row-class-name": {
-    "type": "string | ((params: { $rowindex }) => any)",
+    "type": "string | (({ $rowindex }) => any)",
     "description": "给表尾的行附加 className"
   },
   "vxe-grid/footer-cell-class-name": {
-    "type": "string | ((params: { $rowindex, column, columnindex, $columnindex }) => any)",
+    "type": "string | (({ $rowindex, column, columnindex, $columnindex }) => any)",
     "description": "给表尾的单元格附加 className"
   },
   "vxe-grid/cell-style": {
-    "type": "any | ((params: { row, rowindex, $rowindex, column, columnindex, $columnindex }) => any)",
+    "type": "any | (({ row, rowindex, $rowindex, column, columnindex, $columnindex }) => any)",
     "description": "给单元格附加样式"
   },
   "vxe-grid/header-cell-style": {
-    "type": "any | ((params: { $rowindex, column, columnindex, $columnindex }) => any)",
+    "type": "any | (({ $rowindex, column, columnindex, $columnindex }) => any)",
     "description": "给表头单元格附加样式"
   },
   "vxe-grid/footer-cell-style": {
-    "type": "any | ((params: { $rowindex, column, columnindex, $columnindex }) => any)",
+    "type": "any | (({ $rowindex, column, columnindex, $columnindex }) => any)",
     "description": "给表尾单元格附加样式"
   },
   "vxe-grid/row-style": {
-    "type": "any | ((params: { row, rowindex, $rowindex }) => any)",
+    "type": "any | (({ row, rowindex, $rowindex }) => any)",
     "description": "给行附加样式，也可以是函数"
   },
   "vxe-grid/header-row-style": {
-    "type": "any | ((params: { $rowindex, column, columnindex, $columnindex }) => any)",
+    "type": "any | (({ $rowindex, column, columnindex, $columnindex }) => any)",
     "description": "给表头行附加样式"
   },
   "vxe-grid/footer-row-style": {
-    "type": "any | ((params: { $rowindex }) => any)",
+    "type": "any | (({ $rowindex }) => any)",
     "description": "给表尾行附加样式"
   },
   "vxe-grid/show-footer": {
@@ -628,23 +820,23 @@
     "description": "是否显示表尾"
   },
   "vxe-grid/footer-method": {
-    "type": "(params: { columns, data }) => any[][]",
+    "type": "({ columns, data }) => any[][]",
     "description": "表尾的数据获取方法，返回一个二维数组"
   },
   "vxe-grid/merge-cells": {
     "type": "array<{ row: number, col: number, rowspan: number, colspan: number }>",
-    "description": "临时合并指定的单元格 (不能用于展开行、树形结构，不建议用于固定列)"
+    "description": "临时合并指定的单元格 (不能用于展开行，不建议用于固定列、树形结构)"
   },
   "vxe-grid/merge-footer-items": {
     "type": "array<{ row: number, col: number, rowspan: number, colspan: number }>",
-    "description": "临时合并表尾 (不能用于展开行、树形结构，不建议用于固定列)"
+    "description": "临时合并表尾 (不能用于展开行，不建议用于固定列、树形结构)"
   },
   "vxe-grid/span-method": {
-    "type": "(params: { row, rowindex, $rowindex, _rowindex, column, columnindex, $columnindex, _columnindex, data }) => { rowspan: number, colspan: number}",
+    "type": "({ row, rowindex, $rowindex, _rowindex, column, columnindex, $columnindex, _columnindex, data }) => { rowspan: number, colspan: number}",
     "description": "自定义合并函数，返回计算后的值 (不能用于虚拟滚动、展开行，不建议用于固定列、树形结构)"
   },
   "vxe-grid/footer-span-method": {
-    "type": "(params: { $rowindex, column, columnindex, $columnindex, _columnindex, data }) => { rowspan: number, colspan: number}",
+    "type": "({ $rowindex, column, columnindex, $columnindex, _columnindex, data }) => { rowspan: number, colspan: number}",
     "description": "表尾合并行或列，返回计算后的值 (不能用于虚拟滚动、展开行，不建议用于固定列、树形结构)"
   },
   "vxe-grid/show-overflow": {
@@ -721,11 +913,11 @@
   },
   "vxe-grid/expand-config": {
     "type": "any",
-    "description": "展开行配置项（不能用于虚拟滚动）"
+    "description": "展开行配置项（不支持虚拟滚动）"
   },
   "vxe-grid/tree-config": {
     "type": "any",
-    "description": "树形结构配置项（不能用于虚拟滚动）"
+    "description": "树形结构配置项（不支持虚拟滚动）"
   },
   "vxe-grid/menu-config": {
     "type": "any",
@@ -760,7 +952,7 @@
     "description": "校验配置项"
   },
   "vxe-grid/edit-rules": {
-    "type": "{ [field: string]: columneditrule[] }",
+    "type": "{ [field: string]: vxetabledefines.validatorrule[] }",
     "description": "校验规则配置项"
   },
   "vxe-grid/empty-text": {
@@ -769,7 +961,7 @@
   },
   "vxe-grid/empty-render": {
     "type": "any",
-    "description": "空内容渲染配置项"
+    "description": "空内容渲染配置项，empty-render 的优先级大于 empty-text"
   },
   "vxe-grid/custom-config": {
     "type": "any",
@@ -819,6 +1011,10 @@
     "type": "boolean",
     "description": "配套的样式"
   },
+  "vxe-toolbar/class-name": {
+    "type": "string | (({}) => string)",
+    "description": "给工具栏 className"
+  },
   "vxe-toolbar/import": {
     "type": "boolean | object",
     "description": "导入按钮配置（需要设置 \"import-config\"）"
@@ -828,20 +1024,24 @@
     "description": "导出按钮配置（需要设置 \"export-config\"）"
   },
   "vxe-toolbar/print": {
-    "type": "any",
+    "type": "boolean | object",
     "description": "打印按钮配置"
   },
   "vxe-toolbar/refresh": {
-    "type": "any",
+    "type": "boolean | object",
     "description": "刷新按钮配置"
   },
   "vxe-toolbar/custom": {
-    "type": "any",
+    "type": "boolean | object",
     "description": "自定义列配置"
   },
   "vxe-toolbar/buttons": {
     "type": "any[]",
-    "description": "按钮列表"
+    "description": "左侧按钮列表"
+  },
+  "vxe-toolbar/tools": {
+    "type": "any[]",
+    "description": "右侧工具列表"
   },
   "vxe-pager/size": {
     "type": "string",
@@ -891,6 +1091,10 @@
     "type": "boolean",
     "description": "配套的样式"
   },
+  "vxe-pager/class-name": {
+    "type": "string, ({}) => string",
+    "description": "给分页附加 className"
+  },
   "vxe-pager/auto-hidden": {
     "type": "boolean",
     "description": "当只有一页时自动隐藏"
@@ -915,9 +1119,9 @@
     "type": "string",
     "description": "自定义跳页显示图标"
   },
-  "vxe-radio/v-model / value": {
+  "vxe-radio/model-value": {
     "type": "any",
-    "description": "绑定值"
+    "description": "v-model 绑定值"
   },
   "vxe-radio/label": {
     "type": "string",
@@ -939,9 +1143,9 @@
     "type": "string",
     "description": "原生 name 属性"
   },
-  "vxe-radio-group/v-model / value": {
+  "vxe-radio-group/model-value": {
     "type": "any[]",
-    "description": "绑定值"
+    "description": "v-model 绑定值"
   },
   "vxe-radio-group/size": {
     "type": "string",
@@ -951,9 +1155,9 @@
     "type": "boolean",
     "description": "是否禁用"
   },
-  "vxe-radio-button/v-model / value": {
+  "vxe-radio-button/model-value": {
     "type": "any",
-    "description": "绑定值"
+    "description": "v-model 绑定值"
   },
   "vxe-radio-button/label": {
     "type": "string | number",
@@ -967,9 +1171,9 @@
     "type": "boolean",
     "description": "是否禁用"
   },
-  "vxe-checkbox/v-model / value": {
+  "vxe-checkbox/model-value": {
     "type": "any",
-    "description": "绑定值"
+    "description": "v-model 绑定值"
   },
   "vxe-checkbox/label": {
     "type": "string",
@@ -995,9 +1199,9 @@
     "type": "boolean",
     "description": "是否不确定状态"
   },
-  "vxe-checkbox-group/v-model / value": {
+  "vxe-checkbox-group/model-value": {
     "type": "any[]",
-    "description": "绑定值"
+    "description": "v-model 绑定值"
   },
   "vxe-checkbox-group/size": {
     "type": "string",
@@ -1007,9 +1211,9 @@
     "type": "boolean",
     "description": "是否禁用"
   },
-  "vxe-switch/v-model / value": {
+  "vxe-switch/model-value": {
     "type": "string | number | boolean",
-    "description": "绑定值"
+    "description": "v-model 绑定值"
   },
   "vxe-switch/disabled": {
     "type": "boolean",
@@ -1043,9 +1247,9 @@
     "type": "string",
     "description": "关闭时的图标"
   },
-  "vxe-input/v-model / value": {
+  "vxe-input/model-value": {
     "type": "any",
-    "description": "绑定值"
+    "description": "v-model 绑定值"
   },
   "vxe-input/size": {
     "type": "string",
@@ -1087,6 +1291,10 @@
     "type": "boolean",
     "description": "是否禁用"
   },
+  "vxe-input/class-name": {
+    "type": "string",
+    "description": "附加 className"
+  },
   "vxe-input/prefix-icon": {
     "type": "string",
     "description": "头部图标"
@@ -1121,11 +1329,11 @@
   },
   "vxe-input/min-date": {
     "type": "number | string | date",
-    "description": "只对 type=date|datetime|week|month|year 有效，设置日期可选范围的最小值"
+    "description": "只对 type=date|datetime|week|month|quarter|year 有效，设置日期可选范围的最小值"
   },
   "vxe-input/max-date": {
     "type": "number | string | date",
-    "description": "只对 type=date|datetime|week|month|year 有效，设置日期可选范围的最大值"
+    "description": "只对 type=date|datetime|week|month|quarter|year 有效，设置日期可选范围的最大值"
   },
   "vxe-input/start-week": {
     "type": "number | string",
@@ -1133,35 +1341,31 @@
   },
   "vxe-input/label-format": {
     "type": "string",
-    "description": "只对 type=date|datetime|week|month|year 有效，输入框中显示的日期格式"
-  },
-  "vxe-input/parse-format": {
-    "type": "string",
-    "description": "只对 type=date|datetime|week|month|year 有效，绑定值的解析格式，如果是值为字符串时可能会用到"
+    "description": "只对 type=date|datetime|week|month|quarter|year 有效，输入框中显示的日期格式"
   },
   "vxe-input/value-format": {
     "type": "string",
-    "description": "只对 type=date|datetime|week|month|year 有效，绑定值的返回格式，默认返回 Date 类型，如果指定格式则返回字符串"
+    "description": "只对 type=date|datetime|week|month|quarter|year 有效，绑定值的返回格式，默认返回 Date 类型，如果指定格式则返回字符串"
   },
   "vxe-input/editable": {
     "type": "boolean",
-    "description": "只对 type=date|time|datetime|week|month|year 有效，文本框是否允许输入"
+    "description": "只对 type=date|time|datetime|week|month|quarter|year 有效，文本框是否允许输入"
   },
   "vxe-input/disabled-method": {
-    "type": "function",
-    "description": "只对 type=date|datetime|week|month|year 有效，该方法 Function({ date, type }) 的返回值用来决定该日期是否允许选中"
+    "type": "({ date, viewtype }) => boolean",
+    "description": "只对 type=date|datetime|week|month|quarter|year 有效，该方法的返回值用来决定该日期是否允许选中"
   },
   "vxe-input/festival-method": {
-    "type": "function",
-    "description": "只对 type=date|datetime|week|month|year 有效，该方法 Function({ date, type }) 用于返回对应日期显示的节日"
+    "type": "({ date, viewtype }) => any",
+    "description": "只对 type=date|datetime|week|month|quarter|year 有效，该方法用于返回对应日期显示的节日"
   },
   "vxe-input/transfer": {
     "type": "boolean",
-    "description": "只对 type=date|time|datetime|week|month|year 有效，是否将弹框容器插入于 body 内（对于嵌入到表格或者弹窗中被遮挡时需要设置为 true）"
+    "description": "只对 type=date|time|datetime|week|month|quarter|year 有效，是否将弹框容器插入于 body 内（对于嵌入到表格或者弹窗中被遮挡时需要设置为 true）"
   },
-  "vxe-select/v-model / value": {
+  "vxe-select/model-value": {
     "type": "any",
-    "description": "绑定值"
+    "description": "v-model 绑定值"
   },
   "vxe-select/size": {
     "type": "string",
@@ -1182,6 +1386,10 @@
   "vxe-select/placeholder": {
     "type": "string",
     "description": "空值显示的占位符"
+  },
+  "vxe-select/class-name": {
+    "type": "string | (({}) => string)",
+    "description": "给下拉框附加 className"
   },
   "vxe-select/visible": {
     "type": "boolean",
@@ -1235,13 +1443,17 @@
     "type": "boolean",
     "description": "是否显示"
   },
+  "vxe-optgroup/class-name": {
+    "type": "string | ((params: { option }) => string)",
+    "description": "附加 className"
+  },
   "vxe-optgroup/disabled": {
     "type": "boolean",
     "description": "是否禁用"
   },
   "vxe-option/value": {
     "type": "any",
-    "description": "绑定值"
+    "description": "v-model 绑定值"
   },
   "vxe-option/label": {
     "type": "string | number | boolean",
@@ -1250,6 +1462,10 @@
   "vxe-option/visible": {
     "type": "boolean",
     "description": "是否显示"
+  },
+  "vxe-option/class-name": {
+    "type": "string | ((params: { option }) => string)",
+    "description": "附加 className"
   },
   "vxe-option/disabled": {
     "type": "boolean",
@@ -1291,6 +1507,10 @@
     "type": "boolean",
     "description": "是否禁用"
   },
+  "vxe-button/class-name": {
+    "type": "string",
+    "description": "附加 className"
+  },
   "vxe-button/loading": {
     "type": "boolean",
     "description": "是否加载中"
@@ -1307,12 +1527,12 @@
     "type": "boolean",
     "description": "是否将弹框容器插入于 body 内（对于嵌入到表格或者弹窗中被遮挡时需要设置为 true）"
   },
-  "vxe-tooltip/v-model": {
+  "vxe-tooltip/model-value": {
     "type": "boolean",
     "description": "是否显示"
   },
   "vxe-tooltip/content": {
-    "type": "string",
+    "type": "string | number",
     "description": "显示内容"
   },
   "vxe-tooltip/trigger": {
@@ -1339,9 +1559,9 @@
     "type": "number",
     "description": "鼠标移出后延时多少才隐藏 tooltip"
   },
-  "vxe-modal/v-model / value": {
+  "vxe-modal/model-value": {
     "type": "any",
-    "description": "绑定值"
+    "description": "v-model 绑定值"
   },
   "vxe-modal/size": {
     "type": "string",
@@ -1365,7 +1585,7 @@
   },
   "vxe-modal/status": {
     "type": "string",
-    "description": "只对 type=alert | confirm | message 有效，消息状态"
+    "description": "confirm"
   },
   "vxe-modal/class-name": {
     "type": "string",
@@ -1375,9 +1595,13 @@
     "type": "string",
     "description": "自定义状态图标"
   },
-  "vxe-modal/message": {
+  "vxe-modal/content": {
     "type": "string",
     "description": "显示的文本（支持开启国际化）"
+  },
+  "vxe-modal/message": {
+    "type": "string",
+    "description": "请使用 content"
   },
   "vxe-modal/cancel-button-text": {
     "type": "string",
@@ -1418,6 +1642,10 @@
   "vxe-modal/show-zoom": {
     "type": "boolean",
     "description": "标题是否标显示最大化与还原按钮"
+  },
+  "vxe-modal/show-close": {
+    "type": "boolean",
+    "description": "是否显示关闭按钮"
   },
   "vxe-modal/resize": {
     "type": "boolean",
@@ -1484,7 +1712,7 @@
     "description": "是否启用 localStorage 本地保存，会将窗口拖动的状态保存到本地（需要有 id）"
   },
   "vxe-modal/before-hide-method": {
-    "type": "function/promise<any>",
+    "type": "({ type }) => error | promise<any>",
     "description": "在窗口隐藏之前执行，可以返回 Error 阻止关闭，支持异步"
   },
   "vxe-form/data": {
@@ -1527,12 +1755,16 @@
     "type": "string | boolean",
     "description": "所有设置标题内容过长时显示为省略号"
   },
+  "vxe-form/class-name": {
+    "type": "string, ({ data }) => string",
+    "description": "给表单附加 className"
+  },
   "vxe-form/items": {
     "type": "any[]",
     "description": "项列表"
   },
   "vxe-form/rules": {
-    "type": "{ [field: string]: formrule[] }",
+    "type": "{ [field: string]: vxeformdefines.formrule[] }",
     "description": "校验规则配置项"
   },
   "vxe-form/prevent-submit": {
@@ -1572,7 +1804,7 @@
     "description": "标题内容过长时显示为省略号"
   },
   "vxe-form-item/class-name": {
-    "type": "string, (params: { field, data }) => string",
+    "type": "string, ({ field, data }) => string",
     "description": "给表单项附加 className"
   },
   "vxe-form-item/visible": {
@@ -1580,7 +1812,7 @@
     "description": "默认是否显示"
   },
   "vxe-form-item/visible-method": {
-    "type": "function",
+    "type": "({ data }) => boolean",
     "description": "该方法的返回值用来决定该项是否显示"
   },
   "vxe-form-item/folding": {
@@ -1607,6 +1839,14 @@
     "type": "any",
     "description": "项渲染器配置项"
   },
+  "vxe-form-gather/span": {
+    "type": "string | number",
+    "description": "栅格占据的列数（共 24 分栏）"
+  },
+  "vxe-form-gather/class-name": {
+    "type": "string, ({ field, data }) => string",
+    "description": "给表单项附加 className"
+  },
   "vxe-list/data": {
     "type": "any[]",
     "description": "列表数据"
@@ -1622,6 +1862,10 @@
   "vxe-list/height": {
     "type": "number | string",
     "description": "列表高度"
+  },
+  "vxe-list/class-name": {
+    "type": "string",
+    "description": "附加 className"
   },
   "vxe-list/auto-resize": {
     "type": "boolean",

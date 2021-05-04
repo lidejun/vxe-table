@@ -1,10 +1,12 @@
 import { defineComponent, h, Teleport, PropType, ref, Ref, resolveComponent, ComponentOptions, computed, provide, onUnmounted, reactive, nextTick, watch } from 'vue'
 import XEUtils from 'xe-utils'
 import GlobalConfig from '../../v-x-e-table/src/conf'
-import { UtilTools, DomTools, GlobalEvent } from '../../tools'
 import { useSize } from '../../hooks/size'
+import { getEventTargetNode, getAbsolutePos } from '../../tools/dom'
+import { getLastZIndex, nextZIndex, getFuncText, formatText } from '../../tools/utils'
+import { GlobalEvent } from '../../tools/event'
 
-import { SizeType, VxeSelectConstructor, SelectReactData, VxeSelectEmits, VxeGlobalRendererHandles, SelectMethods, SelectPrivateRef, VxeSelectMethods, VxeInputConstructor } from '../../../types/all'
+import { VxeSelectPropTypes, VxeSelectConstructor, SelectReactData, VxeSelectEmits, SelectMethods, SelectPrivateRef, VxeSelectMethods, VxeInputConstructor, VxeOptgroupProps, VxeOptionProps } from '../../../types/all'
 
 function isOptionVisible (option: any) {
   return option.visible !== false
@@ -18,22 +20,24 @@ export default defineComponent({
   name: 'VxeSelect',
   props: {
     modelValue: null,
-    clearable: Boolean,
-    placeholder: String,
-    disabled: Boolean,
-    multiple: Boolean,
-    multiCharOverflow: { type: [Number, String], default: () => GlobalConfig.select.multiCharOverflow },
-    prefixIcon: String,
-    placement: String,
-    options: Array as PropType<any[]>,
-    optionProps: Object as PropType<VxeGlobalRendererHandles.RenderOptionProps>,
-    optionGroups: Array as PropType<any[]>,
-    optionGroupProps: Object as PropType<VxeGlobalRendererHandles.RenderOptionGroupProps>,
-    size: { type: String as PropType<SizeType>, default: () => GlobalConfig.select.size || GlobalConfig.size },
-    emptyText: String,
-    optionId: { type: String, default: () => GlobalConfig.select.optionId },
-    optionKey: Boolean,
-    transfer: { type: Boolean, default: () => GlobalConfig.select.transfer }
+    clearable: Boolean as PropType<VxeSelectPropTypes.Clearable>,
+    placeholder: String as PropType<VxeSelectPropTypes.Placeholder>,
+    loading: Boolean as PropType<VxeSelectPropTypes.Loading>,
+    disabled: Boolean as PropType<VxeSelectPropTypes.Disabled>,
+    multiple: Boolean as PropType<VxeSelectPropTypes.Multiple>,
+    multiCharOverflow: { type: [Number, String] as PropType<VxeSelectPropTypes.MultiCharOverflow>, default: () => GlobalConfig.select.multiCharOverflow },
+    prefixIcon: String as PropType<VxeSelectPropTypes.PrefixIcon>,
+    placement: String as PropType<VxeSelectPropTypes.Placement>,
+    options: Array as PropType<VxeSelectPropTypes.Options>,
+    optionProps: Object as PropType<VxeSelectPropTypes.OptionProps>,
+    optionGroups: Array as PropType<VxeSelectPropTypes.OptionGroups>,
+    optionGroupProps: Object as PropType<VxeSelectPropTypes.OptionGroupProps>,
+    className: [String, Function] as PropType<VxeSelectPropTypes.ClassName>,
+    size: { type: String as PropType<VxeSelectPropTypes.Size>, default: () => GlobalConfig.select.size || GlobalConfig.size },
+    emptyText: String as PropType<VxeSelectPropTypes.EmptyText>,
+    optionId: { type: String as PropType<VxeSelectPropTypes.OptionId>, default: () => GlobalConfig.select.optionId },
+    optionKey: Boolean as PropType<VxeSelectPropTypes.OptionKey>,
+    transfer: { type: Boolean as PropType<VxeSelectPropTypes.Transfer>, default: () => GlobalConfig.select.transfer }
   },
   emits: [
     'update:modelValue',
@@ -41,8 +45,6 @@ export default defineComponent({
     'clear'
   ] as VxeSelectEmits,
   setup (props, context) {
-    const InputComponent = resolveComponent('vxe-input') as ComponentOptions
-
     const { slots, emit } = context
 
     const xID = XEUtils.uniqueId()
@@ -123,7 +125,7 @@ export default defineComponent({
     const findOption = (optionValue: any) => {
       const { fullOptionList, fullGroupList } = reactData
       const isGroup = computeIsGroup.value
-      const valueField = computeValueField.value
+      const valueField = computeValueField.value as 'value'
       if (isGroup) {
         for (let gIndex = 0; gIndex < fullGroupList.length; gIndex++) {
           const group = fullGroupList[gIndex]
@@ -137,20 +139,20 @@ export default defineComponent({
           }
         }
       }
-      return fullOptionList.find((item: any) => optionValue === item[valueField])
+      return fullOptionList.find((item) => optionValue === item[valueField])
     }
 
     const getSelectLabel = (value: any) => {
       const labelField = computeLabelField.value
       const item = findOption(value)
-      return XEUtils.toValueString(item ? item[labelField] : value)
+      return XEUtils.toValueString(item ? item[labelField as 'label'] : value)
     }
 
     const computeSelectLabel = computed(() => {
       const { modelValue, multiple } = props
       const multiMaxCharNum = computeMultiMaxCharNum.value
       if (modelValue && multiple) {
-        return modelValue.map((val: any) => {
+        return (modelValue as any[]).map((val) => {
           const label = getSelectLabel(val)
           if (multiMaxCharNum > 0 && label.length > multiMaxCharNum) {
             return `${label.substring(0, multiMaxCharNum)}...`
@@ -213,7 +215,7 @@ export default defineComponent({
       }
     }
 
-    const scrollToOption = (option: any, isAlignBottom?: any) => {
+    const scrollToOption = (option: any, isAlignBottom?: boolean) => {
       return nextTick().then(() => {
         if (option) {
           const optWrapperElem = refOptionWrapper.value
@@ -237,8 +239,8 @@ export default defineComponent({
     }
 
     const updateZindex = () => {
-      if (reactData.panelIndex < UtilTools.getLastZIndex()) {
-        reactData.panelIndex = UtilTools.nextZIndex()
+      if (reactData.panelIndex < getLastZIndex()) {
+        reactData.panelIndex = nextZIndex()
       }
     }
 
@@ -257,7 +259,7 @@ export default defineComponent({
           const panelStyle: { [key: string]: any } = {
             zIndex: panelIndex
           }
-          const { boundingTop, boundingLeft, visibleHeight, visibleWidth } = DomTools.getAbsolutePos(el)
+          const { boundingTop, boundingLeft, visibleHeight, visibleWidth } = getAbsolutePos(el)
           let panelPlacement = 'bottom'
           if (transfer) {
             let left = boundingLeft
@@ -315,7 +317,8 @@ export default defineComponent({
     let hidePanelTimeout: number
 
     const showOptionPanel = () => {
-      if (!props.disabled) {
+      const { loading, disabled } = props
+      if (!loading && !disabled) {
         clearTimeout(hidePanelTimeout)
         if (!reactData.inited) {
           reactData.inited = true
@@ -355,12 +358,12 @@ export default defineComponent({
       selectMethods.dispatchEvent('clear', { value: selectValue }, evnt)
     }
 
-    const clearEvent = (params: any, evnt: any) => {
+    const clearEvent = (params: any, evnt: Event) => {
       clearValueEvent(evnt, null)
       hideOptionPanel()
     }
 
-    const changeOptionEvent = (evnt: any, selectValue: any) => {
+    const changeOptionEvent = (evnt: Event, selectValue: any) => {
       const { modelValue, multiple } = props
       if (multiple) {
         let multipleValue
@@ -368,7 +371,7 @@ export default defineComponent({
           if (modelValue.indexOf(selectValue) === -1) {
             multipleValue = modelValue.concat([selectValue])
           } else {
-            multipleValue = modelValue.filter((val: any) => val !== selectValue)
+            multipleValue = (modelValue as any[]).filter((val) => val !== selectValue)
           }
         } else {
           multipleValue = [selectValue]
@@ -380,13 +383,13 @@ export default defineComponent({
       }
     }
 
-    const handleGlobalMousewheelEvent = (evnt: any) => {
+    const handleGlobalMousewheelEvent = (evnt: MouseEvent) => {
       const { disabled } = props
       const { visiblePanel } = reactData
       if (!disabled) {
         if (visiblePanel) {
           const panelElem = refOptionPanel.value
-          if (DomTools.getEventTargetNode(evnt, panelElem).flag) {
+          if (getEventTargetNode(evnt, panelElem).flag) {
             updatePlacement()
           } else {
             hideOptionPanel()
@@ -395,24 +398,24 @@ export default defineComponent({
       }
     }
 
-    const handleGlobalMousedownEvent = (evnt: any) => {
+    const handleGlobalMousedownEvent = (evnt: MouseEvent) => {
       const { disabled } = props
       const { visiblePanel } = reactData
       if (!disabled) {
         const el = refElem.value
         const panelElem = refOptionPanel.value
-        reactData.isActivated = DomTools.getEventTargetNode(evnt, el).flag || DomTools.getEventTargetNode(evnt, panelElem).flag
+        reactData.isActivated = getEventTargetNode(evnt, el).flag || getEventTargetNode(evnt, panelElem).flag
         if (visiblePanel && !reactData.isActivated) {
           hideOptionPanel()
         }
       }
     }
 
-    const findOffsetOption = (optionValue: any, isUpArrow: any) => {
+    const findOffsetOption = (optionValue: any, isUpArrow: boolean) => {
       const { visibleOptionList, visibleGroupList } = reactData
       const isGroup = computeIsGroup.value
-      const valueField = computeValueField.value
-      const groupOptionsField = computeGroupOptionsField.value
+      const valueField = computeValueField.value as 'value'
+      const groupOptionsField = computeGroupOptionsField.value as 'options'
       let firstOption
       let prevOption
       let nextOption
@@ -481,7 +484,7 @@ export default defineComponent({
       return { firstOption }
     }
 
-    const handleGlobalKeydownEvent = (evnt: any) => {
+    const handleGlobalKeydownEvent = (evnt: KeyboardEvent) => {
       const { clearable, disabled } = props
       const { visiblePanel, currentValue } = reactData
       if (!disabled) {
@@ -550,20 +553,21 @@ export default defineComponent({
       }
     }
 
-    const renderOption = (list: any, group?: any) => {
+    const renderOption = (list: VxeOptionProps[], group?: VxeOptgroupProps) => {
       const { optionKey, modelValue, multiple } = props
       const { currentValue } = reactData
       const labelField = computeLabelField.value
       const valueField = computeValueField.value
       const isGroup = computeIsGroup.value
-      return list.map((option: any, cIndex: any) => {
+      return list.map((option, cIndex) => {
+        const { className } = option
         const isVisible = !isGroup || isOptionVisible(option)
         const isDisabled = (group && group.disabled) || option.disabled
-        const optionValue = option[valueField]
+        const optionValue = option[valueField as 'value']
         const optid = getOptid(option)
         return isVisible ? h('div', {
           key: optionKey ? optid : cIndex,
-          class: ['vxe-select-option', {
+          class: ['vxe-select-option', className ? (XEUtils.isFunction(className) ? className({ option, $select: $xeselect }) : className) : '', {
             'is--disabled': isDisabled,
             'is--selected': multiple ? (modelValue && modelValue.indexOf(optionValue) > -1) : modelValue === optionValue,
             'is--hover': currentValue === optionValue
@@ -571,7 +575,13 @@ export default defineComponent({
           // attrs
           optid: optid,
           // event
-          onClick: (evnt: any) => {
+          onMousedown: (evnt: MouseEvent) => {
+            const isLeftBtn = evnt.button === 0
+            if (isLeftBtn) {
+              evnt.stopPropagation()
+            }
+          },
+          onClick: (evnt: MouseEvent) => {
             if (!isDisabled) {
               changeOptionEvent(evnt, optionValue)
             }
@@ -581,7 +591,7 @@ export default defineComponent({
               setCurrentOption(option)
             }
           }
-        }, UtilTools.formatText(UtilTools.getFuncText(option[labelField]))) : null
+        }, formatText(getFuncText(option[labelField as 'label']))) : null
       })
     }
 
@@ -590,12 +600,13 @@ export default defineComponent({
       const { visibleGroupList } = reactData
       const groupLabelField = computeGroupLabelField.value
       const groupOptionsField = computeGroupOptionsField.value
-      return visibleGroupList.map((group: any, gIndex: any) => {
+      return visibleGroupList.map((group, gIndex) => {
+        const { className } = group
         const optid = getOptid(group)
         const isGroupDisabled = group.disabled
         return h('div', {
           key: optionKey ? optid : gIndex,
-          class: ['vxe-optgroup', {
+          class: ['vxe-optgroup', className ? (XEUtils.isFunction(className) ? className({ option: group, $select: $xeselect }) : className) : '', {
             'is--disabled': isGroupDisabled
           }],
           // attrs
@@ -603,10 +614,10 @@ export default defineComponent({
         }, [
           h('div', {
             class: 'vxe-optgroup--title'
-          }, UtilTools.getFuncText(group[groupLabelField])),
+          }, getFuncText(group[groupLabelField as 'label'])),
           h('div', {
             class: 'vxe-optgroup--wrapper'
-          }, renderOption(group[groupOptionsField], group))
+          }, renderOption(group[groupOptionsField as 'options'], group))
         ])
       })
     }
@@ -720,13 +731,14 @@ export default defineComponent({
     })
 
     const renderVN = () => {
-      const { transfer, disabled } = props
+      const { className, transfer, disabled, loading } = props
       const { inited, isActivated, visiblePanel } = reactData
       const vSize = computeSize.value
       const selectLabel = computeSelectLabel.value
+      const prefixSlot = slots.prefix
       return h('div', {
         ref: refElem,
-        class: ['vxe-select', {
+        class: ['vxe-select', className ? (XEUtils.isFunction(className) ? className({ $select: $xeselect }) : className) : '', {
           [`size--${vSize}`]: vSize,
           'is--visivle': visiblePanel,
           'is--disabled': disabled,
@@ -737,7 +749,7 @@ export default defineComponent({
           class: 'vxe-select-slots',
           ref: 'hideOption'
         }, slots.default ? slots.default({}) : []),
-        h(InputComponent, {
+        h(resolveComponent('vxe-input') as ComponentOptions, {
           ref: refInput,
           clearable: props.clearable,
           placeholder: props.placeholder,
@@ -745,14 +757,16 @@ export default defineComponent({
           disabled: disabled,
           type: 'text',
           prefixIcon: props.prefixIcon,
-          suffixIcon: visiblePanel ? GlobalConfig.icon.SELECT_OPEN : GlobalConfig.icon.SELECT_CLOSE,
+          suffixIcon: loading ? GlobalConfig.icon.SELECT_LOADED : (visiblePanel ? GlobalConfig.icon.SELECT_OPEN : GlobalConfig.icon.SELECT_CLOSE),
           modelValue: selectLabel,
           onClear: clearEvent,
           onClick: togglePanelEvent,
           onFocus: focusEvent,
           onBlur: blurEvent,
           onSuffixClick: togglePanelEvent
-        }),
+        }, prefixSlot ? {
+          prefix: () => prefixSlot({})
+        } : {}),
         h(Teleport, {
           to: 'body',
           disabled: transfer ? !inited : true
@@ -762,8 +776,8 @@ export default defineComponent({
             class: ['vxe-table--ignore-clear vxe-select--panel', {
               [`size--${vSize}`]: vSize,
               'is--transfer': transfer,
-              'animat--leave': reactData.animatVisible,
-              'animat--enter': visiblePanel
+              'animat--leave': !loading && reactData.animatVisible,
+              'animat--enter': !loading && visiblePanel
             }],
             placement: reactData.panelPlacement,
             style: reactData.panelStyle

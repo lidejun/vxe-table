@@ -1,10 +1,11 @@
-import { RenderFunction, SetupContext, ComponentPublicInstance, Ref, DefineComponent } from 'vue'
+import { RenderFunction, SetupContext, ComponentPublicInstance, Ref } from 'vue'
 import { VXEComponent, VxeComponentBase, SizeType, VNodeStyle, VxeEvent, ValueOf } from './component'
 
 /**
  * 组件 - 下拉容器
+ * @example import { Pulldown as VxePulldown } from 'vxe-table'
  */
-export const Pulldown: VXEComponent<VxePulldownProps & VxePulldownEventProps>;
+export const Pulldown: VXEComponent<VxePulldownProps, VxePulldownEventProps>;
 
 export type VxePulldownInstance = ComponentPublicInstance<VxePulldownProps, VxePulldownConstructor>;
 
@@ -31,8 +32,6 @@ export interface PulldownReactData {
   animatVisible: boolean;
   isActivated: boolean;
 }
-
-export interface VxePulldownOptions extends VxePulldownProps, VxePulldownListeners { }
 
 export interface PulldownMethods {
   dispatchEvent(type: ValueOf<VxePulldownEmits>, params: any, evnt: Event): void;

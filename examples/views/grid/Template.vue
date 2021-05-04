@@ -75,7 +75,14 @@
         </div>
       </template>
 
-      <!--自定义插槽 Number-->
+      <!--自定义插槽-->
+      <template #name_header>
+        <div class="first-col">
+          <div class="first-col-top">名称</div>
+          <div class="first-col-bottom">类型</div>
+        </div>
+      </template>
+
       <template #num_default="{ row, rowIndex }">
         <template v-if="rowIndex === 2">
           <vxe-switch v-model="row.flag"></vxe-switch>
@@ -95,7 +102,7 @@
         <span>￥{{ row.num1 }}元</span>
       </template>
 
-      <template #num1_height="{ column }">
+      <template #num1_header="{ column }">
         <span>
           <i>@</i>
           <span style="color: red;" @click="headerClickEvent">{{ column.title }}</span>
@@ -140,8 +147,8 @@
       <template #pager>
         <vxe-pager
           perfect
-          :current-page="demo1.tablePage.currentPage"
-          :page-size="demo1.tablePage.pageSize"
+          v-model:current-page="demo1.tablePage.currentPage"
+          v-model:page-size="demo1.tablePage.pageSize"
           :total="demo1.tablePage.totalResult">
           <template #left>
             <span class="page-left">
@@ -192,7 +199,7 @@
 <script lang="tsx">
 import { defineComponent, reactive, ref } from 'vue'
 import { VXETable } from '../../../packages/all'
-import { VxeGridInstance, VxeGridOptions, VxeTableEvents } from '../../../types/index'
+import { VxeGridInstance, VxeGridProps, VxeTableEvents } from '../../../types/index'
 import XEUtils from 'xe-utils'
 
 export default defineComponent({
@@ -217,7 +224,7 @@ export default defineComponent({
         sex: ''
       },
       tablePage: {
-        total: 0,
+        totalResult: 8,
         currentPage: 1,
         pageSize: 10
       }
@@ -252,7 +259,7 @@ export default defineComponent({
       },
       columns: [
         { type: 'checkbox', width: 60 },
-        { field: 'name', title: 'Name' },
+        { field: 'name', title: 'Name', width: 200, resizable: false, slots: { header: 'name_header' } },
         { field: 'age', title: 'Age', width: 100 },
         {
           field: 'num1',
@@ -266,7 +273,7 @@ export default defineComponent({
           slots: {
             // 使用插槽模板渲染
             default: 'num1_default',
-            header: 'num1_height',
+            header: 'num1_header',
             footer: 'num1_footer',
             filter: 'num1_filter',
             edit: 'num1_edit'
@@ -299,7 +306,7 @@ export default defineComponent({
           })
         ]
       }
-    } as VxeGridOptions)
+    } as VxeGridProps)
 
     const searchEvent = () => {
       VXETable.modal.alert('查询')
@@ -409,7 +416,14 @@ export default defineComponent({
             </div>
           </template>
 
-          <!--自定义插槽 Number-->
+          <!--自定义插槽-->
+          <template #name_header>
+            <div class="first-col">
+              <div class="first-col-top">名称</div>
+              <div class="first-col-bottom">类型</div>
+            </div>
+          </template>
+
           <template #num_default="{ row, rowIndex }">
             <template v-if="rowIndex === 2">
               <vxe-switch v-model="row.flag"></vxe-switch>
@@ -429,7 +443,7 @@ export default defineComponent({
             <span>￥{{ row.num1 }}元</span>
           </template>
 
-          <template #num1_height="{ column }">
+          <template #num1_header="{ column }">
             <span>
               <i>@</i>
               <span style="color: red;" @click="headerClickEvent">{{ column.title }}</span>
@@ -474,8 +488,8 @@ export default defineComponent({
           <template #pager>
             <vxe-pager
               perfect
-              :current-page="demo1.tablePage.currentPage"
-              :page-size="demo1.tablePage.pageSize"
+              v-model:current-page="demo1.tablePage.currentPage"
+              v-model:page-size="demo1.tablePage.pageSize"
               :total="demo1.tablePage.totalResult">
               <template #left>
                 <span class="page-left">
@@ -515,7 +529,7 @@ export default defineComponent({
         `,
         `
         import { defineComponent, reactive, ref } from 'vue'
-        import { VXETable, VxeGridInstance, VxeGridOptions, VxeTableEvents } from 'vxe-table'
+        import { VXETable, VxeGridInstance, VxeGridProps, VxeTableEvents } from 'vxe-table'
         import XEUtils from 'xe-utils'
 
         export default defineComponent({
@@ -540,7 +554,7 @@ export default defineComponent({
                 sex: ''
               },
               tablePage: {
-                total: 0,
+                totalResult: 8,
                 currentPage: 1,
                 pageSize: 10
               }
@@ -575,7 +589,7 @@ export default defineComponent({
               },
               columns: [
                 { type: 'checkbox', width: 60 },
-                { field: 'name', title: 'Name' },
+                { field: 'name', title: 'Name', width: 200, resizable: false, slots: { header: 'name_header' } },
                 { field: 'age', title: 'Age', width: 100 },
                 {
                   field: 'num1',
@@ -589,7 +603,7 @@ export default defineComponent({
                   slots: {
                     // 使用插槽模板渲染
                     default: 'num1_default',
-                    header: 'num1_height',
+                    header: 'num1_header',
                     footer: 'num1_footer',
                     filter: 'num1_filter',
                     edit: 'num1_edit'
@@ -622,7 +636,7 @@ export default defineComponent({
                   })
                 ]
               }
-            } as VxeGridOptions)
+            } as VxeGridProps)
 
             const searchEvent = () => {
               VXETable.modal.alert('查询')
@@ -709,11 +723,11 @@ export default defineComponent({
         .my-grid66 .first-col:before {
           content: "";
           position: absolute;
-          left: -15px;
+          left: -14px;
           top: 10px;
-          width: 110px;
+          width: 204px;
           height: 1px;
-          transform: rotate(28deg);
+          transform: rotate(13deg);
           background-color: #e8eaec;
         }
         .my-grid66 .first-col .first-col-top {
@@ -774,11 +788,11 @@ export default defineComponent({
 .my-grid66 .first-col:before {
   content: "";
   position: absolute;
-  left: -15px;
+  left: -14px;
   top: 10px;
-  width: 110px;
+  width: 204px;
   height: 1px;
-  transform: rotate(28deg);
+  transform: rotate(13deg);
   background-color: #e8eaec;
 }
 .my-grid66 .first-col .first-col-top {

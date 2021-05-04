@@ -34,6 +34,7 @@ $vxe-table-popup-border-color: #DADCE0;
 /*table*/
 $vxe-table-font-color: $vxe-font-color;
 $vxe-table-border-radius: $vxe-border-radius;
+$vxe-table-border-width: 1px;
 $vxe-table-border-color: #e8eaec;
 $vxe-table-resizable-line-color: #D9DDDF;
 $vxe-table-resizable-drag-line-color: $vxe-primary-color;
@@ -42,6 +43,7 @@ $vxe-table-header-background-color: #f8f8f9;
 $vxe-table-body-background-color: $vxe-table-background-color;
 $vxe-table-footer-background-color: $vxe-table-background-color;
 $vxe-table-tree-node-line-color:#909399;
+$vxe-table-tree-node-line-style: dotted;
 $vxe-table-header-font-weight: 700;
 
 $vxe-table-row-height-default: 48px;
@@ -64,6 +66,7 @@ $vxe-table-column-current-background-color: #e6f7ff;
 $vxe-table-column-icon-border-color: #c0c4cc;
 $vxe-table-column-icon-border-hover-color: #515A6E;
 
+$vxe-table-cell-placeholder-color: #C0C4CC;
 $vxe-table-cell-padding-left: 10px;
 $vxe-table-cell-padding-right: 10px;
 $vxe-table-cell-input-height-default: $vxe-table-row-height-default - 6;
@@ -192,6 +195,10 @@ $vxe-input-date-month-year-row-height-default: 48px;
 $vxe-input-date-month-year-row-height-medium: 46px;
 $vxe-input-date-month-year-row-height-small: 44px;
 $vxe-input-date-month-year-row-height-mini: 42px;
+$vxe-input-date-quarter-row-height-default: 60px;
+$vxe-input-date-quarter-row-height-medium: 58px;
+$vxe-input-date-quarter-row-height-small: 56px;
+$vxe-input-date-quarter-row-height-mini: 54px;
 $vxe-input-height-default: $vxe-button-height-default;
 $vxe-input-height-medium: $vxe-button-height-medium;
 $vxe-input-height-small: $vxe-button-height-small;

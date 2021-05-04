@@ -1,11 +1,12 @@
-import { RenderFunction, SetupContext, ComponentPublicInstance, Ref, DefineComponent } from 'vue'
+import { RenderFunction, SetupContext, ComponentPublicInstance, Ref } from 'vue'
 import { VXEComponent, VxeComponentBase, VxeEvent, SizeType, ValueOf } from './component'
 import { VxeFormItemProps, VxeFormItemPropTypes } from './form-item'
 
 /**
  * 组件 - 表单
+ * @example import { Form as VxeForm } from 'vxe-table'
  */
-export const Form: VXEComponent<VxeFormProps & VxeFormEventProps>;
+export const Form: VXEComponent<VxeFormProps, VxeFormEventProps>;
 
 export type VxeFormInstance = ComponentPublicInstance<VxeFormProps, VxeFormConstructor>;
 
@@ -38,8 +39,6 @@ export interface FormInternalData {
   }
 }
 
-export interface VxeFormOptions extends VxeFormProps, VxeFormListeners { }
-
 export type VxeFormEmits = [
   'toggle-collapse',
   'submit',
@@ -58,6 +57,14 @@ export namespace VxeFormPropTypes {
   export type TitleColon = boolean;
   export type TitleAsterisk = boolean;
   export type TitleOverflow = boolean | 'ellipsis' | 'title' | 'tooltip' | null;
+
+  interface ClassNameParams {
+    $form: VxeFormConstructor;
+    data: any;
+    items: VxeFormDefines.ItemInfo[];
+  }
+  export type ClassName = string | ((params: ClassNameParams) => string);
+
   export type Items = VxeFormItemProps[];
 
   /**
@@ -85,10 +92,10 @@ export namespace VxeFormPropTypes {
   export interface TooltipOpts extends TooltipConfig { }
 }
 
-export type VxeFormProps = {
+export type VxeFormProps<D = any> = {
   size?: VxeFormPropTypes.Size;
   loading?: VxeFormPropTypes.Loading;
-  data?: VxeFormPropTypes.Data;
+  data?: D;
   span?: VxeFormPropTypes.Span;
   align?: VxeFormPropTypes.Align;
   titleAlign?: VxeFormPropTypes.TitleAlign;
@@ -96,6 +103,7 @@ export type VxeFormProps = {
   titleColon?: VxeFormPropTypes.TitleColon;
   titleAsterisk?: VxeFormPropTypes.TitleAsterisk;
   titleOverflow?: VxeFormPropTypes.TitleOverflow;
+  className?: VxeFormPropTypes.ClassName;
   items?: VxeFormPropTypes.Items;
   rules?: VxeFormPropTypes.Rules;
   preventSubmit?: VxeFormPropTypes.PreventSubmit;
@@ -167,6 +175,7 @@ export namespace VxeFormDefines {
     showError: boolean;
     errRule: any;
     slots: VxeFormItemPropTypes.Slots;
+    children: ItemInfo[];
   }
 
   export interface FormRule {
@@ -185,7 +194,7 @@ export namespace VxeFormDefines {
     /**
      * 数据类型
      */
-    type?: 'number' | 'string';
+    type?: 'number' | 'string' | 'array';
     /**
      * 使用正则表达式校验
      */

@@ -1,4 +1,4 @@
-import { defineComponent, h, onUnmounted, provide, inject, ref, Ref, nextTick } from 'vue'
+import { defineComponent, h, onUnmounted, provide, inject, ref, Ref, onMounted } from 'vue'
 import { columnProps } from './column'
 import { XEColumnInstance, watchColumn, assemColumn, destroyColumn } from '../../table/src/util'
 import Cell from '../../table/src/cell'
@@ -6,7 +6,7 @@ import Cell from '../../table/src/cell'
 import { VxeTableConstructor, VxeTablePrivateMethods, VxeColumnProps } from '../../../types/all'
 
 export default defineComponent({
-  name: 'VxeTableColgroup',
+  name: 'VxeColgroup',
   props: columnProps,
   setup (props, { slots }) {
     const refElem = ref() as Ref<HTMLDivElement>
@@ -21,7 +21,7 @@ export default defineComponent({
 
     watchColumn(props, column)
 
-    nextTick(() => {
+    onMounted(() => {
       assemColumn($xetable, refElem.value, column, colgroup)
     })
 

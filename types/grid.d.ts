@@ -1,16 +1,16 @@
-import { VNode, RenderFunction, SetupContext, Ref, ComputedRef, ComponentPublicInstance, ComponentInternalInstance, DefineComponent } from 'vue'
-import { VxeColumnOptions } from './column'
-import { VxeFormInstance, VxeFormOptions, VxeFormDefines } from './form'
+import { VNode, RenderFunction, SetupContext, Ref, ComputedRef, ComponentPublicInstance, ComponentInternalInstance } from 'vue'
+import { VxeFormInstance, VxeFormProps, VxeFormDefines } from './form'
 import { VxeFormItemProps } from './form-item'
-import { VxeToolbarInstance, VxeToolbarOptions, VxeToolbarPropTypes } from './toolbar'
-import { VxePagerInstance, VxePagerOptions, VxePagerDefines } from './pager'
+import { VxeToolbarInstance, VxeToolbarProps, VxeToolbarPropTypes } from './toolbar'
+import { VxePagerInstance, VxePagerProps, VxePagerDefines } from './pager'
 import { VXEComponent, VxeComponentBase, VxeEvent, SizeType, ValueOf } from './component'
 import { VxeTableInstance, VxeTableDefines, VxeTableEmits, VxeTableConstructor, VxeTableProps, VxeTablePropTypes, TablePublicMethods, VxeTableMethods, VxeTablePrivateMethods } from './table'
 
 /**
  * 组件 - 高级表格
+ * @example import { Grid as VxeGrid } from 'vxe-table'
  */
-export const Grid: VXEComponent<VxeGridProps & VxeGridEventProps>;
+export const Grid: VXEComponent<VxeGridProps, VxeGridEventProps>;
 
 export type VxeGridInstance = ComponentPublicInstance<VxeGridProps, VxeGridConstructor>;
 
@@ -60,8 +60,6 @@ export interface GridReactData {
   }
 }
 
-export interface VxeGridOptions extends VxeGridProps, VxeGridListeners { }
-
 export type VxeGridEmits = [
   ...VxeTableEmits,
 
@@ -71,6 +69,7 @@ export type VxeGridEmits = [
   'form-reset',
   'form-toggle-collapse',
   'toolbar-button-click',
+  'toolbar-tool-click',
   'zoom'
 ]
 
@@ -88,6 +87,7 @@ export interface GridPublicMethods {
    * 获取表单项列表
    */
   getFormItems(): VxeFormItemProps[];
+  getFormItems(itemIndex?: number): VxeFormItemProps;
   /**
    * 获取已标记删除的数据
    */
@@ -128,6 +128,7 @@ export interface GridPrivateMethods {
   callSlot(slotFunc: Function | string | null, params: any): VNode[];
   extendTableMethods: <T>(methodKeys: T[]) => any;
   triggerToolbarBtnEvent(button: VxeToolbarPropTypes.ButtonConfig, evnt: Event): void;
+  triggerToolbarTolEvent(button: VxeToolbarPropTypes.ToolConfig, evnt: Event): void;
   triggerZoomEvent(evnt: Event): void;
   getParentHeight(): number;
   getExcludeHeight(): number;
@@ -138,10 +139,9 @@ export interface VxeGridPrivateMethods extends GridPrivateMethods { }
 export namespace VxeGridPropTypes {
   export type Size = SizeType;
 
-  export interface ColumnOptions extends VxeColumnOptions { }
-  export type Columns = ColumnOptions[];
+  export type Columns = VxeTableDefines.ColumnOptions[];
 
-  export interface PagerConfig extends VxePagerOptions {
+  export interface PagerConfig extends VxePagerProps {
     enabled?: boolean;
     slots?: any;
   }
@@ -223,7 +223,7 @@ export namespace VxeGridPropTypes {
   export interface ProxyOpts extends ProxyConfig { }
 
   export interface ToolbarOpts extends ToolbarConfig { }
-  export interface ToolbarConfig extends VxeToolbarOptions {
+  export interface ToolbarConfig extends VxeToolbarProps {
     enabled?: boolean;
     buttons?: any[];
     zoom?: boolean | {
@@ -237,7 +237,7 @@ export namespace VxeGridPropTypes {
     }
   }
 
-  export interface FormConfig extends VxeFormOptions {
+  export interface FormConfig extends VxeFormProps {
     enabled?: boolean;
     items?: VxeFormItemProps[];
   }
@@ -251,8 +251,8 @@ export namespace VxeGridPropTypes {
   export interface ZoomOpts extends ZoomConfig { }
 }
 
-export type VxeGridProps = VxeTableProps & {
-  columns?: VxeGridPropTypes.ColumnOptions[];
+export type VxeGridProps<D = any> = VxeTableProps<D> & {
+  columns?: VxeGridPropTypes.Columns;
   pagerConfig?: VxeGridPropTypes.PagerConfig;
   proxyConfig?: VxeGridPropTypes.ProxyConfig;
   toolbarConfig?: VxeGridPropTypes.ToolbarConfig;
@@ -277,7 +277,7 @@ export namespace VxeGridDefines {
   export interface CheckboxRangeChangeEventParams extends GridEventParams, VxeTableDefines.CheckboxRangeChangeEventParams { }
   export interface CheckboxRangeEndEventParams extends GridEventParams, VxeTableDefines.CheckboxRangeEndEventParams { }
   export interface CellClickEventParams extends GridEventParams, VxeTableDefines.CellClickEventParams { }
-  export interface CellDBLClickEventParams extends GridEventParams, VxeTableDefines.CellDBLClickEventParams { }
+  export interface CellDblclickEventParams extends GridEventParams, VxeTableDefines.CellDblclickEventParams { }
   export interface CellMenuEventParams extends GridEventParams, VxeTableDefines.CellMenuEventParams { }
   export interface CellMouseenterEventParams extends GridEventParams, VxeTableDefines.CellMouseenterEventParams { }
   export interface CellMouseleaveEventParams extends GridEventParams, VxeTableDefines.CellMouseleaveEventParams { }
@@ -309,8 +309,15 @@ export namespace VxeGridDefines {
 
   export interface ToolbarButtonClickParams {
     code: string;
+    button: VxeToolbarPropTypes.ButtonConfig;
   }
   export interface ToolbarButtonClickEventParams extends GridEventParams, ToolbarButtonClickParams { }
+
+  export interface ToolbarToolClickParams {
+    code: string;
+    tool: VxeToolbarPropTypes.ToolConfig;
+  }
+  export interface ToolbarToolClickEventParams extends GridEventParams, ToolbarToolClickParams { }
 
   export interface ZoomParams {
     type: 'max' | 'revert';
@@ -331,7 +338,7 @@ export interface VxeGridEventProps {
   onCheckboxRangeChange?: VxeGridEvents.CheckboxRangeChange;
   onCheckboxRangeEnd?: VxeGridEvents.CheckboxRangeEnd;
   onCellClick?: VxeGridEvents.CellClick;
-  onCellDBLClick?: VxeGridEvents.CellDBLClick;
+  onCellDblclick?: VxeGridEvents.CellDblclick;
   onCellMenu?: VxeGridEvents.CellMenu;
   onCellMouseenter?: VxeGridEvents.CellMouseenter;
   onCellMouseleave?: VxeGridEvents.CellMouseleave;
@@ -356,11 +363,12 @@ export interface VxeGridEventProps {
 
   // grid
   onPageChange?: VxeGridEvents.PageChange;
-  onFormSubmitEvent?: VxeGridEvents.FormSubmitEvent;
+  onFormSubmit?: VxeGridEvents.FormSubmit;
   onFormSubmitInvalid?: VxeGridEvents.FormSubmitInvalid;
   onFormReset?: VxeGridEvents.FormReset;
   onFormToggleCollapse?: VxeGridEvents.FormToggleCollapse;
   onToolbarButtonClick?: VxeGridEvents.ToolbarButtonClick;
+  onToolbarToolClick?: VxeGridEvents.ToolbarToolClick;
   onZoom?: VxeGridEvents.Zoom;
 }
 
@@ -377,7 +385,7 @@ export interface VxeGridListeners {
   checkboxRangeChange?: VxeGridEvents.CheckboxRangeChange;
   checkboxRangeEnd?: VxeGridEvents.CheckboxRangeEnd;
   cellClick?: VxeGridEvents.CellClick
-  cellDBLClick?: VxeGridEvents.CellDBLClick;
+  cellDBLClick?: VxeGridEvents.CellDblclick;
   cellMenu?: VxeGridEvents.CellMenu;
   cellMouseenter?: VxeGridEvents.CellMouseenter;
   cellMouseleave?: VxeGridEvents.CellMouseleave;
@@ -402,7 +410,7 @@ export interface VxeGridListeners {
 
   // grid
   pageChange?: VxeGridEvents.PageChange;
-  formSubmitEvent?: VxeGridEvents.FormSubmitEvent;
+  formSubmit?: VxeGridEvents.FormSubmit;
   formSubmitInvalid?: VxeGridEvents.FormSubmitInvalid;
   formReset?: VxeGridEvents.FormReset;
   formToggleCollapse?: VxeGridEvents.FormToggleCollapse;
@@ -423,7 +431,7 @@ export namespace VxeGridEvents {
   export type CheckboxRangeChange = (params: VxeGridDefines.CheckboxRangeChangeEventParams) => void;
   export type CheckboxRangeEnd = (params: VxeGridDefines.CheckboxRangeEndEventParams) => void;
   export type CellClick = (params: VxeGridDefines.CellClickEventParams) => void;
-  export type CellDBLClick = (params: VxeGridDefines.CellDBLClickEventParams) => void;
+  export type CellDblclick = (params: VxeGridDefines.CellDblclickEventParams) => void;
   export type CellMenu = (params: VxeGridDefines.CellMenuEventParams) => void;
   export type CellMouseenter = (params: VxeGridDefines.CellMouseenterEventParams) => void;
   export type CellMouseleave = (params: VxeGridDefines.CellMouseleaveEventParams) => void;
@@ -447,10 +455,11 @@ export namespace VxeGridEvents {
   export type Custom = (params: VxeGridDefines.CustomEventParams) => void;
 
   export type PageChange = (params: VxeGridDefines.PageChangeEventParams) => void;
-  export type FormSubmitEvent = (params: VxeGridDefines.FormSubmitEventParams) => void;
+  export type FormSubmit = (params: VxeGridDefines.FormSubmitEventParams) => void;
   export type FormSubmitInvalid = (params: VxeGridDefines.FormSubmitInvalidEventParams) => void;
   export type FormReset = (params: VxeGridDefines.FormResetEventParams) => void;
   export type FormToggleCollapse = (params: VxeGridDefines.FormToggleCollapseEventParams) => void;
   export type ToolbarButtonClick = (params: VxeGridDefines.ToolbarButtonClickEventParams) => void;
+  export type ToolbarToolClick = (params: VxeGridDefines.ToolbarToolClickEventParams) => void;
   export type Zoom = (params: VxeGridDefines.ZoomEventParams) => void;
 }

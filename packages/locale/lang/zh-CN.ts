@@ -20,6 +20,7 @@ export default {
       notSlot: '插槽 "{0}" 不存在',
       noTree: '树结构不支持 "{0}"',
       notProp: '不支持的参数 "{0}"',
+      coverProp: '"{0}" 的参数 "{1}" 被覆盖，这可能会出现错误',
       delFunc: '方法 "{0}" 已废弃，请使用 "{1}"',
       delProp: '参数 "{0}" 已废弃，请使用 "{1}"',
       delEvent: '事件 "{0}" 已废弃，请使用 "{1}"',
@@ -255,6 +256,7 @@ export default {
         m10: '10 月',
         m11: '11 月',
         m12: '12 月',
+        quarterLabel: '{0} 年',
         monthLabel: '{0} 年',
         dayLabel: '{0} 年 {1}',
         labelFormat: {
@@ -263,6 +265,7 @@ export default {
           datetime: 'yyyy-MM-dd HH:mm:ss',
           week: 'yyyy 年第 WW 周',
           month: 'yyyy-MM',
+          quarter: 'yyyy 年第 q 季度',
           year: 'yyyy'
         },
         weeks: {
@@ -288,6 +291,12 @@ export default {
           m9: '十月',
           m10: '十一月',
           m11: '十二月'
+        },
+        quarters: {
+          q1: '第一季度',
+          q2: '第二季度',
+          q3: '第三季度',
+          q4: '第四季度'
         }
       }
     }

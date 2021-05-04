@@ -1,4 +1,4 @@
-import { VNode, DefineComponent } from 'vue'
+import { VNode } from 'vue'
 import { VXEComponent } from './component'
 import { VxeTableConstructor, VxeTableDefines, VxeTablePropTypes } from './table'
 import { VxeGlobalRendererHandles } from './v-x-e-table'
@@ -6,13 +6,9 @@ import { VxeFilterPanel } from './filter'
 
 /**
  * 组件 - 表格列
+ * @example import { Column as VxeColumn } from 'vxe-table'
  */
 export const Column: VXEComponent<VxeColumnProps>;
-
-export interface VxeColumnOptions extends VxeColumnProps {
-  children?: VxeColumnOptions[];
-  slots?: VxeColumnPropTypes.Slots;
-}
 
 export namespace VxeColumnPropTypes {
   export type ColId = string | number;
@@ -40,7 +36,10 @@ export namespace VxeColumnPropTypes {
   }) => string | number) | any[] | string;
 
   export type Sortable = boolean;
-  export type SortBy = string | ((row: any) => string | number);
+  export type SortBy = string | ((params: {
+    row: any;
+    column: VxeTableDefines.ColumnInfo;
+  }) => string | number);
   export type SortType = 'string' | 'number' | null;
 
   export interface Filter {
@@ -56,6 +55,7 @@ export namespace VxeColumnPropTypes {
   interface FilterMethodParams {
     value: any;
     option: VxeTableDefines.FilterOption;
+    cellValue: any;
     row: any;
     column: VxeTableDefines.ColumnInfo;
   }
@@ -133,6 +133,7 @@ export namespace VxeColumnPropTypes {
     defaultValue?: any;
     immediate?: boolean;
     content?: string;
+    placeholder?: string;
   }
 
   /**
@@ -195,6 +196,9 @@ export namespace VxeColumnPropTypes {
   interface IconSlotParams extends DefaultSlotParams { }
 
   export type Slots = {
+    title?: string | ((params: DefaultSlotParams) => JSX.Element[] | VNode[] | string[]) | null;
+    radio?: string | ((params: DefaultSlotParams) => JSX.Element[] | VNode[] | string[]) | null;
+    checkbox?: string | ((params: DefaultSlotParams) => JSX.Element[] | VNode[] | string[]) | null;
     default?: string | ((params: DefaultSlotParams) => JSX.Element[] | VNode[] | string[]) | null;
     header?: string | ((params: HeaderSlotParams) => JSX.Element[] | VNode[] | string[]) | null;
     footer?: string | ((params: FooterSlotParams) => JSX.Element[] | VNode[] | string[]) | null;

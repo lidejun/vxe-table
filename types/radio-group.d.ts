@@ -1,10 +1,11 @@
-import { SetupContext, RenderFunction, ComponentPublicInstance, DefineComponent } from 'vue'
+import { SetupContext, RenderFunction, ComponentPublicInstance } from 'vue'
 import { VXEComponent, VxeComponentBase, SizeType, VxeEvent, ValueOf } from './component'
 
 /**
  * 组件 - 单选框组
+ * @example import { RadioGroup as VxeRadioGroup } from 'vxe-table'
  */
-export const RadioGroup: VXEComponent<VxeRadioGroupProps & VxeRadioGroupEventProps>;
+export const RadioGroup: VXEComponent<VxeRadioGroupProps, VxeRadioGroupEventProps>;
 
 export type VxeRadioGroupInstance = ComponentPublicInstance<VxeRadioGroupProps, VxeRadioGroupConstructor>;
 
@@ -20,12 +21,16 @@ export type VxeRadioGroupEmits = [
   'change'
 ]
 
-export interface VxeRadioGroupOptions extends VxeRadioGroupProps, VxeRadioGroupListeners { }
-
 export type VxeRadioGroupProps = {
-  size?: SizeType;
-  modelValue?: any;
-  disabled?: boolean;
+  size?: VxeRadioGroupPropTypes.Size;
+  modelValue?: VxeRadioGroupPropTypes.ModelValue;
+  disabled?: VxeRadioGroupPropTypes.Disabled;
+}
+
+export namespace VxeRadioGroupPropTypes {
+  export type Size = SizeType;
+  export type ModelValue = any;
+  export type Disabled = boolean;
 }
 
 export interface RadioGroupMethods {

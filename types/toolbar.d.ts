@@ -1,12 +1,14 @@
-import { VNode, RenderFunction, SetupContext, Ref, ComponentPublicInstance, DefineComponent } from 'vue'
+import { VNode, RenderFunction, SetupContext, Ref, ComponentPublicInstance } from 'vue'
 import { VXEComponent, VxeComponentBase, VxeEvent, SizeType, ValueOf } from './component'
 import { VxeGlobalRendererHandles } from './v-x-e-table'
 import { VxeTableDefines, VxeTableConstructor, VxeTablePrivateMethods } from './table'
+import { VxeButtonProps } from './button'
 
 /**
  * 组件 - 工具栏
+ * @example import { Toolbar as VxeToolbar } from 'vxe-table'
  */
-export const Toolbar: VXEComponent<VxeToolbarProps & VxeToolbarEventProps>;
+export const Toolbar: VXEComponent<VxeToolbarProps, VxeToolbarEventProps>;
 
 export type VxeToolbarInstance = ComponentPublicInstance<VxeToolbarProps, VxeToolbarConstructor>;
 
@@ -22,8 +24,6 @@ export interface ToolbarPrivateRef {
   refElem: Ref<HTMLDivElement>;
 }
 export interface VxeToolbarPrivateRef extends ToolbarPrivateRef { }
-
-export interface VxeToolbarOptions extends VxeToolbarProps, VxeToolbarListeners { }
 
 export namespace VxeToolbarPropTypes {
   export type Size = SizeType;
@@ -46,21 +46,18 @@ export namespace VxeToolbarPropTypes {
 
   interface ImportConfig {
     icon?: string;
-    [key: string]: any;
   }
   export type Import = boolean | ImportConfig;
   export interface ImportOpts extends ImportConfig { }
 
   interface ExportConfig {
     icon?: string;
-    [key: string]: any;
   }
   export type Export = boolean | ExportConfig;
   export interface ExportOpts extends ExportConfig { }
 
   export interface PrintConfig {
     icon?: string;
-    [key: string]: any;
   }
   export type Print = boolean | PrintConfig;
   export interface PrintOpts extends PrintConfig { }
@@ -68,7 +65,6 @@ export namespace VxeToolbarPropTypes {
   interface ZoomConfig {
     iconIn?: string;
     iconOut?: string;
-    [key: string]: any;
   }
   export type Zoom = boolean | ZoomConfig;
   export interface ZoomOpts extends ZoomConfig { }
@@ -80,26 +76,33 @@ export namespace VxeToolbarPropTypes {
     checkMethod?(params: { column: VxeTableDefines.ColumnInfo }): boolean;
     isFooter?: Boolean;
     icon?: string;
-    [key: string]: any;
   }
   export type Custom = boolean | CustomConfig;
   export interface CustomOpts extends CustomConfig { }
 
-  export interface ButtonConfig {
-    name?: string;
-    type?: string;
-    status?: string;
+  interface ButtonAndToolConfig extends VxeButtonProps {
     code?: string;
     visible?: boolean;
-    disabled?: boolean;
-    icon?: string;
+    params?: any;
+  }
+
+  export interface ButtonConfig extends ButtonAndToolConfig {
     dropdowns?: ButtonConfig[];
     buttonRender?: VxeGlobalRendererHandles.RenderButtonOptions;
-    [key: string]: any;
   }
   export type Buttons = ButtonConfig[];
 
+  export interface ToolConfig extends ButtonAndToolConfig {
+    dropdowns?: ToolConfig[];
+    toolRender?: VxeGlobalRendererHandles.RenderToolOptions;
+  }
+  export type Tools = ToolConfig[];
+
   export type Perfect = boolean;
+
+  export type ClassName = string | ((params: {
+    $toolbar: VxeToolbarConstructor;
+  }) => string);
 }
 
 export type VxeToolbarProps = {
@@ -137,22 +140,24 @@ export type VxeToolbarProps = {
   /**
    * 按钮列表
    */
-  buttons?: VxeToolbarPropTypes.ButtonConfig[];
+  buttons?: VxeToolbarPropTypes.Buttons;
+  tools?: VxeToolbarPropTypes.Tools;
   /**
    * 配套的样式
    */
   perfect?: VxeToolbarPropTypes.Perfect;
+  className?: VxeToolbarPropTypes.ClassName;
 }
 
 export interface ToolbarReactData {
   isRefresh: boolean;
-  columns: any[];
+  columns: VxeTableDefines.ColumnInfo[];
 }
 
 export interface ToolbarMethods {
   dispatchEvent(type: ValueOf<VxeToolbarEmits>, params: any, evnt: Event): void;
   syncUpdate(params: {
-    collectColumn: any[];
+    collectColumn: VxeTableDefines.ColumnInfo[];
     $table: VxeTableConstructor & VxeTablePrivateMethods;
   }): void;
 }
@@ -162,7 +167,8 @@ export interface ToolbarPrivateMethods { }
 export interface VxeToolbarPrivateMethods extends ToolbarPrivateMethods { }
 
 export type VxeToolbarEmits = [
-  'button-click'
+  'button-click',
+  'tool-click'
 ]
 
 export namespace VxeToolbarDefines {

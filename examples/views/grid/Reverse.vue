@@ -12,7 +12,7 @@
       <pre-code class="css">{{ demoCodes[2] }}</pre-code>
     </pre>
 
-    <p class="tip">更多配置<span class="red">（具体请自行实现，该示例仅供参考）</span></p>
+    <p class="tip">更多方式<span class="red">（具体请自行实现，该示例仅供参考）</span></p>
 
     <vxe-grid class="reverse-table" v-bind="gridOptions2"></vxe-grid>
 
@@ -28,7 +28,7 @@
 
 <script lang="ts">
 import { defineComponent, reactive } from 'vue'
-import { VxeGridOptions } from '../../../types/index'
+import { VxeGridProps } from '../../../types/index'
 
 export default defineComponent({
   setup () {
@@ -37,7 +37,7 @@ export default defineComponent({
       showHeader: false,
       columns: [],
       data: []
-    } as VxeGridOptions)
+    } as VxeGridProps)
 
     const myColumns1 = [
       { field: 'name', title: 'Name' },
@@ -91,7 +91,7 @@ export default defineComponent({
       showHeader: false,
       columns: [],
       data: []
-    } as VxeGridOptions)
+    } as VxeGridProps)
 
     const myColumns2 = [
       { field: 'id', title: 'ID' },
@@ -153,7 +153,7 @@ export default defineComponent({
         `,
         `
         import { defineComponent, reactive } from 'vue'
-        import { VxeGridOptions } from 'vxe-table'
+        import { VxeGridProps } from 'vxe-table'
 
         export default defineComponent({
           setup () {
@@ -162,7 +162,7 @@ export default defineComponent({
               showHeader: false,
               columns: [],
               data: []
-            } as VxeGridOptions)
+            } as VxeGridProps)
 
             const myColumns1 = [
               { field: 'name', title: 'Name' },
@@ -225,7 +225,7 @@ export default defineComponent({
         `,
         `
         import { defineComponent, reactive } from 'vue'
-        import { VxeGridOptions } from 'vxe-table'
+        import { VxeGridProps } from 'vxe-table'
 
         export default defineComponent({
           setup () {
@@ -236,7 +236,7 @@ export default defineComponent({
               showHeader: false,
               columns: [],
               data: []
-            } as VxeGridOptions)
+            } as VxeGridProps)
 
             const myColumns2 = [
               { field: 'id', title: 'ID' },

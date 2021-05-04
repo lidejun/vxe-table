@@ -1,7 +1,9 @@
 import { defineComponent, h, Teleport, ref, Ref, computed, reactive, nextTick, onBeforeMount, watch, PropType, VNode } from 'vue'
 import XEUtils from 'xe-utils'
-import { UtilTools, DomTools, GlobalEvent } from '../../tools'
 import { useSize } from '../../hooks/size'
+import { getDomNode, getEventTargetNode } from '../../tools/dom'
+import { errLog, getLastZIndex, nextZIndex, isNumVal, getFuncText } from '../../tools/utils'
+import { GlobalEvent } from '../../tools/event'
 import GlobalConfig from '../../v-x-e-table/src/conf'
 import VxeButtonConstructor from '../../button/src/button'
 
@@ -24,7 +26,8 @@ export default defineComponent({
     position: [String, Object] as PropType<VxeModalPropTypes.Position>,
     title: String as PropType<VxeModalPropTypes.Title>,
     duration: { type: [Number, String] as PropType<VxeModalPropTypes.Duration>, default: () => GlobalConfig.modal.duration },
-    message: [Number, String, Function] as PropType<VxeModalPropTypes.Message>,
+    message: [Number, String] as PropType<VxeModalPropTypes.Message>,
+    content: [Number, String] as PropType<VxeModalPropTypes.Content>,
     cancelButtonText: { type: String as PropType<VxeModalPropTypes.CancelButtonText>, default: () => GlobalConfig.modal.cancelButtonText },
     confirmButtonText: { type: String as PropType<VxeModalPropTypes.ConfirmButtonText>, default: () => GlobalConfig.modal.confirmButtonText },
     lockView: { type: Boolean as PropType<VxeModalPropTypes.LockView>, default: () => GlobalConfig.modal.lockView },
@@ -36,6 +39,7 @@ export default defineComponent({
     showHeader: { type: Boolean as PropType<VxeModalPropTypes.ShowHeader>, default: () => GlobalConfig.modal.showHeader },
     showFooter: { type: Boolean as PropType<VxeModalPropTypes.ShowFooter>, default: () => GlobalConfig.modal.showFooter },
     showZoom: Boolean as PropType<VxeModalPropTypes.ShowZoom>,
+    showClose: { type: Boolean as PropType<VxeModalPropTypes.ShowClose>, default: () => GlobalConfig.modal.showClose },
     dblclickZoom: { type: Boolean as PropType<VxeModalPropTypes.DblclickZoom>, default: () => GlobalConfig.modal.dblclickZoom },
     width: [Number, String] as PropType<VxeModalPropTypes.Width>,
     height: [Number, String] as PropType<VxeModalPropTypes.Height>,
@@ -59,6 +63,7 @@ export default defineComponent({
     'update:modelValue',
     'show',
     'hide',
+    'before-hide',
     'close',
     'confirm',
     'cancel',
@@ -112,8 +117,8 @@ export default defineComponent({
     const recalculate = () => {
       const { width, height } = props
       const boxElem = getBox()
-      boxElem.style.width = width ? (UtilTools.isNumVal(width) ? `${width}px` : width) : ''
-      boxElem.style.height = height ? (UtilTools.isNumVal(height) ? `${height}px` : height) : ''
+      boxElem.style.width = width ? (isNumVal(width) ? `${width}px` : width) : ''
+      boxElem.style.height = height ? (isNumVal(height) ? `${height}px` : height) : ''
       return nextTick()
     }
 
@@ -122,8 +127,8 @@ export default defineComponent({
       const { modalZindex } = reactData
       if (zIndex) {
         reactData.modalZindex = zIndex
-      } else if (modalZindex < UtilTools.getLastZIndex()) {
-        reactData.modalZindex = UtilTools.nextZIndex()
+      } else if (modalZindex < getLastZIndex()) {
+        reactData.modalZindex = nextZIndex()
       }
     }
 
@@ -135,7 +140,7 @@ export default defineComponent({
         const clientVisibleWidth = document.documentElement.clientWidth || document.body.clientWidth
         const clientVisibleHeight = document.documentElement.clientHeight || document.body.clientHeight
         const isPosCenter = position === 'center'
-        const { top, left }: any = isPosCenter ? { top: position, left: position } : Object.assign({}, position)
+        const { top, left }: any = XEUtils.isString(position) ? { top: position, left: position } : Object.assign({}, position)
         const topCenter = isPosCenter || top === 'center'
         const leftCenter = isPosCenter || left === 'center'
         let posTop = ''
@@ -190,6 +195,7 @@ export default defineComponent({
               reactData.zoomLocat = null
             }
             XEUtils.remove(allActivedModals, item => item === $xemodal)
+            modalMethods.dispatchEvent('before-hide', params)
             setTimeout(() => {
               reactData.visible = false
               emit('update:modelValue', false)
@@ -294,7 +300,7 @@ export default defineComponent({
         if (!reactData.zoomLocat) {
           const marginSize = XEUtils.toNumber(props.marginSize)
           const boxElem = getBox()
-          const { visibleHeight, visibleWidth } = DomTools.getDomNode()
+          const { visibleHeight, visibleWidth } = getDomNode()
           reactData.zoomLocat = {
             top: boxElem.offsetTop,
             left: boxElem.offsetLeft,
@@ -381,13 +387,14 @@ export default defineComponent({
     }
 
     const handleGlobalKeydownEvent = (evnt: KeyboardEvent) => {
-      if (evnt.keyCode === 27) {
+      const isEsc = evnt.keyCode === 27
+      if (isEsc) {
         const lastModal = XEUtils.max(allActivedModals, (item) => item.reactData.modalZindex)
         // 多个时，只关掉最上层的窗口
         if (lastModal) {
           setTimeout(() => {
             if (lastModal === $xemodal && lastModal.props.escClosable) {
-              closeModal('keydown')
+              closeModal('exit')
             }
           }, 10)
         }
@@ -470,13 +477,13 @@ export default defineComponent({
       const { zoomLocat } = reactData
       const marginSize = XEUtils.toNumber(props.marginSize)
       const boxElem = getBox()
-      if (!zoomLocat && evnt.button === 0 && !DomTools.getEventTargetNode(evnt, boxElem, 'trigger--btn').flag) {
+      if (!zoomLocat && evnt.button === 0 && !getEventTargetNode(evnt, boxElem, 'trigger--btn').flag) {
         evnt.preventDefault()
         const domMousemove = document.onmousemove
         const domMouseup = document.onmouseup
         const disX = evnt.clientX - boxElem.offsetLeft
         const disY = evnt.clientY - boxElem.offsetTop
-        const { visibleHeight, visibleWidth } = DomTools.getDomNode()
+        const { visibleHeight, visibleWidth } = getDomNode()
         document.onmousemove = evnt => {
           evnt.preventDefault()
           const offsetWidth = boxElem.offsetWidth
@@ -517,7 +524,7 @@ export default defineComponent({
     const dragEvent = (evnt: MouseEvent) => {
       evnt.preventDefault()
       const { remember, storage } = props
-      const { visibleHeight, visibleWidth } = DomTools.getDomNode()
+      const { visibleHeight, visibleWidth } = getDomNode()
       const marginSize = XEUtils.toNumber(props.marginSize)
       const targetElem = evnt.target as HTMLSpanElement
       const type = targetElem.getAttribute('type')
@@ -666,13 +673,13 @@ export default defineComponent({
     }
 
     const renderTitles = () => {
-      const { slots: propSlots = {}, showZoom, title } = props
+      const { slots: propSlots = {}, showClose, showZoom, title } = props
       const { zoomLocat } = reactData
       const titleSlot = slots.title || propSlots.title
       const titVNs: VNode[] = titleSlot ? titleSlot({ $modal: $xemodal }) as VNode[] : [
         h('span', {
           class: 'vxe-modal--title'
-        }, title ? UtilTools.getFuncText(title) : GlobalConfig.i18n('vxe.alert.title'))
+        }, title ? getFuncText(title) : GlobalConfig.i18n('vxe.alert.title'))
       ]
       if (showZoom) {
         titVNs.push(
@@ -683,13 +690,15 @@ export default defineComponent({
           })
         )
       }
-      titVNs.push(
-        h('i', {
-          class: ['vxe-modal--close-btn', 'trigger--btn', GlobalConfig.icon.MODAL_CLOSE],
-          title: GlobalConfig.i18n('vxe.modal.close'),
-          onClick: closeEvent
-        })
-      )
+      if (showClose) {
+        titVNs.push(
+          h('i', {
+            class: ['vxe-modal--close-btn', 'trigger--btn', GlobalConfig.icon.MODAL_CLOSE],
+            title: GlobalConfig.i18n('vxe.modal.close'),
+            onClick: closeEvent
+          })
+        )
+      }
       return titVNs
     }
 
@@ -699,7 +708,9 @@ export default defineComponent({
       const headerSlot = slots.header || propSlots.header
       const headVNs: VNode[] = []
       if (props.showHeader) {
-        const headerOns: any = {}
+        const headerOns: {
+          onDblclick?: typeof toggleZoomEvent;
+        } = {}
         if (showZoom && props.dblclickZoom && props.type === 'modal') {
           headerOns.onDblclick = toggleZoomEvent
         }
@@ -716,6 +727,7 @@ export default defineComponent({
 
     const renderBodys = () => {
       const { slots: propSlots = {}, status, message } = props
+      const content = props.content || message
       const isMsg = computeIsMsg.value
       const defaultSlot = slots.default || propSlots.default
       const contVNs: VNode[] = []
@@ -733,7 +745,7 @@ export default defineComponent({
       contVNs.push(
         h('div', {
           class: 'vxe-modal--content'
-        }, defaultSlot ? (!reactData.inited || (props.destroyOnClose && !reactData.visible) ? [] : defaultSlot({ $modal: $xemodal })) as VNode[] : (XEUtils.isFunction(message) ? message({ $modal: $xemodal }) as VNode[] : UtilTools.getFuncText(message)))
+        }, defaultSlot ? (!reactData.inited || (props.destroyOnClose && !reactData.visible) ? [] : defaultSlot({ $modal: $xemodal })) as VNode[] : getFuncText(content))
       )
       if (!isMsg) {
         contVNs.push(
@@ -771,7 +783,7 @@ export default defineComponent({
         h(VxeButtonConstructor, {
           ref: refConfirmBtn,
           status: 'primary',
-          content: props.cancelButtonText || GlobalConfig.i18n('vxe.button.confirm'),
+          content: props.confirmButtonText || GlobalConfig.i18n('vxe.button.confirm'),
           onClick: confirmEvent
         })
       )
@@ -832,13 +844,13 @@ export default defineComponent({
       if (value) {
         openModal()
       } else {
-        closeModal('default')
+        closeModal('model')
       }
     })
 
     nextTick(() => {
       if (props.storage && !props.id) {
-        UtilTools.error('vxe.error.reqProp', ['modal.id'])
+        errLog('vxe.error.reqProp', ['modal.id'])
       }
       if (props.modelValue) {
         openModal()
